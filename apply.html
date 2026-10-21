@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KUSC 전략직무 진출 커리큘럼 · 신청</title>
+<meta name="theme-color" content="#1F4BD1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--page:#F2F4F6;--card:#FFFFFF;--ink:#191F28;--sub:#4E5968;--mute:#8B95A1;--line:#E5E8EB;--soft:#F6F7F9;
+  --ku:#1F4BD1;--ku-soft:#E9EEFC;--blue:#1F4BD1;--yel:#F4D84A;--red:#E5484D;--shadow:0 1px 2px rgba(0,23,51,.04),0 8px 28px rgba(0,23,51,.07)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page);color:var(--ink);font-family:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  letter-spacing:-.02em;-webkit-font-smoothing:antialiased;word-break:keep-all}
+body{padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.wrap{max-width:560px;margin:0 auto;padding:20px 18px 40px}
+.hero{background:linear-gradient(170deg,#1C47CC,#2152DB 60%,#1A3FB8);color:#fff;border-radius:28px;padding:28px 24px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero .org{font-size:12.5px;font-weight:700;opacity:.9}
+.hero .script{font-family:Georgia,"Times New Roman",serif;font-style:italic;color:var(--yel);font-size:44px;line-height:.95;margin:18px 0 14px;transform:rotate(-5deg);transform-origin:left}
+.hero h1{font-size:23px;font-weight:800;line-height:1.35}
+.hero .sub{font-size:14px;opacity:.92;margin-top:8px;line-height:1.55}
+.hero .jobs{font-size:12px;font-weight:700;color:var(--yel);margin-top:10px;letter-spacing:.04em}
+.meta{margin-top:18px;border-top:1px solid rgba(255,255,255,.35);padding-top:14px;display:grid;grid-template-columns:72px 1fr;gap:6px 10px;font-size:14px}
+.meta b{color:var(--yel);font-weight:700}
+.card{background:var(--card);border-radius:24px;padding:24px 20px;box-shadow:var(--shadow);margin-top:14px}
+.steps{display:flex;gap:6px;margin:18px 2px 0}
+.steps i{flex:1;height:6px;border-radius:9px;background:var(--line);transition:background .3s}
+.steps i.on{background:var(--ku)}
+.stepname{font-size:13px;font-weight:800;color:var(--ku);margin:10px 2px 0}
+h2{font-size:21px;font-weight:800;line-height:1.35}
+.desc{font-size:14px;color:var(--sub);margin-top:6px;line-height:1.55}
+.field{margin-top:20px}
+.field label.l{display:block;font-size:14px;font-weight:700;margin-bottom:8px}
+.field label.l .req{color:var(--red);margin-left:3px}
+.field label.l .opt{color:var(--mute);font-weight:500;font-size:12.5px;margin-left:4px}
+.hint{font-size:12.5px;color:var(--mute);margin-top:6px;line-height:1.5}
+.hint.em{color:var(--ku);font-weight:600}
+input[type=text],input[type=tel],textarea,select{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--soft);border:2px solid transparent;border-radius:14px;padding:14px 14px;outline:none;transition:border .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--ku);background:#fff}
+textarea{resize:vertical;min-height:52px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:14px;padding:11px 14px;font-size:15px;font-weight:700;color:var(--sub);cursor:pointer;user-select:none;transition:all .15s}
+.chip.on{border-color:var(--ku);background:var(--ku-soft);color:var(--ku)}
+.chip:focus-visible{outline:3px solid var(--ku);outline-offset:2px}
+.qbox{background:var(--soft);border-radius:18px;padding:16px;margin-top:12px;position:relative}
+.qbox .qh{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:var(--ku);margin-bottom:10px}
+.qbox .del{background:none;border:0;color:var(--mute);font:inherit;font-size:13px;cursor:pointer}
+.qbox select,.qbox textarea{background:#fff}
+.qbox textarea{margin-top:8px}
+.ghost{width:100%;margin-top:12px;border:2px dashed var(--line);background:none;border-radius:14px;padding:13px;font:inherit;font-size:15px;font-weight:700;color:var(--sub);cursor:pointer}
+.consent{background:var(--soft);border-radius:16px;padding:16px;font-size:13.5px;line-height:1.7;color:var(--sub)}
+.consent b{color:var(--ink)}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:15px;font-weight:700;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--ku);margin-top:1px;flex-shrink:0}
+.nav{display:flex;gap:10px;margin-top:26px}
+.btn{flex:1;border:0;border-radius:16px;padding:16px;font:inherit;font-size:16.5px;font-weight:800;cursor:pointer;transition:transform .1s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn.pri{background:var(--ku);color:#fff}
+.btn.sec{background:var(--soft);color:var(--sub);flex:0 0 96px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.err{color:var(--red);font-size:13px;font-weight:600;margin-top:8px;display:none}
+.done{text-align:center}
+.done .ok{width:64px;height:64px;border-radius:22px;background:var(--ku-soft);color:var(--ku);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;margin:4px auto 14px}
+.ticket{margin-top:18px;border-radius:22px;background:linear-gradient(170deg,#1C47CC,#2152DB);color:#fff;padding:22px 20px;text-align:left}
+.ticket .t1{font-size:12.5px;font-weight:700;color:var(--yel)}
+.ticket .lb{font-size:12px;font-weight:700;opacity:.8;margin-top:14px}
+.ticket .code{font-size:52px;font-weight:900;letter-spacing:.12em;line-height:1.05;color:#fff;font-variant-numeric:tabular-nums}
+.ticket .nm{font-size:18px;font-weight:700;margin-top:6px;opacity:.95}
+.ticket .mt{margin-top:14px;border-top:1px dashed rgba(255,255,255,.45);padding-top:12px;display:grid;grid-template-columns:56px 1fr;gap:5px 8px;font-size:14px}
+.ticket .mt b{color:var(--yel)}
+.foot{text-align:center;font-size:12px;color:var(--mute);margin-top:22px;line-height:1.6}
+.small-link{background:none;border:0;color:var(--mute);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;margin-top:14px}
+/* 관리자 */
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stat div{background:var(--soft);border-radius:14px;padding:12px}
+.stat small{display:block;font-size:12px;color:var(--mute);font-weight:700}
+.stat b{font-size:22px;font-weight:900}
+.bar{display:grid;grid-template-columns:86px 1fr 34px;gap:8px;align-items:center;font-size:13.5px;margin-top:8px}
+.bar i{display:block;height:10px;border-radius:9px;background:var(--ku)}
+.bar span.t{height:10px;border-radius:9px;background:var(--line);display:block;overflow:hidden}
+.qlist li{list-style:none;background:var(--soft);border-radius:12px;padding:10px 12px;margin-top:8px;font-size:14px;line-height:1.5}
+.qlist li em{font-style:normal;font-weight:800;color:var(--ku);margin-right:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap" id="app"></main>
+
+<script>
+/* ───────── 설정 ───────── */
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbzr2-vwdBV4v7U6qliXPlFWWu0Mo9S7tC7_70xqGdqeCd0wPDmUB52FyB7xB510o-oT/exec";    /* 진단 앱과 같은 Apps Script 웹앱 URL을 붙여넣으세요 */
+const DEADLINE = new Date("2026-10-27T19:00:00+09:00");
+const EVENT = {date:"10월 28일(수) 오후 7시", place:"경영대학 101호", deadline:"10월 27일(화) 오후 7시"};
+const JOBS = ["IB","PE","VC","컨설팅","전략기획","PM"];
+const GRADES = ["1학년","2학년","3학년","4학년","초과학기·졸업유예","졸업생","대학원"];
+const STAGES = ["이제 알아보는 중","준비를 시작함","지원 중이거나 곧 지원"];
+const CHANNELS = ["인스타그램","포스터","단톡방","지인 추천","교수님 안내","기타"];
+const LS = "kusc:apply:v1";
+
+/* ───────── 상태 ───────── */
+const fresh0 = () => ({name:"",phone:"",major:"",major2:"",grade:"",kusc:"",dinner:"",jobs:[],stage:"",channel:"",qs:[{job:"",q:""}],worry:"",consent:false});
+const st = {step:0, d:fresh0()};
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function hero(){return `<section class="hero">
+  <div class="org">경영대학 × KUSC 전략학회</div>
+  <div class="script">Strategy<br>Career<br>Curriculum</div>
+  <h1>KUSC 전략직무 진출 커리큘럼</h1>
+  <div class="sub">여섯 직무의 현직자가 직접 들려주는 진출 노하우와 출근 후기</div>
+  <div class="jobs">IB · PE · VC · 컨설팅 · 전략기획 · PM</div>
+  <div class="meta"><b>일시</b><span>${EVENT.date}</span><b>장소</b><span>${EVENT.place}</span><b>신청 마감</b><span>${EVENT.deadline}</span></div>
+</section>`}
+
+const STEPNAMES=["신청","관심","사전 질문","동의"];
+function stepsUI(){
+  const total = st.d.kusc==="예"?4:3;
+  const idx = st.step===4 && total===3 ? 3 : st.step;   /* 비학회원은 3단계를 건너뜀 */
+  let bars="";for(let i=1;i<=total;i++) bars+=`<i class="${i<=idx?"on":""}"></i>`;
+  const name = st.step===4?"동의":STEPNAMES[st.step-1];
+  return `<div class="steps">${bars}</div><div class="stepname">${idx} / ${total} · ${name}</div>`;
+}
+function chips(key,list,multi){
+  const v=st.d[key];
+  return `<div class="chips" role="${multi?"group":"radiogroup"}">${list.map(o=>{
+    const on = multi? v.includes(o) : v===o;
+    return `<span class="chip ${on?"on":""}" tabindex="0" role="${multi?"checkbox":"radio"}" aria-checked="${on}" data-k="${key}" data-v="${esc(o)}" data-m="${multi?1:0}">${esc(o)}</span>`}).join("")}</div>`;
+}
+
+/* ───────── 화면 ───────── */
+function render(){
+  if(new Date()>DEADLINE && !location.search.includes("admin")){ return closed(); }
+  if(st.step===0) return intro();
+  if(st.step===1) return s1();
+  if(st.step===2) return s2();
+  if(st.step===3) return s3();
+  if(st.step===4) return s4();
+}
+function intro(){
+  const saved = lsGet();
+  const card = saved && !st.force ? `<section class="card">
+    <h2>이미 신청하셨어요</h2>
+    <p class="desc">${esc(saved.name)} 님 · 접수번호 <b style="color:var(--ku)">${esc(saved.no)}</b></p>
+    <div class="nav"><button class="btn pri" id="mine">입장 확인 보기</button></div>
+    <div style="text-align:center"><button class="small-link" id="go">다른 사람 이름으로 새로 신청하기</button></div>
+  </section>` : `<section class="card">
+    <h2>신청하고 들어오세요</h2>
+    <p class="desc">신청자만 입장할 수 있습니다. 1분이면 끝나요.</p>
+    <div class="nav"><button class="btn pri" id="go">신청 시작</button></div>
+  </section>`;
+  app.innerHTML = hero()+card+`<p class="foot">문의 · 회장 김성모 010-3091-4509</p>`;
+  $("#go").onclick=()=>{st.force=true;st.d=fresh0();st.step=1;render();scrollTo(0,0)};
+  if($("#mine")) $("#mine").onclick=()=>{done(saved);scrollTo(0,0)};
+}
+function s1(){
+  const d=st.d;
+  app.innerHTML = stepsUI()+`<section class="card">
+    <h2>기본 정보를 알려주세요</h2>
+    <div class="field"><label class="l" for="name">이름<span class="req">*</span></label>
+      <input type="text" id="name" autocomplete="name" value="${esc(d.name)}"></div>
+    <div class="field"><label class="l" for="phone">연락처<span class="req">*</span></label>
+      <input type="tel" id="phone" inputmode="numeric" placeholder="010-0000-0000" autocomplete="tel" value="${esc(d.phone)}">
+      <p class="hint em">* 일정·장소 등 변동사항이 있을 때 안내드리기 위한 용도로만 사용합니다</p></div>
+    <div class="field"><label class="l" for="major">주전공<span class="req">*</span></label>
+      <input type="text" id="major" placeholder="예: 경영학과" value="${esc(d.major)}"></div>
+    <div class="field"><label class="l" for="major2">복수·부전공<span class="opt">있다면</span></label>
+      <input type="text" id="major2" placeholder="예: 기술경영학과 (복수전공)" value="${esc(d.major2)}"></div>
+    <div class="field"><label class="l">학년<span class="req">*</span></label>${chips("grade",GRADES)}</div>
+    <div class="field"><label class="l">KUSC 전략학회 소속인가요?<span class="req">*</span></label>${chips("kusc",["예","아니오"])}</div>
+    <div class="field"><label class="l">행사 후 회식에 참석하시나요?<span class="req">*</span></label>${chips("dinner",["참석","불참","미정"])}
+      <p class="hint">연사분들과 함께하는 자리입니다</p></div>
+    <p class="err" id="err"></p>
+    <div class="nav"><button class="btn sec" id="back">이전</button><button class="btn pri" id="next">다음</button></div>
+  </section>`;
+  bind();
+  $("#back").onclick=()=>{collect1();st.step=0;st.force=true;render()};
+  $("#next").onclick=()=>{collect1();
+    const p=d.phone.replace(/\D/g,"");
+    const miss=!/^[가-힣A-Za-z][가-힣A-Za-z\s]{1,}$/.test(d.name.trim())?"이름을 정확히":!/^01\d{8,9}$/.test(p)?"연락처를 정확히":!d.major.trim()?"주전공을":!d.grade?"학년을":!d.kusc?"전략학회 소속 여부를":!d.dinner?"회식 참석 여부를":"";
+    if(miss) return showErr(miss+" 입력해 주세요");
+    d.phone=p.replace(/(\d{3})(\d{3,4})(\d{4})/,"$1-$2-$3"); st.step=2;render();scrollTo(0,0)};
+}
+function collect1(){const d=st.d;d.name=$("#name").value;d.phone=$("#phone").value;d.major=$("#major").value;d.major2=$("#major2").value}
+function s2(){
+  app.innerHTML = stepsUI()+`<section class="card">
+    <h2>어떤 직무가 궁금하세요?</h2>
+    <div class="field"><label class="l">관심 있는 직무<span class="req">*</span><span class="opt">여러 개 선택 가능</span></label>${chips("jobs",[...JOBS,"아직 모르겠다"],true)}</div>
+    <div class="field"><label class="l">지금 준비 단계<span class="req">*</span></label>${chips("stage",STAGES)}</div>
+    <div class="field"><label class="l">이 행사를 어떻게 알게 되셨나요?<span class="req">*</span></label>${chips("channel",CHANNELS)}</div>
+    <p class="err" id="err"></p>
+    <div class="nav"><button class="btn sec" id="back">이전</button><button class="btn pri" id="next">다음</button></div>
+  </section>`;
+  bind();
+  $("#back").onclick=()=>{st.step=1;render()};
+  $("#next").onclick=()=>{const d=st.d;
+    const miss=!d.jobs.length?"관심 직무를":!d.stage?"준비 단계를":!d.channel?"알게 된 경로를":"";
+    if(miss) return showErr(miss+" 선택해 주세요");
+    st.step = d.kusc==="예"?3:4; render();scrollTo(0,0)};
+}
+function s3(){
+  const d=st.d;
+  app.innerHTML = stepsUI()+`<section class="card">
+    <h2>현직자에게 묻고 싶은 게 있나요?</h2>
+    <p class="desc">학회원만 미리 질문을 받습니다. 질문은 익명으로 소개되고, 2부 Q&A에서 다룹니다. 건너뛰어도 괜찮아요.</p>
+    <div id="qs"></div>
+    ${d.qs.length<3?`<button class="ghost" id="addq">+ 질문 추가 (최대 3개)</button>`:""}
+    <div class="field"><label class="l" for="worry">지금 가장 막막한 것 한 가지<span class="opt">선택</span></label>
+      <input type="text" id="worry" placeholder="예: 무엇부터 준비해야 할지 모르겠다" value="${esc(d.worry)}"></div>
+    <div class="nav"><button class="btn sec" id="back">이전</button><button class="btn pri" id="next">다음</button></div>
+  </section>`;
+  $("#qs").innerHTML = d.qs.map((q,i)=>`<div class="qbox">
+    <div class="qh"><span>질문 ${i+1}</span>${d.qs.length>1?`<button class="del" data-i="${i}">삭제</button>`:""}</div>
+    <select data-i="${i}" class="qjob" aria-label="묻고 싶은 직무"><option value="">묻고 싶은 직무</option>${[...JOBS,"전체"].map(j=>`<option ${q.job===j?"selected":""}>${j}</option>`).join("")}</select>
+    <textarea data-i="${i}" class="qq" rows="2" placeholder="질문을 한 문장으로 적어주세요&#10;예: 학부 때 해둔 것 중 실제로 쓸모 있었던 하나는?">${esc(q.q)}</textarea></div>`).join("");
+  const save=()=>{document.querySelectorAll(".qjob").forEach(e=>d.qs[e.dataset.i].job=e.value);document.querySelectorAll(".qq").forEach(e=>d.qs[e.dataset.i].q=e.value);d.worry=$("#worry").value};
+  document.querySelectorAll(".del").forEach(b=>b.onclick=()=>{save();d.qs.splice(+b.dataset.i,1);s3()});
+  if($("#addq")) $("#addq").onclick=()=>{save();d.qs.push({job:"",q:""});s3()};
+  $("#back").onclick=()=>{save();st.step=2;render()};
+  $("#next").onclick=()=>{save();st.step=4;render();scrollTo(0,0)};
+}
+function s4(){
+  app.innerHTML = stepsUI()+`<section class="card">
+    <h2>마지막으로 동의해 주세요</h2>
+    <div class="consent" style="margin-top:16px"><b>개인정보 수집·이용 동의</b><br>
+      · 수집 항목: 이름, 연락처, 전공(복수·부전공 포함), 학년, 학회 소속 여부, 회식 참석 여부, 관심 직무 등 응답 내용<br>
+      · 이용 목적: 행사 신청·입장 확인, 변동사항 안내, 학회 행사 운영 및 향후 행사 안내<br>
+      · 보유 기간: 수집일로부터 2년<br>
+      · 동의를 거부할 수 있으며, 거부 시 신청이 제한됩니다</div>
+    <label class="check"><input type="checkbox" id="cs" ${st.d.consent?"checked":""}> 위 내용에 동의합니다 (필수)</label>
+    <p class="err" id="err"></p>
+    <div class="nav"><button class="btn sec" id="back">이전</button><button class="btn pri" id="sub">신청하기</button></div>
+  </section>`;
+  $("#cs").onchange=e=>st.d.consent=e.target.checked;
+  $("#back").onclick=()=>{st.step = st.d.kusc==="예"?3:2; render()};
+  $("#sub").onclick=submit;
+}
+async function submit(){
+  if(!st.d.consent) return showErr("개인정보 수집·이용에 동의해 주세요");
+  const btn=$("#sub");btn.disabled=true;btn.textContent="신청 중…";
+  const d=st.d, now=new Date();
+  const A="ACDEFHJKLMNPRTUVWXY3479"; let no=""; for(let i=0;i<4;i++) no+=A[Math.floor(Math.random()*A.length)];
+  const qs = d.kusc==="예" ? d.qs.filter(q=>q.q.trim()) : [];
+  const rec = {type:"apply", ts:now.toISOString(), no, name:d.name.trim(), phone:d.phone, major:d.major.trim(), major2:d.major2.trim(),
+    grade:d.grade, kusc:d.kusc, dinner:d.dinner, jobs:d.jobs, stage:d.stage, channel:d.channel,
+    qs, worry: d.kusc==="예"?d.worry.trim():"", consent:true};
+  let ok=true;
+  if(ENDPOINT){
+    try{ await fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(rec)}); }
+    catch(e){ ok=false; }
+  }
+  if(!ok){btn.disabled=false;btn.textContent="신청하기";return showErr("네트워크가 불안정합니다. 잠시 후 다시 눌러주세요")}
+  lsSet({no,name:rec.name,ts:rec.ts,dinner:rec.dinner});
+  done(lsGet(),true);
+}
+function done(s,fresh){
+  app.innerHTML = `<section class="card done">
+    <div class="ok">✓</div>
+    <h2>${fresh?"신청이 완료되었습니다":"이미 신청하셨어요"}</h2>
+    <p class="desc">당일 입구에서 이 화면을 보여주세요.<br>캡처해 두시면 편합니다.</p>
+    <div class="ticket"><div class="t1">KUSC 전략직무 진출 커리큘럼 · 입장 확인</div>
+      <div class="lb">접수번호</div><div class="code">${esc(s.no)}</div><div class="nm">${esc(s.name)} 님</div>
+      <div class="mt"><b>일시</b><span>${EVENT.date}</span><b>장소</b><span>${EVENT.place}</span><b>회식</b><span>${esc(s.dinner||"")}</span></div></div>
+    <button class="small-link" id="home">처음 화면으로</button>
+  </section><p class="foot">변동사항이 생기면 남겨주신 연락처로 안내드립니다<br>문의 · 회장 김성모 010-3091-4509</p>`;
+  $("#home").onclick=()=>{st.step=0;st.force=false;st.d=fresh0();render();scrollTo(0,0)};
+}
+function closed(){
+  app.innerHTML = hero()+`<section class="card"><h2>신청이 마감되었습니다</h2>
+    <p class="desc">신청 마감은 ${EVENT.deadline}이었습니다. 이미 신청하셨다면 입장 확인 화면을 보여주세요.</p>
+    ${lsGet()?`<div class="nav"><button class="btn pri" id="mine">내 입장 확인 보기</button></div>`:""}</section>
+    <p class="foot">문의 · 회장 김성모 010-3091-4509</p>`;
+  if($("#mine")) $("#mine").onclick=()=>done(lsGet());
+}
+
+/* ───────── 공통 ───────── */
+function bind(){
+  document.querySelectorAll(".chip").forEach(c=>{
+    const act=()=>{const k=c.dataset.k,v=c.dataset.v;
+      if(c.dataset.m==="1"){const a=st.d[k];const i=a.indexOf(v);i>-1?a.splice(i,1):a.push(v);
+        if(v==="아직 모르겠다"&&i===-1) st.d[k]=["아직 모르겠다"]; else if(v!=="아직 모르겠다") st.d[k]=st.d[k].filter(x=>x!=="아직 모르겠다");}
+      else st.d[k]=v;
+      if(st.step===1) collect1();
+      render();};
+    c.onclick=act; c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}};
+  });
+}
+function showErr(m){const e=$("#err");if(e){e.textContent=m;e.style.display="block"}}
+function lsGet(){try{return JSON.parse(localStorage.getItem(LS)||"null")}catch(e){return null}}
+function lsSet(v){try{localStorage.setItem(LS,JSON.stringify(v))}catch(e){}}
+
+/* ───────── 운영진 집계 (주소 뒤에 ?admin) ───────── */
+async function adminView(){
+  app.innerHTML=`<section class="card"><h2>신청 현황</h2><p class="desc">운영진 비밀번호를 입력하세요</p>
+    <div class="field"><input type="password" id="pw" placeholder="비밀번호"></div><p class="err" id="err"></p>
+    <div class="nav"><button class="btn pri" id="in">보기</button></div></section>`;
+  $("#in").onclick=async()=>{
+    if(!ENDPOINT) return showErr("ENDPOINT가 설정되지 않았습니다");
+    try{const r=await fetch(ENDPOINT+"?action=apply&key="+encodeURIComponent($("#pw").value));const j=await r.json();
+      if(!Array.isArray(j)) return showErr("비밀번호가 맞지 않습니다");
+      adminRender(j);}catch(e){showErr("불러오지 못했습니다")}};
+}
+function adminRender(rows){
+  const cnt=(arr)=>arr.reduce((m,x)=>(m[x]=(m[x]||0)+1,m),{});
+  const bars=(obj,order)=>{const max=Math.max(1,...Object.values(obj));return (order||Object.keys(obj)).map(k=>`<div class="bar"><span>${esc(k)}</span><span class="t"><i style="width:${(obj[k]||0)/max*100}%"></i></span><b>${obj[k]||0}</b></div>`).join("")};
+  const n=rows.length, k=rows.filter(r=>r.kusc==="예").length, din=cnt(rows.map(r=>r.dinner));
+  const qs=rows.flatMap(r=>(r.qs||[]).map(q=>q)), worries=rows.map(r=>r.worry).filter(Boolean);
+  const csv=()=>{const H=["접수번호","신청시각","이름","연락처","주전공","복수·부전공","학년","KUSC","회식","관심직무","준비단계","경로","질문","막막한것"];
+    const L=rows.map(r=>[r.no,r.ts,r.name,r.phone,r.major,r.major2,r.grade,r.kusc,r.dinner,(r.jobs||[]).join("/"),r.stage,r.channel,(r.qs||[]).map(q=>`[${q.job}] ${q.q}`).join(" | "),r.worry].map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(","));
+    const b=new Blob(["\uFEFF"+[H.join(","),...L].join("\n")],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="3강_신청자.csv";a.click()};
+  app.innerHTML=`<section class="card"><h2>신청 현황</h2>
+    <div class="stat"><div><small>전체 신청</small><b>${n}</b></div><div><small>KUSC 학회원</small><b>${k}</b></div><div><small>회식 참석</small><b>${din["참석"]||0}</b></div></div>
+    <div class="stat"><div><small>회식 미정</small><b>${din["미정"]||0}</b></div><div><small>사전 질문</small><b>${qs.length}</b></div><div><small>막막한 것</small><b>${worries.length}</b></div></div>
+    <div class="nav"><button class="btn pri" id="csv">CSV 내려받기</button></div></section>
+    <section class="card"><h2>관심 직무</h2>${bars(cnt(rows.flatMap(r=>r.jobs||[])),[...JOBS,"아직 모르겠다"])}</section>
+    <section class="card"><h2>학년 · 준비 단계 · 경로</h2>${bars(cnt(rows.map(r=>r.grade)),GRADES)}<div style="height:12px"></div>${bars(cnt(rows.map(r=>r.stage)),STAGES)}<div style="height:12px"></div>${bars(cnt(rows.map(r=>r.channel)),CHANNELS)}</section>
+    <section class="card"><h2>사전 질문 (직무별)</h2><ul class="qlist">${qs.sort((a,b)=>(a.job||"").localeCompare(b.job||"")).map(q=>`<li><em>${esc(q.job||"전체")}</em>${esc(q.q)}</li>`).join("")||"<li>아직 없습니다</li>"}</ul></section>
+    <section class="card"><h2>지금 가장 막막한 것</h2><ul class="qlist">${worries.map(w=>`<li>${esc(w)}</li>`).join("")||"<li>아직 없습니다</li>"}</ul></section>`;
+  $("#csv").onclick=csv;
+}
+
+if(location.search.includes("reset")){ try{localStorage.removeItem(LS)}catch(e){} history.replaceState(null,"",location.pathname); }
+if(location.search.includes("admin")) adminView(); else render();
+</script>
+</body>
+</html>
