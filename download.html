@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KUSC 전략 직무 진출 커리큘럼 · 서류 양식</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--page:#F2F4F6;--card:#FFFFFF;--ink:#191F28;--sub:#4E5968;--mute:#8B95A1;--line:#E5E8EB;--soft:#F6F7F9;
+  --ku:#036B3F;--ku-soft:rgba(3,107,63,.10);--red:#E5484D;
+  --shadow:0 1px 2px rgba(0,23,51,.04),0 8px 28px rgba(0,23,51,.07)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#101113;--card:#1B1D21;--ink:#F2F4F6;--sub:#B0B8C1;--mute:#7E8792;
+  --line:#2C2F35;--soft:#23262B;--ku:#3DBE84;--ku-soft:rgba(61,190,132,.14);--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px rgba(0,0,0,.35)}}
+:root[data-theme="dark"]{--page:#101113;--card:#1B1D21;--ink:#F2F4F6;--sub:#B0B8C1;--mute:#7E8792;--line:#2C2F35;--soft:#23262B;--ku:#3DBE84;--ku-soft:rgba(61,190,132,.14)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page);color:var(--ink);font-family:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  letter-spacing:-.02em;-webkit-font-smoothing:antialiased;word-break:keep-all}
+body{padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);min-height:100vh}
+.wrap{max-width:560px;margin:0 auto;padding:36px 18px 48px}
+.back{display:inline-block;font-size:14px;font-weight:700;color:var(--mute);text-decoration:none;margin-bottom:18px}
+.tag{display:inline-block;background:var(--ku-soft);color:var(--ku);font-weight:800;font-size:13px;padding:6px 12px;border-radius:999px}
+h1{font-size:30px;font-weight:900;letter-spacing:-.04em;line-height:1.25;margin-top:14px}
+.lead{font-size:15.5px;color:var(--sub);line-height:1.65;margin-top:8px;font-weight:500}
+.card{background:var(--card);border-radius:24px;padding:24px 20px;box-shadow:var(--shadow);margin-top:16px}
+h2{font-size:21px;font-weight:800;line-height:1.35}
+.desc{font-size:14px;color:var(--sub);margin-top:6px;line-height:1.55}
+.lesson{font-size:13px;font-weight:800;color:var(--ku)}
+/* 파일 목록 */
+.files{margin-top:16px}
+.file{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.file:first-child{border-top:0}
+.ic{width:42px;height:42px;border-radius:13px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;font-size:11px;font-weight:900;color:var(--sub)}
+.ic.doc{background:var(--ku-soft);color:var(--ku)}
+.file .t{flex:1;min-width:0}
+.file .t b{display:block;font-size:15.5px;font-weight:800}
+.file .t small{display:block;font-size:12.5px;color:var(--mute);font-weight:600;margin-top:2px}
+.dl{flex:none;border:0;border-radius:12px;padding:10px 14px;font:inherit;font-size:14px;font-weight:800;text-decoration:none;cursor:pointer;background:var(--ku);color:#fff}
+.dl.sec{background:var(--soft);color:var(--sub)}
+.locked .dl{display:none}
+.lockmark{flex:none;font-size:12.5px;font-weight:700;color:var(--mute);display:none}
+.locked .lockmark{display:block}
+.when{font-size:13px;color:var(--sub);background:var(--soft);border-radius:12px;padding:10px 12px;margin-top:12px;line-height:1.55}
+/* 선택 버튼 */
+.pick{display:block;width:100%;text-align:left;border:2px solid var(--line);background:var(--card);border-radius:18px;padding:16px 18px;margin-top:10px;cursor:pointer;font:inherit;color:var(--ink);transition:border .15s}
+.pick:hover,.pick:focus-visible{border-color:var(--ku);outline:none}
+.pick b{display:block;font-size:16.5px;font-weight:800}
+.pick small{display:block;font-size:13px;color:var(--mute);font-weight:600;margin-top:3px}
+/* 입력 (신청 페이지와 같은 부품) */
+.steps{display:flex;gap:6px;margin:18px 2px 0}
+.steps i{flex:1;height:6px;border-radius:9px;background:var(--line);transition:background .3s}
+.steps i.on{background:var(--ku)}
+.stepname{font-size:13px;font-weight:800;color:var(--ku);margin:10px 2px 0}
+.field{margin-top:20px}
+.field label.l{display:block;font-size:14px;font-weight:700;margin-bottom:8px}
+.field label.l .req{color:var(--red);margin-left:3px}
+.field label.l .opt{color:var(--mute);font-weight:500;font-size:12.5px;margin-left:4px}
+.hint{font-size:12.5px;color:var(--mute);margin-top:6px;line-height:1.5}
+input[type=text],input[type=tel],input[type=password]{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--soft);border:2px solid transparent;border-radius:14px;padding:14px;outline:none;transition:border .2s}
+input:focus{border-color:var(--ku);background:var(--card)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:var(--card);border-radius:14px;padding:11px 14px;font-size:15px;font-weight:700;color:var(--sub);cursor:pointer;user-select:none;transition:all .15s}
+.chip.on{border-color:var(--ku);background:var(--ku-soft);color:var(--ku)}
+.chip:focus-visible{outline:3px solid var(--ku);outline-offset:2px}
+.consent{background:var(--soft);border-radius:16px;padding:16px;font-size:13.5px;line-height:1.7;color:var(--sub);margin-top:20px}
+.consent b{color:var(--ink)}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:15px;font-weight:700;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--ku);margin-top:1px;flex-shrink:0}
+.nav{display:flex;gap:10px;margin-top:26px}
+.btn{flex:1;border:0;border-radius:16px;padding:16px;font:inherit;font-size:16.5px;font-weight:800;cursor:pointer;transition:transform .1s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn.pri{background:var(--ku);color:#fff}
+.btn.sec{background:var(--soft);color:var(--sub);flex:0 0 96px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.err{color:var(--red);font-size:13px;font-weight:600;margin-top:8px;display:none}
+.foot{text-align:center;font-size:12.5px;color:var(--mute);margin-top:26px;line-height:1.6;font-weight:600}
+.small-link{background:none;border:0;color:var(--mute);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer}
+/* 운영진 */
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stat div{background:var(--soft);border-radius:14px;padding:12px}
+.stat small{display:block;font-size:12px;color:var(--mute);font-weight:700}
+.stat b{font-size:22px;font-weight:900}
+.bar{display:grid;grid-template-columns:86px 1fr 34px;gap:8px;align-items:center;font-size:13.5px;margin-top:8px}
+.bar i{display:block;height:10px;border-radius:9px;background:var(--ku)}
+.bar span.t{height:10px;border-radius:9px;background:var(--line);display:block;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:600px){
+  .wrap{padding:28px 16px 40px}
+  h1{font-size:28px}
+  .wrap.form{padding:0;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+  .wrap.form .steps{margin:calc(16px + env(safe-area-inset-top,0px)) 18px 0}
+  .wrap.form .stepname{margin:10px 18px 0}
+  .wrap.form > .card{flex:1 0 auto;margin:12px 0 0;border-radius:28px 28px 0 0;padding:24px 20px 0;display:flex;flex-direction:column}
+  .wrap.form .nav{position:sticky;bottom:0;margin:auto -20px 0;padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px));background:var(--card);box-shadow:0 -1px 0 var(--line)}
+}
+</style>
+</head>
+<body>
+<main class="wrap" id="app"></main>
+
+<script>
+/* ───────── 설정 ───────── */
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbzr2-vwdBV4v7U6qliXPlFWWu0Mo9S7tC7_70xqGdqeCd0wPDmUB52FyB7xB510o-oT/exec";   /* 진단·신청과 같은 Apps Script 웹앱 */
+const LS = "kusc:download:v1";
+const JOBS = ["IB","PE","VC","컨설팅","전략기획","PM"];
+const GRADES = ["1학년","2학년","3학년","4학년","초과학기·졸업유예","졸업생","대학원"];
+const CHANNELS = ["인스타그램","포스터","단톡방","지인 추천","교수님 안내","기타"];
+const FILES = [
+  {grp:"국문 이력서", when:"국내 기업, 국내 컨설팅 펌 RA에 낼 때", items:[
+    {n:"국문 이력서 양식", s:"Word · 빈 양식", ext:"DOC", href:"files/KUSC_KR_resume_form.docx", save:"국문_이력서_양식.docx"},
+    {n:"국문 이력서 작성 요령", s:"PDF · 3쪽", ext:"PDF", href:"files/KUSC_KR_resume_guide.pdf", save:"국문_이력서_작성요령.pdf"}]},
+  {grp:"영문 레쥬메", when:"외국계, 전략 컨설팅 펌, 글로벌 IB에 낼 때", items:[
+    {n:"영문 레쥬메 양식", s:"Word · 빈 양식", ext:"DOC", href:"files/KUSC_EN_resume_form.docx", save:"영문_레쥬메_양식.docx"},
+    {n:"영문 레쥬메 작성 요령", s:"PDF · 4쪽", ext:"PDF", href:"files/KUSC_EN_resume_guide.pdf", save:"영문_레쥬메_작성요령.pdf"}]}
+];
+const ALL = {href:"files/KUSC_resume_templates.zip", save:"KUSC_서류양식_4종.zip"};
+
+/* ───────── 상태 ───────── */
+const fresh0 = () => ({name:"",sid:"",phone:"",school:"",major:"",grade:"",jobs:[],channel:"",consent:false});
+const st = {v:"home", step:1, d:fresh0()};
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function head(){return `<a class="back" href="./">← 처음으로</a><br>
+  <span class="tag">건국대학교 경영대학 전략학회 KUSC</span>
+  <h1>서류 양식</h1>
+  <p class="lead">4강 ‘진입하기’에서 다룬 국문 이력서와 영문 레쥬메 양식, 작성 요령입니다. 대부분 두 가지를 함께 내니, 두 문서의 사실과 수준을 같게 맞추세요.</p>`}
+
+function fileList(open){
+  return FILES.map(g=>`<section class="card ${open?"":"locked"}">
+    <div class="lesson">${g.grp}</div>
+    <div class="when">${g.when}</div>
+    <div class="files">${g.items.map(f=>`<div class="file">
+      <div class="ic ${f.ext==="DOC"?"doc":""}">${f.ext}</div>
+      <div class="t"><b>${f.n}</b><small>${f.s}</small></div>
+      <span class="lockmark">확인 후 받기</span>
+      ${open?`<a class="dl ${f.ext==="PDF"?"sec":""}" href="${f.href}" ${f.ext==="PDF"?'target="_blank" rel="noopener"':`download="${f.save}"`}>${f.ext==="PDF"?"보기":"받기"}</a>`:""}
+    </div>`).join("")}</div>
+  </section>`).join("");
+}
+
+/* ───────── 화면 ───────── */
+function mode(m){ app.className="wrap"+(m?" "+m:""); }
+function render(){
+  const s=lsGet();
+  if(s) return opened(s);
+  if(st.v==="home") return home();
+  if(st.v==="member") return member();
+  if(st.v==="guest") return guest();
+}
+function home(){
+  mode("");
+  app.innerHTML = head()+`<section class="card">
+    <h2>누구신가요?</h2>
+    <p class="desc">학회원은 바로 받을 수 있고, 학회원이 아니라면 간단한 정보를 남기고 받을 수 있어요.</p>
+    <button class="pick" id="m"><b>KUSC 학회원이에요</b><small>이름과 학번으로 확인합니다</small></button>
+    <button class="pick" id="g"><b>학회원이 아니에요</b><small>1분이면 끝나요</small></button>
+  </section>`+fileList(false)+`<p class="foot">KUSC 전략 직무 진출 커리큘럼 · Jason Baek</p>`;
+  $("#m").onclick=()=>{st.v="member";render();scrollTo(0,0)};
+  $("#g").onclick=()=>{st.v="guest";st.step=1;render();scrollTo(0,0)};
+}
+function member(){
+  mode("form");
+  const d=st.d;
+  app.innerHTML = `<div class="steps"><i class="on"></i></div><div class="stepname">학회원 확인</div><section class="card">
+    <h2>이름과 학번을 알려주세요</h2>
+    <p class="desc">학회원 명단과 맞는지만 확인합니다.</p>
+    <div class="field"><label class="l" for="name">이름<span class="req">*</span></label>
+      <input type="text" id="name" autocomplete="name" value="${esc(d.name)}"></div>
+    <div class="field"><label class="l" for="sid">학번<span class="req">*</span></label>
+      <input type="text" id="sid" inputmode="numeric" placeholder="예: 202612345" value="${esc(d.sid)}"></div>
+    <p class="err" id="err"></p>
+    <p class="hint" id="alt" style="display:none">명단에 없다고 나오면 운영진에게 알려주세요. 급하면 <button class="small-link" id="toG">학회원이 아닌 경우로 받기</button></p>
+    <div class="nav"><button class="btn sec" id="back">이전</button><button class="btn pri" id="ok">확인</button></div>
+  </section>`;
+  $("#back").onclick=()=>{st.v="home";render()};
+  $("#toG").onclick=()=>{st.v="guest";st.step=1;render();scrollTo(0,0)};
+  $("#ok").onclick=async()=>{
+    d.name=$("#name").value.trim(); d.sid=$("#sid").value.replace(/\D/g,"");
+    if(!d.name) return showErr("이름을 입력해 주세요");
+    if(d.sid.length<6) return showErr("학번을 정확히 입력해 주세요");
+    const b=$("#ok"); b.disabled=true; b.textContent="확인 중…";
+    try{
+      const r=await fetch(ENDPOINT+"?action=member&name="+encodeURIComponent(d.name)+"&sid="+encodeURIComponent(d.sid));
+      const j=await r.json();
+      if(j&&j.ok){ lsSet({kind:"member",name:d.name,ts:new Date().toISOString()}); return render(); }
+      b.disabled=false; b.textContent="확인";
+      showErr("학회원 명단에서 찾지 못했어요. 이름과 학번을 다시 확인해 주세요"); $("#alt").style.display="block";
+    }catch(e){ b.disabled=false; b.textContent="확인"; showErr("네트워크가 불안정합니다. 잠시 후 다시 눌러주세요"); }
+  };
+}
+function guest(){
+  mode("form");
+  const d=st.d, s=st.step;
+  const bars=`<div class="steps"><i class="on"></i><i class="${s>=2?"on":""}"></i></div><div class="stepname">${s} / 2 · ${s===1?"기본 정보":"관심과 동의"}</div>`;
+  if(s===1){
+    app.innerHTML = bars+`<section class="card">
+      <h2>기본 정보를 알려주세요</h2>
+      <div class="field"><label class="l" for="name">이름<span class="req">*</span></label>
+        <input type="text" id="name" autocomplete="name" value="${esc(d.name)}"></div>
+      <div class="field"><label class="l" for="phone">연락처<span class="req">*</span></label>
+        <input type="tel" id="phone" inputmode="numeric" placeholder="010-0000-0000" autocomplete="tel" value="${esc(d.phone)}"></div>
+      <div class="field"><label class="l" for="school">학교<span class="req">*</span></label>
+        <input type="text" id="school" placeholder="예: 건국대학교" value="${esc(d.school)}"></div>
+      <div class="field"><label class="l" for="major">학과<span class="req">*</span></label>
+        <input type="text" id="major" placeholder="예: 경영학과" value="${esc(d.major)}"></div>
+      <div class="field"><label class="l">학년<span class="req">*</span></label>${chips("grade",GRADES)}</div>
+      <p class="err" id="err"></p>
+      <div class="nav"><button class="btn sec" id="back">이전</button><button class="btn pri" id="next">다음</button></div>
+    </section>`;
+    bind();
+    $("#back").onclick=()=>{collect1();st.v="home";render()};
+    $("#next").onclick=()=>{collect1();
+      const p=d.phone.replace(/\D/g,"");
+      const miss=!/^[가-힣A-Za-z][가-힣A-Za-z\s]{1,}$/.test(d.name.trim())?"이름을 정확히":!/^01\d{8,9}$/.test(p)?"연락처를 정확히":!d.school.trim()?"학교를":!d.major.trim()?"학과를":!d.grade?"학년을":"";
+      if(miss) return showErr(miss+" 입력해 주세요");
+      d.phone=p.replace(/(\d{3})(\d{3,4})(\d{4})/,"$1-$2-$3"); st.step=2; render(); scrollTo(0,0)};
+  } else {
+    app.innerHTML = bars+`<section class="card">
+      <h2>어떤 직무가 궁금하세요?</h2>
+      <div class="field"><label class="l">관심 있는 직무<span class="req">*</span><span class="opt">여러 개 선택 가능</span></label>${chips("jobs",[...JOBS,"아직 모르겠다"],true)}</div>
+      <div class="field"><label class="l">이 페이지를 어떻게 알게 되셨나요?<span class="req">*</span></label>${chips("channel",CHANNELS)}</div>
+      <div class="consent"><b>개인정보 수집·이용 동의</b><br>
+        · 수집 항목: 이름, 연락처, 학교, 학과, 학년, 관심 직무, 알게 된 경로<br>
+        · 이용 목적: 서류 양식 제공 기록, 학회 모집과 행사 안내<br>
+        · 보유 기간: 수집일로부터 2년<br>
+        · 동의를 거부할 수 있으며, 거부 시 양식 제공이 제한됩니다</div>
+      <label class="check"><input type="checkbox" id="cs" ${d.consent?"checked":""}> 위 내용에 동의합니다 (필수)</label>
+      <p class="err" id="err"></p>
+      <div class="nav"><button class="btn sec" id="back">이전</button><button class="btn pri" id="sub">양식 받기</button></div>
+    </section>`;
+    bind();
+    $("#cs").onchange=e=>d.consent=e.target.checked;
+    $("#back").onclick=()=>{st.step=1;render()};
+    $("#sub").onclick=submit;
+  }
+}
+function collect1(){const d=st.d;d.name=$("#name").value;d.phone=$("#phone").value;d.school=$("#school").value;d.major=$("#major").value}
+async function submit(){
+  const d=st.d;
+  const miss=!d.jobs.length?"관심 직무를":!d.channel?"알게 된 경로를":"";
+  if(miss) return showErr(miss+" 선택해 주세요");
+  if(!d.consent) return showErr("개인정보 수집·이용에 동의해 주세요");
+  const b=$("#sub"); b.disabled=true; b.textContent="저장 중…";
+  const rec={type:"download", name:d.name.trim(), phone:d.phone, school:d.school.trim(), major:d.major.trim(),
+    grade:d.grade, jobs:d.jobs, channel:d.channel, consent:true};
+  try{ await fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(rec)}); }
+  catch(e){ b.disabled=false; b.textContent="양식 받기"; return showErr("네트워크가 불안정합니다. 잠시 후 다시 눌러주세요"); }
+  lsSet({kind:"guest",name:rec.name,ts:new Date().toISOString()});
+  render(); scrollTo(0,0);
+}
+function opened(s){
+  mode("");
+  app.innerHTML = head()+`<section class="card">
+    <h2>${esc(s.name)} 님, 받아 가세요</h2>
+    <p class="desc">작성 요령을 옆에 펴 두고, 양식의 번호 순서대로 채우면 됩니다.</p>
+    <div class="nav"><a class="btn pri" style="text-align:center;text-decoration:none" href="${ALL.href}" download="${ALL.save}">네 개 한 번에 받기</a></div>
+  </section>`+fileList(true)+`<p class="foot">KUSC 전략 직무 진출 커리큘럼 · Jason Baek<br>
+    <button class="small-link" id="sw">다른 사람으로 받기</button></p>`;
+  $("#sw").onclick=()=>{lsDel();st.v="home";st.d=fresh0();render();scrollTo(0,0)};
+}
+
+/* ───────── 공통 ───────── */
+function chips(key,list,multi){
+  const v=st.d[key];
+  return `<div class="chips" role="${multi?"group":"radiogroup"}">${list.map(o=>{
+    const on = multi? v.includes(o) : v===o;
+    return `<span class="chip ${on?"on":""}" tabindex="0" role="${multi?"checkbox":"radio"}" aria-checked="${on}" data-k="${key}" data-v="${esc(o)}" data-m="${multi?1:0}">${esc(o)}</span>`}).join("")}</div>`;
+}
+function bind(){
+  document.querySelectorAll(".chip").forEach(c=>{
+    const act=()=>{const k=c.dataset.k,v=c.dataset.v;
+      if(c.dataset.m==="1"){const a=st.d[k];const i=a.indexOf(v);i>-1?a.splice(i,1):a.push(v);
+        if(v==="아직 모르겠다"&&i===-1) st.d[k]=["아직 모르겠다"]; else if(v!=="아직 모르겠다") st.d[k]=st.d[k].filter(x=>x!=="아직 모르겠다");}
+      else st.d[k]=v;
+      if(st.v==="guest"&&st.step===1) collect1();
+      render();};
+    c.onclick=act; c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}};
+  });
+}
+function showErr(m){const e=$("#err");if(e){e.textContent=m;e.style.display="block"}}
+function lsGet(){try{return JSON.parse(localStorage.getItem(LS)||"null")}catch(e){return null}}
+function lsSet(v){try{localStorage.setItem(LS,JSON.stringify(v))}catch(e){}}
+function lsDel(){try{localStorage.removeItem(LS)}catch(e){}}
+
+/* ───────── 운영진 집계 (주소 뒤에 ?admin) ───────── */
+function adminView(){
+  mode("");
+  app.innerHTML=head()+`<section class="card"><h2>다운로드 현황</h2><p class="desc">운영진 비밀번호를 입력하세요</p>
+    <div class="field"><input type="password" id="pw" placeholder="비밀번호"></div><p class="err" id="err"></p>
+    <div class="nav"><button class="btn pri" id="in">보기</button></div></section>`;
+  $("#in").onclick=async()=>{
+    try{const r=await fetch(ENDPOINT+"?action=downloads&key="+encodeURIComponent($("#pw").value));const j=await r.json();
+      if(!Array.isArray(j)) return showErr("비밀번호가 맞지 않습니다");
+      adminRender(j);}catch(e){showErr("불러오지 못했습니다")}};
+}
+function adminRender(rows){
+  const cnt=a=>a.reduce((m,x)=>(m[x]=(m[x]||0)+1,m),{});
+  const bars=(o,order)=>{const max=Math.max(1,...Object.values(o));return (order||Object.keys(o)).map(k=>`<div class="bar"><span>${esc(k)}</span><span class="t"><i style="width:${(o[k]||0)/max*100}%"></i></span><b>${o[k]||0}</b></div>`).join("")};
+  const g=rows.filter(r=>r.kind==="guest"), m=rows.filter(r=>r.kind==="member");
+  const csv=()=>{const H=["시각","구분","이름","학번","연락처","학교","학과","학년","관심직무","경로"];
+    const L=rows.map(r=>[r.ts,r.kind==="member"?"학회원":"비학회원",r.name,r.sid,r.phone,r.school,r.major,r.grade,r.jobs,r.channel].map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(","));
+    const b=new Blob(["﻿"+[H.join(","),...L].join("\n")],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="서류양식_다운로드.csv";a.click()};
+  app.innerHTML=head()+`<section class="card"><h2>다운로드 현황</h2>
+    <div class="stat"><div><small>전체</small><b>${rows.length}</b></div><div><small>학회원</small><b>${m.length}</b></div><div><small>비학회원</small><b>${g.length}</b></div></div>
+    <div class="nav"><button class="btn pri" id="csv">CSV 내려받기</button></div></section>
+    <section class="card"><h2>비학회원 학교</h2>${bars(cnt(g.map(r=>r.school||"-")))}</section>
+    <section class="card"><h2>비학회원 관심 직무</h2>${bars(cnt(g.flatMap(r=>String(r.jobs||"").split("/").filter(Boolean))),[...JOBS,"아직 모르겠다"])}</section>
+    <section class="card"><h2>학년 · 알게 된 경로</h2>${bars(cnt(g.map(r=>r.grade)),GRADES)}<div style="height:12px"></div>${bars(cnt(g.map(r=>r.channel)),CHANNELS)}</section>`;
+  $("#csv").onclick=csv;
+}
+
+if(location.search.includes("reset")){ lsDel(); history.replaceState(null,"",location.pathname); }
+if(location.search.includes("admin")) adminView(); else render();
+if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){navigator.serviceWorker.register("sw.js").catch(function(){});}
+</script>
+</body>
+</html>

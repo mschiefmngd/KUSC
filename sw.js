@@ -1,6 +1,6 @@
 /* 오프라인 캐시 — 페이지는 최신을 먼저 받고, 안 되면 저장본을 보여줍니다 */
-const CACHE = "kusc-v4";
-const CORE = ["./", "./index.html", "./diagnostic.html", "./simulation.html", "./apply.html", "./manifest.json"];
+const CACHE = "kusc-v5";
+const CORE = ["./", "./index.html", "./diagnostic.html", "./simulation.html", "./apply.html", "./download.html", "./manifest.json"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -17,6 +17,8 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   if (req.url.indexOf("script.google.com") > -1) return;
+  /* 서류 양식 파일: 항상 최신본을 받도록 저장하지 않음 */
+  if (req.url.indexOf("/files/") > -1) return;
 
   /* 페이지 이동: 네트워크 우선 → 실패하면 캐시 */
   if (req.mode === "navigate") {
