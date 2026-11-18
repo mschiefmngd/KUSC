@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
-   KUSC 회원 기능 — Firebase 연결 모음
-   화면 코드는 이 파일의 함수만 부릅니다.
+   KUSC 회원 사이트 — Firebase 연결 모음
+   화면 코드(js/app.js, diagnostic.html)는 이 파일의 함수만 부릅니다.
    ───────────────────────────────────────────── */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -9,8 +9,8 @@ import {
   signOut as fbSignOut, deleteUser, setPersistence, browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, getDocs, collection,
-  writeBatch, serverTimestamp, deleteField
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, addDoc, getDocs, collection,
+  query, orderBy, limit, writeBatch, serverTimestamp, deleteField, increment
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -27,6 +27,7 @@ const auth = getAuth(app);
 auth.languageCode = "ko";
 setPersistence(auth, browserLocalPersistence).catch(() => {});
 const db = getFirestore(app);
+const now = () => serverTimestamp();
 
 /* 학회원 명단 문서 이름: 학번_이름 (이름의 띄어쓰기는 뺌) */
 export const rosterId = (sid, name) =>
@@ -40,56 +41,102 @@ export const signUpEmail = (e, p) => createUserWithEmailAndPassword(auth, e, p);
 export const resetPw = e => sendPasswordResetEmail(auth, e);
 export const signOut = () => fbSignOut(auth);
 
+/* ── 공통 ── */
+async function list(col, n = 200, field = "createdAt") {
+  const s = await getDocs(query(collection(db, col), orderBy(field, "desc"), limit(n)));
+  return s.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+const add = (col, data) => addDoc(collection(db, col), { ...data, createdAt: now() });
+const del = (col, id) => deleteDoc(doc(db, col, id));
+const upd = (col, id, patch) => updateDoc(doc(db, col, id), { ...patch, updatedAt: now() });
+
 /* ── 내 정보 ── */
 export async function getProfile(uid) {
   const s = await getDoc(doc(db, "users", uid));
   return s.exists() ? s.data() : null;
 }
+export async function getRole(uid) {          /* 'admin' | 'exec' | null */
+  try { const s = await getDoc(doc(db, "admins", uid)); return s.exists() ? (s.data().role || "exec") : null; }
+  catch (e) { return null; }
+}
 export async function getRoster(id) {
   const s = await getDoc(doc(db, "roster", id));
   return s.exists() ? s.data() : null;
 }
-export async function isAdmin(uid) {
-  try { return (await getDoc(doc(db, "admins", uid))).exists(); } catch (e) { return false; }
-}
-
-/* 가입: 일반 회원 */
-export async function createGeneral(uid, data) {
-  await setDoc(doc(db, "users", uid), {
-    ...data, role: "general", createdAt: serverTimestamp(), updatedAt: serverTimestamp()
-  });
-}
-
-/* 학회원 확인: 명단 문서에 내 uid를 걸고, 내 정보의 등급을 member로 (한 번에 처리) */
-export async function claimMember(uid, id, data, isNew) {
+/* 학회원 가입: 명단 문서에 내 계정을 걸고 내 정보를 만듦 (한 번에 처리) */
+export async function joinMember(uid, rid, data) {
   const b = writeBatch(db);
-  b.update(doc(db, "roster", id), { uid });
-  const base = { ...data, role: "member", rosterId: id, updatedAt: serverTimestamp() };
-  if (isNew) b.set(doc(db, "users", uid), { ...base, createdAt: serverTimestamp() });
-  else b.update(doc(db, "users", uid), base);
+  b.update(doc(db, "roster", rid), { uid });
+  b.set(doc(db, "users", uid), { ...data, role: "member", rosterId: rid, createdAt: now(), updatedAt: now() });
+  b.delete(doc(db, "requests", uid));
   await b.commit();
 }
-
-export const updateProfile = (uid, patch) =>
-  updateDoc(doc(db, "users", uid), { ...patch, updatedAt: serverTimestamp() });
-
+export const updateProfile = (uid, patch) => upd("users", uid, patch);
 export const saveDiag = (uid, rec) =>
-  updateDoc(doc(db, "users", uid), { diag: rec, diagAt: rec.ts || new Date().toISOString(), diagFrom: deleteField(), updatedAt: serverTimestamp() });
-
+  updateDoc(doc(db, "users", uid), { diag: rec, diagAt: rec.ts || new Date().toISOString(), diagFrom: deleteField(), updatedAt: now() });
 export const markProgress = (uid, key) =>
   updateDoc(doc(db, "users", uid), { ["progress." + key]: new Date().toISOString() });
-
 /* 탈퇴: 명단 연결을 풀고 내 정보를 지운 뒤 로그인 계정을 삭제 */
 export async function deleteMe(user, profile) {
   const b = writeBatch(db);
-  if (profile && profile.role === "member" && profile.rosterId)
-    b.update(doc(db, "roster", profile.rosterId), { uid: null });
-  b.delete(doc(db, "users", user.uid));
+  if (profile && profile.rosterId) b.update(doc(db, "roster", profile.rosterId), { uid: null });
+  if (profile) b.delete(doc(db, "users", user.uid));
   await b.commit();
   await deleteUser(user);
 }
 
-/* ── 운영진 ── */
+/* ── 가입 요청 (명단에 아직 없는 새 학회원) ── */
+export const getMyRequest = async uid => { const s = await getDoc(doc(db, "requests", uid)); return s.exists() ? s.data() : null; };
+export const submitRequest = (uid, data) => setDoc(doc(db, "requests", uid), { ...data, uid, createdAt: now() });
+export const listRequests = () => list("requests");
+export const deleteRequest = uid => del("requests", uid);
+
+/* ── 공지 · 일정 · 재정 · 회의록 ── */
+export const listNotices = () => list("notices");
+export const addNotice = d => add("notices", d);
+export const deleteNotice = id => del("notices", id);
+
+export const listEvents = () => list("events", 100, "date");
+export const addEvent = d => add("events", d);
+export const deleteEvent = id => del("events", id);
+export const setRsvp = (eid, uid, d) => setDoc(doc(db, "events", eid, "rsvp", uid), { ...d, at: now() });
+export async function listRsvp(eid) {
+  const s = await getDocs(collection(db, "events", eid, "rsvp"));
+  return s.docs.map(d => ({ uid: d.id, ...d.data() }));
+}
+
+export const listLedger = () => list("ledger", 300, "date");
+export const addLedger = d => add("ledger", d);
+export const deleteLedger = id => del("ledger", id);
+
+export const listMinutes = () => list("minutes", 200, "date");
+export const addMinute = d => add("minutes", d);
+export const deleteMinute = id => del("minutes", id);
+
+/* ── 커뮤니티 ── */
+export const listPosts = () => list("posts", 300);
+export async function getPost(id) { const s = await getDoc(doc(db, "posts", id)); return s.exists() ? { id, ...s.data() } : null; }
+export const addPost = d => add("posts", { ...d, comments: 0 });
+export const updatePost = (id, patch) => upd("posts", id, patch);
+export const deletePost = id => del("posts", id);
+export async function listComments(pid) {
+  const s = await getDocs(query(collection(db, "posts", pid, "comments"), orderBy("createdAt", "asc"), limit(300)));
+  return s.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+export async function addComment(pid, d) {
+  const b = writeBatch(db);
+  b.set(doc(collection(db, "posts", pid, "comments")), { ...d, createdAt: now() });
+  b.update(doc(db, "posts", pid), { comments: increment(1) });
+  await b.commit();
+}
+export async function deleteComment(pid, cid) {
+  const b = writeBatch(db);
+  b.delete(doc(db, "posts", pid, "comments", cid));
+  b.update(doc(db, "posts", pid), { comments: increment(-1) });
+  await b.commit();
+}
+
+/* ── 임원진 ── */
 export async function listUsers() {
   const s = await getDocs(collection(db, "users"));
   return s.docs.map(d => ({ uid: d.id, ...d.data() }));
@@ -98,7 +145,15 @@ export async function listRoster() {
   const s = await getDocs(collection(db, "roster"));
   return s.docs.map(d => ({ id: d.id, ...d.data() }));
 }
-/* 명단 올리기: 이미 있는 사람은 연결(uid)을 유지한 채 정보만 덮어씀 */
+export async function listAdmins() {
+  const s = await getDocs(collection(db, "admins"));
+  return s.docs.map(d => ({ uid: d.id, ...d.data() }));
+}
+export const setUserFields = (uid, patch) => upd("users", uid, patch);
+export const setDues = (uid, term, paid) => updateDoc(doc(db, "users", uid), { ["dues." + term]: paid ? new Date().toISOString() : deleteField() });
+export const setRole = (uid, name, role) => role ? setDoc(doc(db, "admins", uid), { role, name }) : deleteDoc(doc(db, "admins", uid));
+const ROSTER_KEYS = ["phone", "grade", "age", "gender", "major", "major2", "jobs", "stage", "diag", "note"];
+/* 명단 올리기: 이미 있는 사람은 계정 연결(uid)을 유지한 채 정보만 덮어씀 */
 export async function importRoster(entries) {
   let n = 0;
   for (let i = 0; i < entries.length; i += 400) {
@@ -106,10 +161,8 @@ export async function importRoster(entries) {
     for (const e of entries.slice(i, i + 400)) {
       const id = rosterId(e.sid, e.name);
       if (!/^\d{6,}_.+/.test(id)) continue;
-      const d = { name: String(e.name).replace(/\s/g, ""), sid: String(e.sid).replace(/\D/g, "") };
-      if (e.grade) d.grade = e.grade;
-      if (e.major) d.major = e.major;
-      if (e.diag) d.diag = e.diag;
+      const d = { name: String(e.name).replace(/\s/g, ""), sid: String(e.sid).replace(/\D/g, ""), updatedAt: now() };
+      ROSTER_KEYS.forEach(k => { if (e[k] !== undefined && e[k] !== "" && e[k] !== null) d[k] = e[k]; });
       b.set(doc(db, "roster", id), d, { merge: true });
       n++;
     }
@@ -117,5 +170,4 @@ export async function importRoster(entries) {
   }
   return n;
 }
-export const releaseRoster = id => updateDoc(doc(db, "roster", id), { uid: null });
-export const removeField = (uid, f) => updateDoc(doc(db, "users", uid), { [f]: deleteField() });
+export const deleteRoster = id => del("roster", id);

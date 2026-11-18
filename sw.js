@@ -1,6 +1,6 @@
 /* 오프라인 캐시 — 페이지는 최신을 먼저 받고, 안 되면 저장본을 보여줍니다 */
-const CACHE = "kusc-v6";
-const CORE = ["./", "./index.html", "./diagnostic.html", "./simulation.html", "./apply.html", "./download.html", "./js/fb.js", "./manifest.json"];
+const CACHE = "kusc-v7";
+const CORE = ["./", "./index.html", "./diagnostic.html", "./simulation.html", "./apply.html", "./download.html", "./js/fb.js", "./js/app.js", "./manifest.json"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));

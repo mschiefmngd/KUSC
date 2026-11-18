@@ -631,6 +631,8 @@ function prog(n){el("prog").style.width=(n*100)+"%"}
 
 function render(){
   const A=el("app");
+  /* 회원 사이트에서 로그인한 학회원: 기본 정보는 가입 정보로 채우고 바로 문항으로 */
+  if(st.step==="profile"&&window.KUSC_PROFILE&&!st.admin){st.profile={...window.KUSC_PROFILE};st.step="q";st.i=0;}
   if(st.step==="intro"){prog(0);
     A.innerHTML=`<a class="homelink" href="./">← KUSC 홈</a><div class="stamp mono">진단지 · 약 8분</div>
       <h1>역량을<br><i>전략적으로</i></h1>
@@ -1175,6 +1177,7 @@ F.onUser(async u=>{
   let p=null; try{ p=await F.getProfile(u.uid); }catch(e){}
   if(!p){ if(q.has("view")) location.replace("index.html"); return; }
   window.KUSC_saveDiag=rec=>F.saveDiag(u.uid,rec).catch(()=>{});
+  window.KUSC_PROFILE={name:p.name||"",sid:p.sid||"",grade:p.grade||"",age:p.age||"",major:p.major||"",major2:p.major2||"",gender:p.gender||""};
   /* 내 홈으로 돌아가는 버튼 */
   const a=document.createElement("a");
   a.href="index.html#home"; a.textContent="← 내 홈";

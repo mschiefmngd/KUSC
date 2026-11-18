@@ -1,44 +1,43 @@
 rules_version = '2';
 
 // KUSC 회원 사이트 보안 규칙
-// Firebase 콘솔 → Firestore Database → 규칙 탭에 이 내용을 통째로 붙여넣고 '게시'
+// Firebase 콘솔 → Firestore → 규칙 탭에 이 내용을 통째로 붙여넣고 '게시'
 //
 // 원칙
-// - 회원은 자기 정보만 읽고 고칠 수 있다
-// - 학회원 등급은 운영진이 올린 명단(roster)과 맞을 때만 얻을 수 있다
+// - 사이트는 학회원만 쓴다: 운영진이 올린 명단(roster)과 이름, 학번이 맞아야 가입된다
 // - 명단 한 줄은 한 계정만 연결할 수 있다
-// - 운영진(admins)은 전체를 볼 수 있다
+// - 회원은 자기 정보만 읽고 고친다. 이름, 학번, 등급, 회비 기록은 본인이 못 고친다
+// - 임원진(admins: exec)은 명단, 공지, 일정, 회비, 재정, 회의록을 관리한다
+// - 관리자(admins: admin)만 임원진을 지정하거나 해제한다
 
 service cloud.firestore {
   match /databases/{db}/documents {
 
     function signedIn() { return request.auth != null; }
-    function isAdmin() {
-      return signedIn() && exists(/databases/$(db)/documents/admins/$(request.auth.uid));
-    }
-    // 학회원이라고 적었다면, 명단 문서에 내 계정이 연결돼 있어야 한다 (같은 요청 안의 변경 포함)
+    function isExec() { return signedIn() && exists(/databases/$(db)/documents/admins/$(request.auth.uid)); }
+    function isAdmin() { return isExec() && get(/databases/$(db)/documents/admins/$(request.auth.uid)).data.role == 'admin'; }
+    function isMember() { return signedIn() && exists(/databases/$(db)/documents/users/$(request.auth.uid)); }
+    function canUse() { return isMember() || isExec(); }
     function claimOk(d) {
       return d.rosterId is string
         && getAfter(/databases/$(db)/documents/roster/$(d.rosterId)).data.get('uid', null) == request.auth.uid;
     }
-    function roleOk(d) {
-      return d.role == 'general' || (d.role == 'member' && claimOk(d));
-    }
+    function untouched(keys) { return !request.resource.data.diff(resource.data).affectedKeys().hasAny(keys); }
 
     match /users/{uid} {
-      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
-      allow create: if signedIn() && request.auth.uid == uid && roleOk(request.resource.data);
-      allow update: if isAdmin()
-        || (signedIn() && request.auth.uid == uid
-            && roleOk(request.resource.data)
-            && (request.resource.data.role == resource.data.role || resource.data.role == 'general'));
+      allow read: if signedIn() && (request.auth.uid == uid || isExec());
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.role == 'member' && claimOk(request.resource.data)
+        && !('dues' in request.resource.data);
+      allow update: if isExec()
+        || (signedIn() && request.auth.uid == uid && untouched(['role', 'rosterId', 'sid', 'name', 'dues']));
       allow delete: if signedIn() && (request.auth.uid == uid || isAdmin());
     }
 
     match /roster/{id} {
       allow get: if signedIn();
-      allow list, create, delete: if isAdmin();
-      allow update: if isAdmin()
+      allow list, create, delete: if isExec();
+      allow update: if isExec()
         || (signedIn()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid'])
             && ((resource.data.get('uid', null) == null && request.resource.data.uid == request.auth.uid)
@@ -46,8 +45,54 @@ service cloud.firestore {
     }
 
     match /admins/{uid} {
-      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
-      allow list, write: if isAdmin();
+      allow get: if signedIn() && (request.auth.uid == uid || isExec());
+      allow list: if isExec();
+      allow write: if isAdmin();
+    }
+
+    match /requests/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isExec());
+      allow list: if isExec();
+      allow create, update: if signedIn() && request.auth.uid == uid && request.resource.data.uid == uid;
+      allow delete: if signedIn() && (request.auth.uid == uid || isExec());
+    }
+
+    match /notices/{id} {
+      allow read: if canUse();
+      allow write: if isExec();
+    }
+
+    match /events/{id} {
+      allow read: if canUse();
+      allow write: if isExec();
+      match /rsvp/{uid} {
+        allow read: if canUse();
+        allow create, update: if signedIn() && request.auth.uid == uid && canUse();
+        allow delete: if signedIn() && (request.auth.uid == uid || isExec());
+      }
+    }
+
+    match /posts/{id} {
+      allow read: if canUse();
+      allow create: if canUse() && request.resource.data.uid == request.auth.uid && request.resource.data.comments == 0;
+      allow update: if isExec()
+        || (canUse() && resource.data.uid == request.auth.uid && untouched(['uid', 'comments']))
+        || (canUse() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments']));
+      allow delete: if isExec() || (signedIn() && resource.data.uid == request.auth.uid);
+      match /comments/{cid} {
+        allow read: if canUse();
+        allow create: if canUse() && request.resource.data.uid == request.auth.uid;
+        allow delete: if isExec() || (signedIn() && resource.data.uid == request.auth.uid);
+      }
+    }
+
+    match /ledger/{id} {
+      allow read: if canUse();
+      allow write: if isExec();
+    }
+
+    match /minutes/{id} {
+      allow read, write: if isExec();
     }
 
     match /{document=**} {
