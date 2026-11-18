@@ -730,7 +730,7 @@ function home(){
   resetAll(true);}
 function saveProfile(){
   const v=id=>(el(id).value||"").trim();
-  if(!v("f_name")||!v("f_sid")){el("perr").style.display="block";return}
+  if(!v("f_name")||(!v("f_sid")&&!window.KUSC_saveDiag)){el("perr").style.display="block";return}   /* 로그인한 회원은 학번 생략 가능 */
   st.profile={name:v("f_name"),sid:v("f_sid"),grade:el("f_grade").value,
     age:v("f_age"),major:v("f_major"),major2:v("f_major2"),gender:el("f_gender").value};
   st.step="q";st.i=0;render();window.scrollTo({top:0})}
@@ -772,6 +772,7 @@ async function flushOutbox(){
 async function persist(){
   if(st.admin)return;                      /* 강사 모드에서는 저장하지 않음 */
   const rec=buildRec();
+  try{ if(window.KUSC_saveDiag) window.KUSC_saveDiag(rec); }catch(e){}   /* 로그인한 회원이면 내 계정에도 저장 */
   window.__local=(window.__local||[]).concat(rec);
   lsSet("kusc:mine",lsGet("kusc:mine","[]").concat(rec));   /* 본인 기기 기록 */
   if(ENDPOINT){
@@ -1158,6 +1159,34 @@ function adminView(){
 }
 function preview(){resetAll(true)}
 initOrder();render();netBadge();flushOutbox().then(netBadge);
+/* ── 회원 사이트 연결: 저장된 내 결과 다시 보기 ── */
+window.KUSC_showResult=function(r){
+  st={step:"result",i:0,ans:r.ans||[],sans:r.sans||[],items:r.items||[],want:r.want,code:r.code,
+      profile:{name:r.name||"",sid:r.sid||"",grade:r.grade||"",age:r.age||"",major:r.major||"",major2:r.major2||"",gender:r.gender||""},
+      admin:false,gpa:r.gpa||""};
+  render();window.scrollTo({top:0});
+};
+</script>
+<script type="module">
+import * as F from "./js/fb.js";
+const q=new URLSearchParams(location.search);
+F.onUser(async u=>{
+  if(!u){ if(q.has("view")) location.replace("index.html"); return; }
+  let p=null; try{ p=await F.getProfile(u.uid); }catch(e){}
+  if(!p){ if(q.has("view")) location.replace("index.html"); return; }
+  window.KUSC_saveDiag=rec=>F.saveDiag(u.uid,rec).catch(()=>{});
+  /* 내 홈으로 돌아가는 버튼 */
+  const a=document.createElement("a");
+  a.href="index.html#home"; a.textContent="← 내 홈";
+  a.style.cssText="position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:#036B3F;color:#fff;font:800 14px 'Noto Sans KR',sans-serif;padding:11px 16px;border-radius:14px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.18)";
+  document.body.appendChild(a);
+  /* 처음 묻는 이름, 학번, 전공을 내 정보로 미리 채움 */
+  const fill=()=>{ const set=(id,v)=>{ const e=document.getElementById(id); if(e&&!e.value&&v) e.value=v; };
+    set("f_name",p.name); set("f_sid",p.sid); set("f_major",p.major);
+    const g=document.getElementById("f_grade"); if(g&&p.grade&&!g.dataset.kf){ g.dataset.kf="1"; [...g.options].forEach(o=>{ if(o.value===p.grade||o.text===p.grade) g.value=o.value; }); } };
+  new MutationObserver(fill).observe(document.getElementById("app")||document.body,{childList:true,subtree:true}); fill();
+  if(q.get("view")==="mine"){ if(p.diag) window.KUSC_showResult(p.diag); else location.replace("diagnostic.html?from=app"); }
+});
 </script>
 </body>
 </html>

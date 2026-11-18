@@ -11,78 +11,141 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{--page:#F2F4F6;--card:#FFFFFF;--ink:#191F28;--sub:#4E5968;--mute:#8B95A1;--line:#E5E8EB;--soft:#F6F7F9;
-  --ku:#036B3F;--ku-soft:rgba(3,107,63,.10);--skin:#FFDCC2;--hair:#3B2A22;--eye:#2A2A2A;--cheek:#FF9DA0;--ground:#E9ECEF;
+  --ku:#036B3F;--ku-soft:rgba(3,107,63,.10);--red:#E5484D;--skin:#FFDCC2;--hair:#3B2A22;--eye:#2A2A2A;--cheek:#FF9DA0;--ground:#E9ECEF;
   --shadow:0 1px 2px rgba(0,23,51,.04),0 8px 28px rgba(0,23,51,.07)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#101113;--card:#1B1D21;--ink:#F2F4F6;--sub:#B0B8C1;--mute:#7E8792;
   --line:#2C2F35;--soft:#23262B;--ku:#3DBE84;--ku-soft:rgba(61,190,132,.14);--ground:#2A2D33;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px rgba(0,0,0,.35)}}
 :root[data-theme="dark"]{--page:#101113;--card:#1B1D21;--ink:#F2F4F6;--sub:#B0B8C1;--mute:#7E8792;--line:#2C2F35;--soft:#23262B;--ku:#3DBE84;--ku-soft:rgba(61,190,132,.14);--ground:#2A2D33}
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{box-sizing:border-box}
 *,*:before,*:after{box-sizing:inherit;margin:0;padding:0}
 body{background:var(--page);color:var(--ink);font-family:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  letter-spacing:-.02em;-webkit-font-smoothing:antialiased;word-break:keep-all;min-height:100vh}
-.wrap{max-width:880px;margin:0 auto;padding:56px 22px 64px}
+  letter-spacing:-.02em;-webkit-font-smoothing:antialiased;word-break:keep-all;min-height:100vh;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:880px;margin:0 auto;padding:44px 22px 64px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .tag{display:inline-block;background:var(--ku-soft);color:var(--ku);font-weight:800;font-size:14px;padding:7px 13px;border-radius:999px}
+nav.tabs{display:flex;gap:6px}
+nav.tabs a{font-size:14.5px;font-weight:800;color:var(--sub);text-decoration:none;padding:9px 14px;border-radius:12px}
+nav.tabs a.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+nav.tabs a .soon{font-size:10.5px;color:var(--mute);margin-left:3px}
 h1{font-size:40px;font-weight:900;letter-spacing:-.04em;line-height:1.25;margin-top:16px}
 .lead{font-size:17px;color:var(--sub);line-height:1.65;margin-top:10px;font-weight:500}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:34px}
-a.card{display:flex;flex-direction:column;background:var(--card);border-radius:28px;padding:26px;box-shadow:var(--shadow);
-  text-decoration:none;color:inherit;transition:transform .15s ease,box-shadow .15s ease;min-height:360px}
-a.card:hover{transform:translateY(-3px)}
-a.card:focus-visible{outline:3px solid var(--ku);outline-offset:3px}
-.art{height:150px;border-radius:20px;background:var(--soft);display:flex;align-items:center;justify-content:center;gap:4px;overflow:hidden}
-.art .chr{width:15%;height:auto;max-width:72px;min-width:0}
-.lesson{font-size:13px;font-weight:800;color:var(--ku);margin-top:20px}
-.card h2{font-size:25px;font-weight:900;letter-spacing:-.035em;margin-top:4px}
-.card p{font-size:15.5px;color:var(--sub);line-height:1.6;margin-top:8px;font-weight:500}
+.card{background:var(--card);border-radius:28px;padding:26px;box-shadow:var(--shadow);margin-top:16px}
+.card.tight{border-radius:24px;padding:22px}
+h2{font-size:23px;font-weight:900;letter-spacing:-.035em;line-height:1.35}
+h3{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.desc{font-size:15px;color:var(--sub);line-height:1.6;margin-top:6px;font-weight:500}
+.lesson{font-size:13px;font-weight:800;color:var(--ku)}
+.muted{color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.grid>.card{margin-top:0}
 .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
 .meta span{font-size:12.5px;font-weight:700;color:var(--sub);background:var(--soft);padding:5px 10px;border-radius:9px}
-.go{margin-top:auto;padding-top:20px;display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:16px}
-.go b{width:44px;height:44px;border-radius:14px;background:var(--ku);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
-.next{margin-top:16px;background:var(--card);border-radius:22px;padding:18px 22px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;box-shadow:var(--shadow)}
-.next small{font-size:13px;font-weight:800;color:var(--mute);margin-right:6px}
-.next span{font-size:14px;font-weight:700;color:var(--mute);background:var(--soft);padding:7px 12px;border-radius:10px}
-.foot{margin-top:30px;font-size:12.5px;color:var(--mute);font-weight:600;text-align:center}
+.badge{display:inline-block;font-size:12.5px;font-weight:800;padding:5px 10px;border-radius:99px;background:var(--soft);color:var(--sub);vertical-align:middle}
+.badge.ku{background:var(--ku-soft);color:var(--ku)}
+.art{height:150px;border-radius:20px;background:var(--soft);display:flex;align-items:center;justify-content:center;gap:4px;overflow:hidden}
+.art .chr{width:15%;height:auto;max-width:72px;min-width:0}
 .chr .sh{fill:var(--ground)}.chr .skin{fill:var(--skin)}.chr .hair{fill:var(--hair)}.chr .eye{fill:var(--eye)}
 .chr .ck{fill:var(--cheek);opacity:.55}.chr .mouth{fill:none;stroke:var(--eye);stroke-width:2.4;stroke-linecap:round}
-@media (max-width:700px){.wrap{padding:36px 18px 48px}h1{font-size:30px}.grid{grid-template-columns:1fr}a.card{min-height:0}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* 버튼 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:16px;padding:15px 18px;font:inherit;font-size:16px;font-weight:800;cursor:pointer;text-decoration:none;transition:transform .1s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn.pri{background:var(--ku);color:#fff}
+.btn.sec{background:var(--soft);color:var(--sub)}
+.btn.line{background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.btn.block{display:flex;width:100%}
+.btn.sm{padding:10px 14px;font-size:14px;border-radius:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.go{margin-top:auto;padding-top:20px;display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:16px;color:inherit;text-decoration:none}
+.go b{width:44px;height:44px;border-radius:14px;background:var(--ku);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.link{background:none;border:0;color:var(--mute);font:inherit;font-size:13.5px;text-decoration:underline;cursor:pointer}
+/* 입력 */
+.field{margin-top:18px}
+.field label.l{display:block;font-size:14px;font-weight:700;margin-bottom:8px}
+.field label.l .req{color:var(--red);margin-left:3px}
+.field label.l .opt{color:var(--mute);font-weight:500;font-size:12.5px;margin-left:4px}
+.hint{font-size:12.5px;color:var(--mute);margin-top:6px;line-height:1.5}
+input[type=text],input[type=tel],input[type=email],input[type=password]{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--soft);border:2px solid transparent;border-radius:14px;padding:14px;outline:none;transition:border .2s}
+input:focus{border-color:var(--ku);background:var(--card)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:var(--card);border-radius:14px;padding:11px 14px;font-size:15px;font-weight:700;color:var(--sub);cursor:pointer;user-select:none;transition:all .15s}
+.chip.on{border-color:var(--ku);background:var(--ku-soft);color:var(--ku)}
+.chip:focus-visible{outline:3px solid var(--ku);outline-offset:2px}
+.consent{background:var(--soft);border-radius:16px;padding:16px;font-size:13.5px;line-height:1.7;color:var(--sub);margin-top:18px}
+.consent b{color:var(--ink)}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:15px;font-weight:700;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--ku);margin-top:1px;flex-shrink:0}
+.err{color:var(--red);font-size:13.5px;font-weight:700;margin-top:10px;display:none;line-height:1.5}
+.ok{color:var(--ku);font-size:13.5px;font-weight:700;margin-top:10px;line-height:1.5}
+.steps{display:flex;gap:6px;margin-top:4px}
+.steps i{flex:1;height:6px;border-radius:9px;background:var(--line)}
+.steps i.on{background:var(--ku)}
+.stepname{font-size:13px;font-weight:800;color:var(--ku);margin:10px 0 14px}
+.divider{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:13px;font-weight:700;margin:16px 0}
+.divider:before,.divider:after{content:"";flex:1;height:1px;background:var(--line)}
+.g{width:20px;height:20px}
+.notice{background:#FFF7E6;color:#8A5A00;border-radius:16px;padding:14px 16px;font-size:14px;line-height:1.6;font-weight:600;margin-top:16px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .notice{background:#2E2614;color:#F5C76B}}
+/* 대시보드 */
+.hexwrap{display:flex;gap:22px;align-items:center;margin-top:12px}
+.hex{width:240px;max-width:48%;flex:none}
+.hex text{font:700 11px "Noto Sans KR",sans-serif;fill:var(--sub)}
+.facts{flex:1;min-width:0}
+.fact{padding:12px 0;border-top:1px solid var(--line)}
+.fact:first-child{border-top:0}
+.fact small{display:block;font-size:12.5px;color:var(--mute);font-weight:700}
+.fact b{display:block;font-size:19px;font-weight:900;margin-top:2px}
+.prog{display:flex;gap:8px;margin-top:14px}
+.prog div{flex:1;background:var(--soft);border-radius:14px;padding:12px;text-align:center}
+.prog div.done{background:var(--ku-soft)}
+.prog small{display:block;font-size:12px;color:var(--mute);font-weight:800}
+.prog b{display:block;font-size:14px;font-weight:800;margin-top:4px;color:var(--sub)}
+.prog div.done b{color:var(--ku)}
+/* 강의실 */
+.lec{display:flex;flex-direction:column}
+.files{margin-top:14px}
+.file{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.file:first-child{border-top:0}
+.ic{width:40px;height:40px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;font-size:11px;font-weight:900;color:var(--sub)}
+.ic.doc{background:var(--ku-soft);color:var(--ku)}
+.file .t{flex:1;min-width:0}
+.file .t b{display:block;font-size:15px;font-weight:800}
+.file .t small{display:block;font-size:12.5px;color:var(--mute);font-weight:600;margin-top:2px}
+.lock{background:var(--soft);border-radius:16px;padding:14px 16px;font-size:14px;color:var(--sub);line-height:1.6;margin-top:14px}
+/* 운영진 */
+.stat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.stat div{background:var(--soft);border-radius:14px;padding:12px}
+.stat small{display:block;font-size:12px;color:var(--mute);font-weight:700}
+.stat b{font-size:22px;font-weight:900}
+.bar{display:grid;grid-template-columns:96px 1fr 30px;gap:8px;align-items:center;font-size:13.5px;margin-top:8px}
+.bar i{display:block;height:10px;border-radius:9px;background:var(--ku)}
+.bar span.t{height:10px;border-radius:9px;background:var(--line);display:block;overflow:hidden}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+.tbl th{text-align:left;color:var(--mute);font-weight:700;padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.scroll{overflow-x:auto}
+.foot{margin-top:30px;font-size:12.5px;color:var(--mute);font-weight:600;text-align:center;line-height:1.7}
+.skel{height:120px;border-radius:28px;background:linear-gradient(90deg,var(--card),var(--soft),var(--card));background-size:200% 100%;animation:sk 1.2s infinite;margin-top:16px}
+@keyframes sk{to{background-position:-200% 0}}
+@media (max-width:700px){
+  .wrap{padding:28px 16px calc(96px + env(safe-area-inset-bottom,0px))}
+  h1{font-size:30px}
+  .grid{grid-template-columns:1fr}
+  .stat{grid-template-columns:repeat(2,1fr)}
+  .hexwrap{flex-direction:column;align-items:stretch}
+  .hex{width:100%;max-width:300px;margin:0 auto}
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);box-shadow:0 -1px 0 var(--line);
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));justify-content:space-around;gap:0}
+  nav.tabs a{flex:1;text-align:center;padding:10px 4px;font-size:13px;border-radius:12px}
+  nav.tabs a.on{box-shadow:none;background:var(--ku-soft);color:var(--ku)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
-<main class="wrap">
-  <span class="tag">건국대학교 경영대학 전략학회 KUSC</span>
-  <h1>전략 직무 진출 커리큘럼</h1>
-  <p class="lead">한 학기 동안 쓰는 도구들을 모아뒀습니다. 들어갈 곳을 고르세요.</p>
+<main class="wrap" id="app"><div class="skel"></div><div class="skel"></div></main>
 
-  <div class="grid">
-    <a class="card" href="diagnostic.html">
-      <div class="art"><svg viewBox="0 0 220 140" width="220" height="140" aria-hidden="true">
-        <polygon points="110,14 186,52 186,108 110,136 34,108 34,52" fill="none" stroke="var(--line)" stroke-width="2"/>
-        <polygon points="110,40 160,62 160,98 110,114 60,98 60,62" fill="none" stroke="var(--line)" stroke-width="2"/>
-        <polygon points="110,30 172,58 150,102 110,124 52,94 76,62" fill="rgba(3,107,63,.18)" stroke="var(--ku)" stroke-width="3" stroke-linejoin="round"/>
-        <circle cx="110" cy="30" r="4" fill="var(--ku)"/><circle cx="172" cy="58" r="4" fill="var(--ku)"/><circle cx="150" cy="102" r="4" fill="var(--ku)"/>
-        <circle cx="110" cy="124" r="4" fill="var(--ku)"/><circle cx="52" cy="94" r="4" fill="var(--ku)"/><circle cx="76" cy="62" r="4" fill="var(--ku)"/>
-      </svg></div>
-      <div class="lesson">1강 · 전략 직무 정의하기</div>
-      <h2>직무 성향 진단</h2>
-      <p>일상 속 상황 17개로 나의 역량 모양을 그리고, 여섯 전략 직무 중 어디와 닮았는지 확인합니다.</p>
-      <div class="meta"><span>약 8분</span><span>개인 결과</span><span>이번 학기 목표 3가지</span></div>
-      <div class="go">진단 시작하기<b>→</b></div>
-    </a>
-    <a class="card" href="simulation.html">
-      <div class="art" id="cast"></div>
-      <div class="lesson">2강 · 전략 직무 구조화하기</div>
-      <h2>전략 직무 시뮬레이션</h2>
-      <p>디저트 브랜드 ‘하프’가 매각되기까지 7년. 회사가 커질 때마다 어떤 직무가 왜 필요해지는지 따라갑니다.</p>
-      <div class="meta"><span>7개 스테이지</span><span>6개 직무</span><span>방향키·스와이프</span></div>
-      <div class="go">시뮬레이션 열기<b>→</b></div>
-    </a>
-  </div>
-
-  <a class="next" href="apply.html" style="text-decoration:none;color:inherit"><small style="color:var(--ku)">3강 · 10월 28일(수) 오후 7시</small><span style="background:var(--ku);color:#fff">신청하기 →</span><span>여섯 직무 현직자의 진출 노하우와 출근 후기</span></a>
-  <a class="next" href="download.html" style="text-decoration:none;color:inherit"><small style="color:var(--ku)">4강 · 진입하기</small><span style="background:var(--ku);color:#fff">서류 양식 받기 →</span><span>국문 이력서와 영문 레쥬메 양식, 작성 요령</span></a>
-  <p class="foot">KUSC 전략 직무 진출 커리큘럼 · Jason Baek</p>
-</main>
 <script>
 const J={VC:{c:"#FF7A1A"},PM:{c:"#F04452"},BP:{c:"#D99A00"},CS:{c:"#00A3A3"},PE:{c:"#7B61FF"},IB:{c:"#3182F6"}};
 /* 공통 얼굴 */
@@ -118,9 +181,446 @@ function chr(k){
     <rect x="28" y="80" width="64" height="54" rx="26" fill="${c}"/>
     ${p.body}${faceParts()}${p.head}</svg>`;
 }
+</script>
+<script type="module">
+import * as F from "./js/fb.js";
 
-document.getElementById("cast").innerHTML=["VC","PM","BP","CS","PE","IB"].map(k=>chr(k)).join("");
-if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){navigator.serviceWorker.register("sw.js").catch(function(){});}
+/* ───────── 고정 값 ───────── */
+const JOBS = ["IB","PE","VC","컨설팅","전략기획","PM"];
+const GRADES = ["1학년","2학년","3학년","4학년","초과학기·졸업유예","졸업생","대학원"];
+const JOBNAME = {IB:"IB",PE:"PE",VC:"VC",CONS:"컨설팅",BIZ:"전략기획",PM:"PM",NONE:"아직 없음"};
+const AXES = ["구조화","수치화","가설 수립","정보 탐색","커뮤니케이션","실행 지구력"];
+const FILES = [
+  {n:"국문 이력서 양식", s:"Word · 빈 양식", ext:"DOC", href:"files/KUSC_KR_resume_form.docx", save:"국문_이력서_양식.docx"},
+  {n:"국문 이력서 작성 요령", s:"PDF · 3쪽", ext:"PDF", href:"files/KUSC_KR_resume_guide.pdf"},
+  {n:"영문 레쥬메 양식", s:"Word · 빈 양식", ext:"DOC", href:"files/KUSC_EN_resume_form.docx", save:"영문_레쥬메_양식.docx"},
+  {n:"영문 레쥬메 작성 요령", s:"PDF · 4쪽", ext:"PDF", href:"files/KUSC_EN_resume_guide.pdf"}
+];
+
+/* ───────── 상태 ───────── */
+const S = {user:null, prof:null, admin:false, ready:false, auth:"login", ob:{step:1}, msg:""};
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const app = $("#app");
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const route = () => (location.hash||"#home").slice(1).split("?")[0];
+const day = x => { try{ const d = x&&x.toDate ? x.toDate() : new Date(x); return isNaN(d) ? "" : `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`; }catch(e){ return ""; } };
+
+/* ───────── 공통 조각 ───────── */
+function header(title, lead){
+  const r = route(), tabs = S.prof ? `<nav class="tabs" aria-label="메뉴">
+    <a href="#home" class="${r==="home"?"on":""}">홈</a>
+    <a href="#class" class="${r==="class"?"on":""}">강의실</a>
+    <a href="#write" class="${r==="write"?"on":""}">작성실<span class="soon">준비 중</span></a>
+    <a href="#me" class="${r==="me"?"on":""}">내 정보</a>
+    ${S.admin?`<a href="#admin" class="${r==="admin"?"on":""}">운영진</a>`:""}</nav>` : "";
+  return `<div class="top"><span class="tag">건국대학교 경영대학 전략학회 KUSC</span>${tabs}</div>
+    ${title?`<h1>${title}</h1>`:""}${lead?`<p class="lead">${lead}</p>`:""}`;
+}
+const foot = () => `<p class="foot">KUSC 전략 직무 진출 커리큘럼 · Jason Baek</p>`;
+function showErr(m, id="err"){ const e=$("#"+id); if(e){ e.textContent=m; e.style.display="block"; } }
+function chips(key, list, multi, obj){
+  const v = obj[key];
+  return `<div class="chips" role="${multi?"group":"radiogroup"}">${list.map(o=>{
+    const on = multi ? (v||[]).includes(o) : v===o;
+    return `<span class="chip ${on?"on":""}" tabindex="0" role="${multi?"checkbox":"radio"}" aria-checked="${on}" data-k="${key}" data-v="${esc(o)}" data-m="${multi?1:0}">${esc(o)}</span>`;}).join("")}</div>`;
+}
+function bindChips(obj, after){
+  $$(".chip").forEach(c=>{
+    const act=()=>{ const k=c.dataset.k, v=c.dataset.v;
+      if(c.dataset.m==="1"){ const a=obj[k]=obj[k]||[]; const i=a.indexOf(v); i>-1?a.splice(i,1):a.push(v);
+        if(v==="아직 모르겠다"&&i===-1) obj[k]=["아직 모르겠다"]; else if(v!=="아직 모르겠다") obj[k]=obj[k].filter(x=>x!=="아직 모르겠다"); }
+      else obj[k]=v;
+      after(); };
+    c.onclick=act; c.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); act(); } };
+  });
+}
+function authMsg(e){
+  const c = (e && e.code) || "";
+  return ({
+    "auth/invalid-email":"이메일 형식을 확인해 주세요",
+    "auth/missing-password":"비밀번호를 입력해 주세요",
+    "auth/weak-password":"비밀번호는 6자 이상이어야 해요",
+    "auth/email-already-in-use":"이미 가입된 이메일이에요. '로그인'으로 들어와 주세요",
+    "auth/invalid-credential":"이메일 또는 비밀번호가 맞지 않아요",
+    "auth/wrong-password":"이메일 또는 비밀번호가 맞지 않아요",
+    "auth/user-not-found":"가입되지 않은 이메일이에요",
+    "auth/too-many-requests":"시도가 너무 많아요. 잠시 후 다시 해 주세요",
+    "auth/popup-closed-by-user":"로그인 창이 닫혔어요. 다시 눌러 주세요",
+    "auth/cancelled-popup-request":"로그인 창이 닫혔어요. 다시 눌러 주세요",
+    "auth/popup-blocked":"팝업이 막혔어요. 브라우저에서 팝업을 허용하거나 이메일로 로그인해 주세요",
+    "auth/network-request-failed":"네트워크가 불안정해요. 잠시 후 다시 해 주세요",
+    "auth/requires-recent-login":"보안을 위해 로그아웃 후 다시 로그인한 뒤 시도해 주세요",
+    "auth/unauthorized-domain":"이 주소에서는 로그인이 아직 허용되지 않았어요. 운영진에게 알려주세요",
+    "permission-denied":"권한이 없어요. 운영진에게 알려주세요"
+  })[c] || "문제가 생겼어요. 잠시 후 다시 해 주세요" + (c?` (${c})`:"");
+}
+const inApp = /KAKAOTALK|Instagram|FBAN|FBAV|NAVER|Line\//i.test(navigator.userAgent);
+
+/* ───────── 화면: 로그인 ───────── */
+function viewLanding(){
+  const isUp = S.auth==="signup", isReset = S.auth==="reset";
+  const gIcon = `<svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`;
+  app.innerHTML = header("전략 직무 진출 커리큘럼","한 학기 동안 쓰는 도구를 한곳에 모았습니다. 로그인하면 내 진단 결과와 강의실이 열려요.")+`
+  <div class="grid">
+    <section class="card">
+      <h2>${isReset?"비밀번호 다시 설정":isUp?"이메일로 가입하기":"로그인하고 시작하기"}</h2>
+      <p class="desc">${isReset?"가입한 이메일로 비밀번호를 다시 정하는 링크를 보내 드려요.":"처음이면 가입부터, 이미 계정이 있으면 바로 들어와요."}</p>
+      ${inApp && !isReset ? `<div class="notice">카카오톡이나 인스타그램 안에서 열면 구글 로그인이 막혀 있어요.<br>
+        <button class="link" id="ext" style="color:inherit;font-weight:800">다른 브라우저로 열기</button> 또는 이메일로 로그인해 주세요.</div>`:""}
+      ${isReset?"":`<button class="btn line block" id="google" style="margin-top:18px">${gIcon}구글 계정으로 계속하기</button>
+      <div class="divider">또는 이메일</div>`}
+      <div class="field" style="margin-top:${isReset?18:0}px"><label class="l" for="em">이메일</label><input type="email" id="em" autocomplete="email" placeholder="name@example.com"></div>
+      ${isReset?"":`<div class="field"><label class="l" for="pw">비밀번호${isUp?'<span class="opt">6자 이상</span>':""}</label><input type="password" id="pw" autocomplete="${isUp?"new-password":"current-password"}"></div>`}
+      <p class="err" id="err"></p>${S.msg?`<p class="ok">${esc(S.msg)}</p>`:""}
+      <button class="btn pri block" id="go" style="margin-top:18px">${isReset?"링크 보내기":isUp?"가입하기":"로그인"}</button>
+      <div style="display:flex;justify-content:space-between;margin-top:14px">
+        ${isReset?`<button class="link" data-mode="login">로그인으로 돌아가기</button>`
+          :`<button class="link" data-mode="${isUp?"login":"signup"}">${isUp?"이미 계정이 있어요":"처음이에요, 이메일로 가입할게요"}</button>
+            <button class="link" data-mode="reset">비밀번호를 잊었어요</button>`}
+      </div>
+    </section>
+    <section class="card">
+      <div class="lesson">로그인하면</div>
+      <h2 style="margin-top:4px">이런 게 열려요</h2>
+      <div class="files">
+        <div class="file"><div class="ic doc">1</div><div class="t"><b>내 역량 진단 결과</b><small>여섯 역량의 모양과 닮은 직무, 언제든 다시 보기</small></div></div>
+        <div class="file"><div class="ic doc">2</div><div class="t"><b>강의실</b><small>1강부터 4강까지 도구와 자료, 서류 양식</small></div></div>
+        <div class="file"><div class="ic">3</div><div class="t"><b>작성실</b><small>레쥬메와 자소서를 강의 방식대로 써 보는 곳 · 준비 중</small></div></div>
+      </div>
+      <p class="hint" style="margin-top:14px">KUSC 학회원은 가입할 때 학번으로 확인하면 학회원 전용 자료까지 열려요.</p>
+    </section>
+  </div>`+foot();
+  $$("[data-mode]").forEach(b=>b.onclick=()=>{ S.auth=b.dataset.mode; S.msg=""; viewLanding(); });
+  if($("#ext")) $("#ext").onclick=()=>{ location.href = /KAKAOTALK/i.test(navigator.userAgent)
+      ? "kakaotalk://web/openExternal?url="+encodeURIComponent(location.href) : location.href; };
+  if($("#google")) $("#google").onclick=async()=>{ try{ await F.signInGoogle(); }catch(e){ showErr(authMsg(e)); } };
+  $("#go").onclick=async()=>{
+    const em=$("#em").value.trim(), pw=$("#pw")?$("#pw").value:"";
+    const b=$("#go"); b.disabled=true;
+    try{
+      if(isReset){ await F.resetPw(em); S.msg="메일을 보냈어요. 받은편지함과 스팸함을 확인해 주세요"; S.auth="login"; viewLanding(); return; }
+      if(isUp) await F.signUpEmail(em,pw); else await F.signInEmail(em,pw);
+    }catch(e){ b.disabled=false; showErr(authMsg(e)); }
+  };
+}
+
+/* ───────── 화면: 처음 가입 정보 ───────── */
+function viewOnboard(){
+  const o = S.ob, d = o.d || (o.d = {name:S.user.displayName||"", school:"건국대학교", major:"", grade:"", kusc:"", sid:"", jobs:[], consent:false});
+  const step = o.step;
+  app.innerHTML = header("","")+`<section class="card" style="margin-top:22px">
+    <div class="steps"><i class="on"></i><i class="${step>=2?"on":""}"></i></div>
+    <div class="stepname">${step} / 2 · ${step===1?"기본 정보":"관심 직무와 동의"}</div>
+    <h2>${step===1?"반가워요! 몇 가지만 알려주세요":"거의 다 됐어요"}</h2>
+    ${step===1?`
+      <div class="field"><label class="l" for="name">이름<span class="req">*</span></label><input type="text" id="name" autocomplete="name" value="${esc(d.name)}"></div>
+      <div class="field"><label class="l" for="school">학교<span class="req">*</span></label><input type="text" id="school" value="${esc(d.school)}"></div>
+      <div class="field"><label class="l" for="major">학과<span class="req">*</span></label><input type="text" id="major" placeholder="예: 경영학과" value="${esc(d.major)}"></div>
+      <div class="field"><label class="l">학년<span class="req">*</span></label>${chips("grade",GRADES,false,d)}</div>
+      <div class="field"><label class="l">KUSC 전략학회 학회원인가요?<span class="req">*</span></label>${chips("kusc",["예","아니오"],false,d)}</div>
+      ${d.kusc==="예"?`<div class="field"><label class="l" for="sid">학번<span class="req">*</span></label>
+        <input type="text" id="sid" inputmode="numeric" placeholder="예: 202612345" value="${esc(d.sid)}">
+        <p class="hint">학회원 명단과 이름, 학번이 맞으면 학회원으로 가입돼요.</p></div>`:""}
+    `:`
+      <div class="field"><label class="l">관심 있는 직무<span class="req">*</span><span class="opt">여러 개 선택 가능</span></label>${chips("jobs",[...JOBS,"아직 모르겠다"],true,d)}</div>
+      <div class="consent"><b>개인정보 수집·이용 동의</b><br>
+        · 수집 항목: 이름, 이메일, 학교, 학과, 학년, 관심 직무${d.kusc==="예"?", 학번":""}, 진단 결과와 이용 기록<br>
+        · 이용 목적: 회원 관리, 진단 결과와 강의 자료 제공, 학회 활동 안내<br>
+        · 보유 기간: 탈퇴할 때까지 (내 정보에서 언제든 탈퇴하면 바로 지워져요)<br>
+        · 동의를 거부할 수 있으며, 거부 시 가입이 제한됩니다</div>
+      <label class="check"><input type="checkbox" id="cs" ${d.consent?"checked":""}> 위 내용에 동의합니다 (필수)</label>
+    `}
+    <p class="err" id="err"></p>
+    <div class="row" style="margin-top:24px"><button class="btn sec" id="back" style="flex:0 0 96px">${step===1?"나가기":"이전"}</button><button class="btn pri" id="next" style="flex:1">${step===1?"다음":"가입 완료"}</button></div>
+  </section>`+foot();
+  const keep=()=>{ if(step===1){ d.name=$("#name").value; d.school=$("#school").value; d.major=$("#major").value; if($("#sid")) d.sid=$("#sid").value; } };
+  bindChips(d, ()=>{ keep(); viewOnboard(); });
+  if($("#cs")) $("#cs").onchange=e=>d.consent=e.target.checked;
+  $("#back").onclick=async()=>{ keep(); if(step===1){ await F.signOut(); } else { o.step=1; viewOnboard(); } };
+  $("#next").onclick=async()=>{
+    keep();
+    if(step===1){
+      const miss = d.name.trim().length<2?"이름을":!d.school.trim()?"학교를":!d.major.trim()?"학과를":!d.grade?"학년을":!d.kusc?"학회원 여부를":(d.kusc==="예"&&d.sid.replace(/\D/g,"").length<6)?"학번을 정확히":"";
+      if(miss) return showErr(miss+" 입력해 주세요");
+      o.step=2; viewOnboard(); scrollTo(0,0); return;
+    }
+    if(!d.jobs.length) return showErr("관심 직무를 골라 주세요");
+    if(!d.consent) return showErr("개인정보 수집·이용에 동의해 주세요");
+    const b=$("#next"); b.disabled=true; b.textContent="가입 중…";
+    const data = {name:d.name.trim(), email:S.user.email||"", school:d.school.trim(), major:d.major.trim(), grade:d.grade, jobs:d.jobs,
+      consent:true, consentAt:new Date().toISOString(), progress:{}};
+    try{
+      if(d.kusc==="예"){
+        const res = await tryClaim(data, d.sid, true);
+        if(!res.ok){ b.disabled=false; b.textContent="가입 완료"; return showErr(res.msg+" 일단 일반 회원으로 가입하려면 1단계에서 '아니오'를 골라 주세요. 나중에 내 정보에서 다시 확인할 수 있어요."); }
+      } else await F.createGeneral(S.user.uid, data);
+      S.prof = await F.getProfile(S.user.uid);
+      location.hash="#home"; render();
+    }catch(e){ b.disabled=false; b.textContent="가입 완료"; showErr(authMsg(e)); }
+  };
+}
+/* 학회원 확인 (가입할 때, 내 정보에서 모두 사용) */
+async function tryClaim(data, sid, isNew){
+  const id = F.rosterId(sid, data.name);
+  let r = null;
+  try{ r = await F.getRoster(id); }catch(e){}
+  if(!r) return {ok:false, msg:"학회원 명단에서 이름과 학번을 찾지 못했어요."};
+  if(r.uid && r.uid!==S.user.uid) return {ok:false, msg:"이 학번은 이미 다른 계정에 연결돼 있어요. 운영진에게 알려주세요."};
+  const extra = {sid:String(sid).replace(/\D/g,"")};
+  if(r.diag && !(S.prof&&S.prof.diag)){ extra.diag = r.diag; extra.diagAt = r.diag.ts||""; extra.diagFrom = "1강 진단"; }
+  await F.claimMember(S.user.uid, id, {...data, ...extra}, isNew);
+  return {ok:true};
+}
+
+/* ───────── 화면: 홈 ───────── */
+function hexSVG(a){
+  const cx=150, cy=130, R=96, max=50, pt=(i,v)=>{ const ang=-Math.PI/2+i*Math.PI/3; return [cx+Math.cos(ang)*R*v, cy+Math.sin(ang)*R*v]; };
+  const ring=f=>AXES.map((_,i)=>pt(i,f).map(n=>n.toFixed(1)).join(",")).join(" ");
+  const me=a.map((v,i)=>pt(i,Math.max(.04,Math.min(1,v/max))).map(n=>n.toFixed(1)).join(",")).join(" ");
+  const lab=AXES.map((t,i)=>{ const [x,y]=pt(i,1.24); return `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle">${t}</text>`; }).join("");
+  return `<svg class="hex" viewBox="0 0 300 260" role="img" aria-label="역량 육각형">
+    <polygon points="${ring(1)}" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <polygon points="${ring(.66)}" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <polygon points="${ring(.33)}" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <polygon points="${me}" fill="var(--ku-soft)" stroke="var(--ku)" stroke-width="3" stroke-linejoin="round"/>
+    ${a.map((v,i)=>{ const [x,y]=pt(i,Math.max(.04,Math.min(1,v/max))); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="var(--ku)"/>`; }).join("")}
+    ${lab}</svg>`;
+}
+function lessonsDone(p){
+  const g = p.progress||{};
+  return [!!p.diag, !!g.l2, !!g.l3, !!g.l4];
+}
+function viewHome(){
+  const p=S.prof, dg=p.diag, done=lessonsDone(p), n=done.filter(Boolean).length;
+  const best = dg ? AXES[dg.a.indexOf(Math.max(...dg.a))] : "";
+  app.innerHTML = header(`${esc(p.name)} 님, 반가워요`,
+    `${esc(p.school)} ${esc(p.major)} ${esc(p.grade)} <span class="badge ${p.role==="member"?"ku":""}">${p.role==="member"?"KUSC 학회원":"일반 회원"}</span>`)+`
+  ${dg?`<section class="card">
+      <div class="lesson">1강 · 내 역량 진단</div>
+      <h2 style="margin-top:4px">내 역량의 모양</h2>
+      <p class="desc">${day(p.diagAt||dg.ts)} 진단${p.diagFrom?` · ${esc(p.diagFrom)}에서 불러왔어요`:""}</p>
+      <div class="hexwrap">${hexSVG(dg.a)}
+        <div class="facts">
+          <div class="fact"><small>가장 닮은 직무</small><b>${esc(JOBNAME[dg.fit]||dg.fit)}</b></div>
+          <div class="fact"><small>내가 원했던 직무</small><b>${esc(JOBNAME[dg.want]||dg.want)}</b></div>
+          <div class="fact"><small>가장 강한 역량</small><b>${esc(best)}</b></div>
+        </div></div>
+      <div class="row"><a class="btn pri" href="diagnostic.html?view=mine">결과 자세히 보기</a><a class="btn sec" href="diagnostic.html?from=app">다시 진단하기</a></div>
+    </section>`
+  :`<section class="card">
+      <div class="lesson">먼저 해 볼 것</div>
+      <h2 style="margin-top:4px">내 역량 진단부터 시작해요</h2>
+      <p class="desc">일상 속 상황 17개로 여섯 역량의 모양을 그리고, 여섯 전략 직무 중 어디와 닮았는지 확인해요. 결과는 내 계정에 저장돼서 언제든 다시 볼 수 있어요.</p>
+      <div class="meta"><span>약 8분</span><span>개인 결과</span><span>이번 학기 목표 3가지</span></div>
+      <div class="row"><a class="btn pri" href="diagnostic.html?from=app">진단 시작하기 →</a></div>
+    </section>`}
+  <section class="card">
+    <div class="lesson">이번 학기</div>
+    <h2 style="margin-top:4px">강의 4개 중 ${n}개를 함께했어요</h2>
+    <div class="prog">${["정의하기","구조화하기","검증하기","진입하기"].map((t,i)=>`<div class="${done[i]?"done":""}"><small>${i+1}강</small><b>${t}</b></div>`).join("")}</div>
+    <div class="row"><a class="btn sec" href="#class">강의실 가기</a></div>
+  </section>
+  <section class="card">
+    <div class="lesson">곧 열려요</div>
+    <h2 style="margin-top:4px">작성실</h2>
+    <p class="desc">내 경험을 정리하고, 4강 방식대로 레쥬메 불릿과 자소서를 써 보는 곳이에요. 쓴 내용은 계정에 저장돼서 어느 기기에서든 이어 쓸 수 있어요.</p>
+  </section>`+foot();
+}
+
+/* ───────── 화면: 강의실 ───────── */
+function viewClass(){
+  const p=S.prof, member=p.role==="member", done=lessonsDone(p);
+  const mark=k=>`data-mark="${k}"`;
+  app.innerHTML = header("강의실","강의마다 쓰는 도구와 자료를 모았어요.")+`
+  <div class="grid">
+    <section class="card lec">
+      <div class="art"><svg viewBox="0 0 220 140" width="220" height="140" aria-hidden="true">
+        <polygon points="110,14 186,52 186,108 110,136 34,108 34,52" fill="none" stroke="var(--line)" stroke-width="2"/>
+        <polygon points="110,40 160,62 160,98 110,114 60,98 60,62" fill="none" stroke="var(--line)" stroke-width="2"/>
+        <polygon points="110,30 172,58 150,102 110,124 52,94 76,62" fill="rgba(3,107,63,.18)" stroke="var(--ku)" stroke-width="3" stroke-linejoin="round"/>
+      </svg></div>
+      <div class="lesson" style="margin-top:20px">1강 · 전략 직무 정의하기 ${done[0]?'<span class="badge ku">완료</span>':""}</div>
+      <h2 style="margin-top:4px">직무 성향 진단</h2>
+      <p class="desc">일상 속 상황 17개로 나의 역량 모양을 그리고, 여섯 전략 직무 중 어디와 닮았는지 확인합니다.</p>
+      <a class="go" href="${p.diag?"diagnostic.html?view=mine":"diagnostic.html?from=app"}">${p.diag?"내 결과 보기":"진단 시작하기"}<b>→</b></a>
+    </section>
+    <section class="card lec">
+      <div class="art" id="cast"></div>
+      <div class="lesson" style="margin-top:20px">2강 · 전략 직무 구조화하기 ${done[1]?'<span class="badge ku">완료</span>':""}</div>
+      <h2 style="margin-top:4px">전략 직무 시뮬레이션</h2>
+      <p class="desc">디저트 브랜드 ‘하프’가 매각되기까지 7년. 회사가 커질 때마다 어떤 직무가 왜 필요해지는지 따라갑니다.</p>
+      <a class="go" href="simulation.html" ${mark("l2")}>시뮬레이션 열기<b>→</b></a>
+    </section>
+    <section class="card lec">
+      <div class="lesson">3강 · 전략 직무 검증하기 ${done[2]?'<span class="badge ku">완료</span>':""}</div>
+      <h2 style="margin-top:4px">여섯 직무 현직자 강연</h2>
+      <p class="desc">IB, PE, VC, 컨설팅, 전략기획, PM 현직자의 진출 노하우와 출근 후기. 10월 28일에 함께했어요.</p>
+      ${member?`<div class="lock">강연 자료는 연사분들께 공개 동의를 받는 대로 이곳에 올라와요.</div>`
+        :`<div class="lock">강연 자료는 학회원 전용이에요. 학회원이라면 <a href="#me" style="color:var(--ku);font-weight:800">내 정보</a>에서 학번으로 확인해 주세요.</div>`}
+      <a class="go" href="apply.html" ${mark("l3")}>그날의 신청 기록<b>→</b></a>
+    </section>
+    <section class="card lec">
+      <div class="lesson">4강 · 전략 직무 진입하기 ${done[3]?'<span class="badge ku">완료</span>':""}</div>
+      <h2 style="margin-top:4px">서류 양식과 작성 요령</h2>
+      <p class="desc">국문 이력서와 영문 레쥬메 양식, 그리고 옆에 펴 두고 보는 작성 요령이에요.</p>
+      <div class="files">${FILES.map(f=>`<div class="file"><div class="ic ${f.ext==="DOC"?"doc":""}">${f.ext}</div>
+        <div class="t"><b>${f.n}</b><small>${f.s}</small></div>
+        <a class="btn ${f.ext==="PDF"?"sec":"pri"} sm" href="${f.href}" ${f.ext==="PDF"?'target="_blank" rel="noopener"':`download="${f.save}"`} ${mark("l4")}>${f.ext==="PDF"?"보기":"받기"}</a></div>`).join("")}</div>
+    </section>
+  </div>`+foot();
+  if(typeof chr==="function") $("#cast").innerHTML=["VC","PM","BP","CS","PE","IB"].map(k=>chr(k)).join("");
+  $$("[data-mark]").forEach(a=>a.addEventListener("click",()=>{ const k=a.dataset.mark;
+    if(!(S.prof.progress||{})[k]){ F.markProgress(S.user.uid,k).catch(()=>{}); S.prof.progress={...(S.prof.progress||{}),[k]:new Date().toISOString()}; } }));
+}
+
+/* ───────── 화면: 작성실 (준비 중) ───────── */
+function viewWrite(){
+  app.innerHTML = header("작성실","곧 열려요.")+`<section class="card">
+    <h2>이런 걸 할 수 있게 준비하고 있어요</h2>
+    <div class="files">
+      <div class="file"><div class="ic doc">1</div><div class="t"><b>내 경험 정리</b><small>경험마다 상황, 내가 한 일, 결과와 숫자를 한 번만 적어 두기</small></div></div>
+      <div class="file"><div class="ic doc">2</div><div class="t"><b>공고 읽기와 설득 지도</b><small>공고 문장을 역량으로 바꾸고, 내 경험과 짝지어 한 장으로</small></div></div>
+      <div class="file"><div class="ic doc">3</div><div class="t"><b>레쥬메 불릿</b><small>동사, 무엇을, 어떻게, 결과(숫자) 순서로 쓰고 문서 전체 점검</small></div></div>
+      <div class="file"><div class="ic doc">4</div><div class="t"><b>자소서와 면접 준비</b><small>미끼를 심고, 면접에서 2분 동안 답할 수 있게 준비</small></div></div>
+    </div>
+    <p class="hint" style="margin-top:12px">지금은 강의실의 서류 양식과 작성 요령을 먼저 써 보세요.</p>
+  </section>`+foot();
+}
+
+/* ───────── 화면: 내 정보 ───────── */
+function viewMe(){
+  const p=S.prof, d=S.me||(S.me={name:p.name,school:p.school,major:p.major,grade:p.grade,jobs:[...(p.jobs||[])],sid:""});
+  const provider = (S.user.providerData[0]||{}).providerId==="google.com" ? "구글 계정" : "이메일";
+  app.innerHTML = header("내 정보","")+`
+  <section class="card">
+    <h2>기본 정보</h2>
+    <div class="field"><label class="l" for="name">이름</label><input type="text" id="name" value="${esc(d.name)}"></div>
+    <div class="field"><label class="l" for="school">학교</label><input type="text" id="school" value="${esc(d.school)}"></div>
+    <div class="field"><label class="l" for="major">학과</label><input type="text" id="major" value="${esc(d.major)}"></div>
+    <div class="field"><label class="l">학년</label>${chips("grade",GRADES,false,d)}</div>
+    <div class="field"><label class="l">관심 직무</label>${chips("jobs",[...JOBS,"아직 모르겠다"],true,d)}</div>
+    <p class="err" id="err"></p><p class="ok" id="saved" style="display:none">저장했어요</p>
+    <div class="row"><button class="btn pri" id="save">저장하기</button></div>
+  </section>
+  <section class="card">
+    <h2>학회원 확인 <span class="badge ${p.role==="member"?"ku":""}">${p.role==="member"?"확인 완료":"일반 회원"}</span></h2>
+    ${p.role==="member"?`<p class="desc">학번 ${esc(p.sid||"")}로 학회원 확인이 끝났어요.</p>`
+    :`<p class="desc">KUSC 학회원이라면 학번을 넣어 주세요. 명단과 이름, 학번이 맞으면 바로 학회원이 되고, 1강 때 한 진단 결과도 불러와요.</p>
+      <div class="field"><label class="l" for="sid">학번</label><input type="text" id="sid" inputmode="numeric" placeholder="예: 202612345" value="${esc(d.sid)}"></div>
+      <p class="err" id="err2"></p>
+      <div class="row"><button class="btn pri" id="claim">학회원 확인</button></div>`}
+  </section>
+  <section class="card">
+    <h2>계정</h2>
+    <p class="desc">${esc(S.user.email||"")} · ${provider}로 로그인</p>
+    <p class="err" id="err3"></p>
+    <div class="row"><button class="btn sec" id="out">로그아웃</button><button class="btn sec" id="del" style="color:var(--red)">회원 탈퇴</button></div>
+    <p class="hint" style="margin-top:16px">계정 번호 (운영진 등록용): <span style="user-select:all">${esc(S.user.uid)}</span></p>
+  </section>`+foot();
+  const keep=()=>{ d.name=$("#name").value; d.school=$("#school").value; d.major=$("#major").value; if($("#sid")) d.sid=$("#sid").value; };
+  bindChips(d, ()=>{ keep(); viewMe(); });
+  $("#save").onclick=async()=>{ keep();
+    if(d.name.trim().length<2) return showErr("이름을 입력해 주세요");
+    try{ const patch={name:d.name.trim(),school:d.school.trim(),major:d.major.trim(),grade:d.grade,jobs:d.jobs};
+      await F.updateProfile(S.user.uid,patch); Object.assign(S.prof,patch); $("#saved").style.display="block"; $("#err").style.display="none"; }
+    catch(e){ showErr(authMsg(e)); } };
+  if($("#claim")) $("#claim").onclick=async()=>{ keep();
+    if(d.sid.replace(/\D/g,"").length<6) return showErr("학번을 정확히 입력해 주세요","err2");
+    const b=$("#claim"); b.disabled=true; b.textContent="확인 중…";
+    try{ const res=await tryClaim({name:S.prof.name}, d.sid, false);
+      if(!res.ok){ b.disabled=false; b.textContent="학회원 확인"; return showErr(res.msg+" 이름이 명단과 다르면 위 기본 정보에서 이름을 고친 뒤 다시 눌러 주세요.","err2"); }
+      S.prof=await F.getProfile(S.user.uid); S.me=null; viewMe(); }
+    catch(e){ b.disabled=false; b.textContent="학회원 확인"; showErr(authMsg(e),"err2"); } };
+  $("#out").onclick=()=>F.signOut();
+  $("#del").onclick=async()=>{
+    const b=$("#del");
+    if(b.dataset.armed!=="1"){ b.dataset.armed="1"; b.textContent="정말 탈퇴할게요 (한 번 더 누르기)"; return; }
+    b.disabled=true;
+    try{ await F.deleteMe(S.user, S.prof); }catch(e){ b.disabled=false; showErr(authMsg(e),"err3"); }
+  };
+}
+
+/* ───────── 화면: 운영진 ───────── */
+async function viewAdmin(){
+  if(!S.admin){ location.hash="#home"; return; }
+  app.innerHTML = header("운영진","")+`<div class="skel"></div>`;
+  let users=[], roster=[];
+  try{ [users, roster] = await Promise.all([F.listUsers(), F.listRoster()]); }
+  catch(e){ app.innerHTML = header("운영진","")+`<section class="card"><p class="err" style="display:block">${authMsg(e)}</p></section>`; return; }
+  const cnt=a=>a.reduce((m,x)=>(m[x]=(m[x]||0)+1,m),{});
+  const bars=(o,order)=>{ const max=Math.max(1,...Object.values(o)); return (order||Object.keys(o)).map(k=>`<div class="bar"><span>${esc(k)}</span><span class="t"><i style="width:${(o[k]||0)/max*100}%"></i></span><b>${o[k]||0}</b></div>`).join(""); };
+  const m=users.filter(u=>u.role==="member"), dgn=users.filter(u=>u.diag);
+  const claimed=roster.filter(r=>r.uid).length;
+  users.sort((a,b)=>((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0));
+  app.innerHTML = header("운영진","")+`
+  <section class="card">
+    <h2>회원 현황</h2>
+    <div class="stat"><div><small>전체 회원</small><b>${users.length}</b></div><div><small>학회원</small><b>${m.length}</b></div>
+      <div><small>일반 회원</small><b>${users.length-m.length}</b></div><div><small>진단 완료</small><b>${dgn.length}</b></div></div>
+    <div class="row"><button class="btn pri" id="csv">회원 목록 CSV 내려받기</button></div>
+  </section>
+  <div class="grid">
+    <section class="card"><h3>학년</h3>${bars(cnt(users.map(u=>u.grade||"-")),GRADES)}</section>
+    <section class="card"><h3>관심 직무</h3>${bars(cnt(users.flatMap(u=>u.jobs||[])),[...JOBS,"아직 모르겠다"])}</section>
+  </div>
+  <section class="card">
+    <h2>회원 목록</h2>
+    <div class="scroll"><table class="tbl"><tr><th>이름</th><th>등급</th><th>학교</th><th>학과</th><th>학년</th><th>진단</th><th>가입일</th></tr>
+      ${users.map(u=>`<tr><td>${esc(u.name)}</td><td>${u.role==="member"?"학회원":"일반"}</td><td>${esc(u.school)}</td><td>${esc(u.major)}</td><td>${esc(u.grade)}</td><td>${u.diag?esc(JOBNAME[u.diag.fit]||""):"-"}</td><td>${day(u.createdAt)}</td></tr>`).join("")||`<tr><td colspan="7" class="muted">아직 없어요</td></tr>`}
+    </table></div>
+  </section>
+  <section class="card">
+    <h2>학회원 명단</h2>
+    <p class="desc">명단 ${roster.length}명 중 ${claimed}명이 계정을 연결했어요. 새 학기에는 명단 파일을 다시 올리면 돼요. 이미 연결된 사람은 그대로 유지돼요.</p>
+    <p class="hint">올릴 수 있는 파일: 운영진이 받은 '명단 올리기용 JSON', 또는 첫 줄에 '이름', '학번'이 있는 CSV</p>
+    <div class="row"><input type="file" id="rf" accept=".json,.csv,text/csv,application/json"></div>
+    <p class="err" id="err"></p><p class="ok" id="rok" style="display:none"></p>
+  </section>`+foot();
+  $("#csv").onclick=()=>{
+    const H=["이름","등급","이메일","학교","학과","학년","관심직무","학번","진단 닮은 직무","진단일","가입일"];
+    const L=users.map(u=>[u.name,u.role==="member"?"학회원":"일반",u.email,u.school,u.major,u.grade,(u.jobs||[]).join("/"),u.sid||"",u.diag?(JOBNAME[u.diag.fit]||u.diag.fit):"",day(u.diagAt),day(u.createdAt)]
+      .map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(","));
+    const b=new Blob(["﻿"+[H.join(","),...L].join("\n")],{type:"text/csv"}); const a=document.createElement("a");
+    a.href=URL.createObjectURL(b); a.download="KUSC_회원목록.csv"; a.click(); };
+  $("#rf").onchange=async e=>{
+    const f=e.target.files[0]; if(!f) return;
+    try{
+      const txt=(await f.text()).replace(/^﻿/,"");
+      let rows;
+      if(/\.json$/i.test(f.name)) rows=JSON.parse(txt);
+      else { const lines=txt.split(/\r?\n/).filter(Boolean).map(l=>l.split(",").map(x=>x.replace(/^"|"$/g,"").trim()));
+        const h=lines[0], ni=h.indexOf("이름"), si=h.indexOf("학번"), gi=h.indexOf("학년"), mi=h.indexOf("주전공");
+        if(ni<0||si<0) throw new Error("첫 줄에 '이름'과 '학번' 열이 있어야 해요");
+        rows=lines.slice(1).map(c=>({name:c[ni],sid:c[si],grade:gi>-1?c[gi]:"",major:mi>-1?c[mi]:""})); }
+      const n=await F.importRoster(rows.filter(r=>r.name&&r.sid));
+      $("#rok").textContent=`${n}명을 명단에 올렸어요. 새로고침하면 숫자가 바뀌어요.`; $("#rok").style.display="block";
+    }catch(err){ showErr(err.code?authMsg(err):(err.message||"파일을 읽지 못했어요")); }
+  };
+}
+
+/* ───────── 흐름 ───────── */
+async function render(){
+  if(!S.ready) return;
+  if(!S.user) return viewLanding();
+  if(!S.prof) return viewOnboard();
+  const r=route();
+  if(r==="class") return viewClass();
+  if(r==="write") return viewWrite();
+  if(r==="me") return viewMe();
+  if(r==="admin") return viewAdmin();
+  return viewHome();
+}
+window.addEventListener("hashchange",()=>{ S.me=null; render(); scrollTo(0,0); });
+F.onUser(async u=>{
+  S.user=u; S.prof=null; S.admin=false; S.ob={step:1}; S.me=null;
+  if(u){
+    try{ S.prof=await F.getProfile(u.uid); }catch(e){ S.prof=null; }
+    S.admin=await F.isAdmin(u.uid);
+  }
+  S.ready=true; render();
+});
+if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){ navigator.serviceWorker.register("sw.js").catch(function(){}); }
 </script>
 </body>
 </html>

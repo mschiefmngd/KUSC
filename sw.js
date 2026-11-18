@@ -1,6 +1,6 @@
 /* 오프라인 캐시 — 페이지는 최신을 먼저 받고, 안 되면 저장본을 보여줍니다 */
-const CACHE = "kusc-v5";
-const CORE = ["./", "./index.html", "./diagnostic.html", "./simulation.html", "./apply.html", "./download.html", "./manifest.json"];
+const CACHE = "kusc-v6";
+const CORE = ["./", "./index.html", "./diagnostic.html", "./simulation.html", "./apply.html", "./download.html", "./js/fb.js", "./manifest.json"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -17,8 +17,16 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   if (req.url.indexOf("script.google.com") > -1) return;
+  /* 로그인과 회원 데이터(Firebase)는 절대 저장하지 않음 */
+  if (/googleapis\.com|firebaseapp\.com|firebasejs|identitytoolkit|securetoken/.test(req.url)) return;
   /* 서류 양식 파일: 항상 최신본을 받도록 저장하지 않음 */
   if (req.url.indexOf("/files/") > -1) return;
+  /* 사이트 자체의 스크립트(js/): 네트워크 우선, 안 되면 저장본 */
+  if (req.url.indexOf(self.location.origin) === 0 && req.url.indexOf("/js/") > -1) {
+    e.respondWith(fetch(req).then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); return res; })
+      .catch(() => caches.match(req)));
+    return;
+  }
 
   /* 페이지 이동: 네트워크 우선 → 실패하면 캐시 */
   if (req.mode === "navigate") {
