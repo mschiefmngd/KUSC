@@ -226,6 +226,7 @@ function viewJoin(){
   app.innerHTML = header("","")+`<section class="card" style="margin-top:22px">${bars}${body}
     <p class="err" id="err"></p>
     <div class="row" style="margin-top:24px"><button class="btn sec" id="back" style="flex:0 0 96px">${step===1?"나가기":"이전"}</button><button class="btn pri" id="next" style="flex:1">${step===3?"가입 완료":"다음"}</button></div>
+    ${step===1?`<p class="hint" style="margin-top:14px">계정 번호 (임원진 지정용): <span style="user-select:all">${esc(S.user.uid)}</span></p>`:""}
     ${step===1&&isExec()?`<p class="hint" style="margin-top:14px">임원진 계정이에요. 명단을 먼저 올리려면 <a href="#exec" style="color:var(--ku);font-weight:800">임원진 공간</a>으로 가세요.</p>`:""}
   </section>`+foot();
   const keep=()=>{ if(step===1){ d.name=val("name"); d.sid=val("sid"); } if(step===2){ d.phone=val("phone"); d.age=val("age"); d.major=val("major"); d.major2=val("major2"); } };
