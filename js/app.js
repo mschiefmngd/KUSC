@@ -28,7 +28,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const app = $("#app");
 const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const nl = s => esc(s).replace(/\n/g,"<br>");
-const route = () => { const h=(location.hash||"#home").slice(1); const [r,arg]=h.split("/"); return {r:r||"home", arg:arg?decodeURIComponent(arg):""}; };
+const route = () => { const h=(location.hash||"").slice(1); const [r,arg]=h.split("/"); return {r:r||"main", arg:arg?decodeURIComponent(arg):""}; };
 const toD = x => x&&x.toDate ? x.toDate() : (x ? new Date(x) : null);
 const day = x => { const d=toD(x); return d&&!isNaN(d) ? `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}` : ""; };
 const ymd = s => { if(!s) return ""; const [y,m,d]=String(s).split("-"); const w="일월화수목금토"[new Date(+y,+m-1,+d).getDay()]; return `${+m}월 ${+d}일(${w})`; };
@@ -43,11 +43,11 @@ function header(title, lead){
   const {r} = route();
   const on = k => (r===k || (k==="board"&&r==="post") || (k==="news"&&r==="news")) ? "on" : "";
   const tabs = (isMember()||isExec()) ? `<nav class="tabs" aria-label="메뉴">
-    ${isMember()?`<a href="#home" class="${on("home")}">홈</a><a href="#news" class="${on("news")}">소식</a>
+    ${isMember()?`<a href="#home" class="${on("home")}">내 공간</a><a href="#news" class="${on("news")}">소식</a>
     <a href="#board" class="${on("board")}">커뮤니티</a><a href="#class" class="${on("class")}">강의실</a>
     <a href="#me" class="${on("me")}">내 정보</a>`:""}
     ${isExec()?`<a href="#exec" class="${on("exec")}">임원진</a>`:""}</nav>` : "";
-  return `<div class="top"><a class="tag" href="#about" style="text-decoration:none">건국대학교 경영대학 전략학회 KUSC</a>${tabs}</div>
+  return `<div class="top"><a class="brand" href="#" aria-label="KUSC 홈페이지"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span></a>${tabs}</div>
     ${title?`<h1>${title}</h1>`:""}${lead?`<p class="lead">${lead}</p>`:""}`;
 }
 const foot = () => `<p class="foot">KUSC 전략 직무 진출 커리큘럼 · Jason Baek</p>`;
@@ -191,7 +191,7 @@ function viewLanding(){
     <div class="lin">
       <a class="brand" href="#" aria-label="KUSC 처음으로"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span></a>
       <nav aria-label="홈페이지 메뉴"><a href="#" data-to="jobs">직무</a><a href="#" data-to="course">커리큘럼</a><a href="#" data-to="space">학회원 공간</a><a href="#" data-to="vision">비전</a></nav>
-      <button class="lbtn sm" data-login>로그인</button>
+      <button class="lbtn sm" data-login>${S.user?(S.prof?"내 공간":"가입 마치기"):"로그인"}</button>
     </div>
   </header>
 
@@ -199,7 +199,7 @@ function viewLanding(){
     <p class="kicker">건국대학교 경영대학 전략학회 KUSC</p>
     <h1>당신의 모양에 맞는<br>전략 직무를 찾아요</h1>
     <p class="lsub">IB, PE, VC, 컨설팅, 전략기획, PM.<br>여섯 직무를 준비하는 학부생이 모여, 한 학기 동안 함께 길을 그려요.</p>
-    <div class="lcta"><button class="lbtn" data-login>학회원 로그인</button><button class="lbtn ghost" data-to="course">커리큘럼 보기</button></div>
+    <div class="lcta"><button class="lbtn" data-login>${S.user?(S.prof?"내 공간으로 가기":"가입 마치기"):"학회원 로그인"}</button><button class="lbtn ghost" data-to="course">커리큘럼 보기</button></div>
     <figure class="lfig">${landHex()}<figcaption>1강 역량 진단에서 그리는 나의 모양 (예시)</figcaption></figure>
   </section>
 
@@ -258,7 +258,7 @@ function viewLanding(){
     <div class="lin narrow">
       <h2>학회원이라면,<br>지금 들어오세요</h2>
       <p class="lsub">학회원 명단의 이름과 학번으로 가입해요. 새로 들어온 학회원은 가입 요청을 남기면 임원진이 확인해요.</p>
-      <div class="lcta"><button class="lbtn" data-login>학회원 로그인</button></div>
+      <div class="lcta"><button class="lbtn" data-login>${S.user?(S.prof?"내 공간으로 가기":"가입 마치기"):"학회원 로그인"}</button></div>
       <p class="lnote">다음 학기 모집 안내는 준비되는 대로 이곳에 올라와요.</p>
     </div>
   </section>
@@ -266,7 +266,7 @@ function viewLanding(){
   <footer class="lfoot"><div class="lin"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span><span>KUSC 전략 직무 진출 커리큘럼 · Jason Baek</span></div></footer>
   <div class="sheet" id="sheet" hidden><div class="sheetbg" data-close></div><div class="sheetcard" role="dialog" aria-modal="true" aria-label="로그인" id="sheetcard"></div></div>`;
   $$("[data-to]").forEach(a=>a.onclick=e=>{ e.preventDefault(); const t=document.getElementById(a.dataset.to); if(t) t.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); });
-  $$("[data-login]").forEach(b=>b.onclick=()=>openLogin());
+  $$("[data-login]").forEach(b=>b.onclick=()=>{ if(S.user) location.hash = S.prof ? "#home" : "#join"; else openLogin(); });
   const nav=$("#lnav"), onScroll=()=>nav.classList.toggle("on",scrollY>8);
   window.onscroll=onScroll; onScroll();
   if(S.sheetOpen) openLogin();
@@ -304,14 +304,15 @@ function renderLogin(){
   card.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeLogin);
   $$("[data-mode]").forEach(b=>b.onclick=()=>{ S.auth=b.dataset.mode; S.msg=""; renderLogin(); });
   if($("#ext")) $("#ext").onclick=()=>{ location.href = /KAKAOTALK/i.test(navigator.userAgent) ? "kakaotalk://web/openExternal?url="+encodeURIComponent(location.href) : location.href; };
-  if($("#google")) $("#google").onclick=async()=>{ try{ await F.signInGoogle(); }catch(e){ showErr(authMsg(e)); } };
+  if($("#google")) $("#google").onclick=async()=>{ S.afterLogin=true; try{ await F.signInGoogle(); }catch(e){ S.afterLogin=false; showErr(authMsg(e)); } };
   $("#go").onclick=async()=>{
     const em=val("em"), pw=$("#pw")?$("#pw").value:"";
     const b=$("#go"); b.disabled=true;
     try{
       if(isReset){ await F.resetPw(em); S.msg="메일을 보냈어요. 받은편지함과 스팸함을 확인해 주세요"; S.auth="login"; renderLogin(); return; }
+      S.afterLogin=true;
       if(isUp) await F.signUpEmail(em,pw); else await F.signInEmail(em,pw);
-    }catch(e){ b.disabled=false; showErr(authMsg(e)); }
+    }catch(e){ S.afterLogin=false; b.disabled=false; showErr(authMsg(e)); }
   };
   setTimeout(()=>{ const f=$("#em"); if(f&&matchMedia("(min-width:701px)").matches) f.focus(); },50);
 }
@@ -969,9 +970,9 @@ async function render(){
   if(!S.ready) return;
   const {r, arg} = route();
   window.onscroll=null; document.body.style.overflow="";
-  if(S.user || r==="about") app.className="wrap";
+  if(r==="main" || !S.user && r!=="about") return viewLanding();   /* 사이트 첫 화면은 누구에게나 홈페이지 */
+  app.className="wrap";
   if(r==="about") return viewAbout();
-  if(!S.user) return viewLanding();
   if(!S.prof){
     if(isExec() && r==="exec") return viewExec();
     if(r==="join"){ if(S.join) S.join.force=true; }
@@ -993,6 +994,7 @@ F.onUser(async u=>{
     try{ S.prof=await F.getProfile(u.uid); }catch(e){ S.prof=null; }
     S.role=await F.getRole(u.uid);
     if(!S.prof){ try{ S.req=await F.getMyRequest(u.uid); }catch(e){} }
+    if(S.afterLogin){ S.afterLogin=false; S.ready=true; const to = S.prof ? "#home" : "#join"; if(location.hash!==to){ location.hash = to; return; } }
   }
   S.ready=true; render();
 });
