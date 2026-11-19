@@ -147,7 +147,7 @@ function viewAbout(){
   app.innerHTML = header("학회 소개","")+aboutBody()+(S.user?"":`<div class="row"><a class="btn pri" href="#">로그인 화면으로</a></div>`)+foot();
 }
 
-/* ───────── 첫 화면 (로그인 전): 학회 홈페이지 ───────── */
+/* ───────── 첫 화면: 학회 홈페이지 ───────── */
 const LAND_JOBS = [
   ["IB","IB","기업의 인수, 상장, 자금 조달 같은 큰 거래를 설계하고 성사시켜요"],
   ["PE","PE","회사를 인수해 가치를 키운 뒤 다시 팔아 수익을 내요"],
@@ -156,12 +156,64 @@ const LAND_JOBS = [
   ["BP","전략기획","회사 안에서 다음 사업과 나아갈 방향을 정해요"],
   ["PM","PM","고객의 문제를 풀 제품을 정의하고 끝까지 만들어 내요"]
 ];
-const LAND_STEPS = [
-  ["정의하기","여섯 직무를 해부하고, 일상 상황 17개로 나의 역량 모양을 그려요.","역량 진단"],
-  ["구조화하기","디저트 브랜드가 매각되기까지 7년을 따라가며, 회사가 클 때마다 어떤 직무가 왜 필요한지 봐요.","성장 시뮬레이션"],
-  ["검증하기","여섯 직무의 현직자를 한자리에 모셔, 진출 경로와 실제 하루를 직접 들어요.","현직자 강연"],
-  ["진입하기","공고를 읽는 법부터 국문 이력서, 영문 레쥬메, 자소서, 인터뷰까지 준비해요.","서류 양식과 작성 요령"]
+const LAND_DO = [
+  ["session","정기 세션","학기마다 여덟 번, 두 시간씩 모여요. 전략경영 이론과 분석 틀을 실제 기업 사례에 적용해 봐요."],
+  ["case","케이스 스터디","지도교수님과 함께 문제를 정의하는 법과 분석의 관점을 배우고, 팀별 워크숍으로 바로 써 봐요."],
+  ["team","팀 프로젝트","한 기업이나 산업을 골라 핵심 이슈를 찾고, 자료 조사부터 전략 제안까지 팀이 직접 끝까지 가요."],
+  ["pitch","산학협력 발표","학기 끝에는 연계 기업 실무진 앞에서 최종 결과를 발표하고, 평가와 피드백을 받아요."],
+  ["union","연합 세션","다른 학교 전략학회와 케이스 분석과 전략 제안을 나누고 교류해요."],
+  ["talk","선배와 현직자 강연","전략 직무 선배와 현직자를 모셔 직무의 실제와 커리어 길을 직접 들어요."]
 ];
+const LAND_YEAR = [
+  ["8월 말","모집","진출 의지가 분명한 학생을 서류와 면접으로 뽑아요."],
+  ["9월 초","오리엔테이션","한 학기 커리큘럼과 학회칙, 수료 기준을 함께 확인해요."],
+  ["9월 ~ 11월","정기 세션과 강연","이론 적용, 케이스 스터디, 선배와 현직자 강연이 이어져요. 사이사이 팀 프로젝트를 진행해요."],
+  ["11월","연합 세션","다른 학교 전략학회와 만나 서로의 분석을 나눠요."],
+  ["12월","산학협력 최종 발표","기업 실무진 앞에서 발표하고, 기준을 채운 학회원은 학장 명의 수료증을 받아요."]
+];
+const LAND_STEPS = [
+  ["정의하기","여섯 직무를 해부하고, 일상 상황 17개로 나의 역량 모양을 그려요."],
+  ["구조화하기","회사가 클 때마다 어떤 직무가 왜 필요해지는지 시뮬레이션으로 따라가요."],
+  ["검증하기","여섯 직무의 현직자를 한자리에 모셔 진출 경로와 실제 하루를 들어요."],
+  ["진입하기","공고 읽기부터 이력서, 레쥬메, 자소서, 인터뷰까지 준비해요."]
+];
+const LAND_ROLES = [
+  ["학회장","운영 방향과 정기 세션 기획, 대외 소통과 지도교수님 협의를 맡아요"],
+  ["부학회장","학회장을 도와 운영 전반에 참여하고, 운영진과 학회원 사이를 이어 줘요"],
+  ["총무","일정과 출결, 수료 기준을 관리해요"],
+  ["디자인","홍보물과 발표 자료 등 학회의 얼굴을 만들어요"],
+  ["대외협력","기업과 현직자를 잇고 커리큘럼을 함께 논의해요"],
+  ["지도교수","케이스 스터디를 이끌고, 학기 말 발표를 평가하고 피드백해요"]
+];
+const ICON = {
+  session:`<path d="M6 9h20v14H6z"/><path d="M11 5v6M21 5v6M6 14h20"/>`,
+  case:`<circle cx="14" cy="14" r="7"/><path d="M19.5 19.5L26 26"/>`,
+  team:`<circle cx="11" cy="11" r="4"/><circle cx="22" cy="12" r="3"/><path d="M4 25c1-5 4-7 7-7s6 2 7 7M18 24c.6-3.4 2.4-5 4-5s3.4 1.6 4 5"/>`,
+  pitch:`<path d="M5 6h22v14H5zM16 20v6M11 26h10"/><path d="M10 16l4-4 3 3 5-5"/>`,
+  union:`<circle cx="11" cy="16" r="6"/><circle cx="21" cy="16" r="6"/>`,
+  talk:`<path d="M5 7h17v11H12l-5 4v-4H5z"/><path d="M25 12h2v10h-2v3l-4-3h-6"/>`
+};
+const icon = k => `<svg class="lic" viewBox="0 0 32 32" aria-hidden="true">${ICON[k]}</svg>`;
+function landDeck(){
+  return `<svg class="ldeck" viewBox="0 0 640 420" role="img" aria-label="팀 프로젝트에서 만드는 전략 제안 장표 예시">
+    <g class="sl back"><rect x="110" y="70" width="440" height="290" rx="18"/></g>
+    <g class="sl mid"><rect x="96" y="62" width="452" height="296" rx="18"/></g>
+    <g class="sl front">
+      <rect x="80" y="54" width="480" height="318" rx="18"/>
+      <rect x="80" y="54" width="480" height="62" rx="18" class="tb"/><rect x="80" y="96" width="480" height="20" class="tb"/>
+      <text x="108" y="92" class="t1">가상의 기업 A, 다음 3년의 성장 전략</text>
+      <text x="108" y="148" class="t2">시장별 매출 성장률 (%)</text>
+      ${[[118,212,28],[160,190,50],[202,170,70],[244,140,100],[286,118,122]].map(([x,y,h],i)=>`<rect x="${x}" y="${y}" width="28" height="${h}" rx="5" class="bar ${i===4?"hi":""}" style="--i:${i}"/>`).join("")}
+      <line x1="108" y1="312" x2="326" y2="312" class="ax"/>
+      <text x="360" y="148" class="t2">우선순위 판단</text>
+      <rect x="360" y="160" width="172" height="152" rx="10" class="mx"/>
+      <line x1="446" y1="160" x2="446" y2="312" class="ax"/><line x1="360" y1="236" x2="532" y2="236" class="ax"/>
+      <circle cx="492" cy="190" r="13" class="pt hi"/><circle cx="408" cy="200" r="9" class="pt"/><circle cx="478" cy="270" r="8" class="pt"/><circle cx="396" cy="282" r="6" class="pt"/>
+      <rect x="108" y="334" width="250" height="10" rx="5" class="ln"/><rect x="108" y="350" width="170" height="10" rx="5" class="ln"/>
+      <rect x="440" y="330" width="92" height="28" rx="14" class="tag"/><text x="486" y="349" text-anchor="middle" class="t3">핵심 제안</text>
+    </g>
+  </svg>`;
+}
 function landHex(){
   const cx=260, cy=230, R=170, pt=(i,v)=>{ const a=-Math.PI/2+i*Math.PI/3; return [cx+Math.cos(a)*R*v, cy+Math.sin(a)*R*v]; };
   const P=(i,v)=>pt(i,v).map(n=>n.toFixed(1)).join(",");
@@ -186,46 +238,72 @@ function landStars(){
 }
 function viewLanding(){
   app.className = "land";
+  const inLabel = S.user ? (S.prof ? "내 공간으로 가기" : "가입 마치기") : "학회원 로그인";
   app.innerHTML = `
   <header class="lnav" id="lnav">
     <div class="lin">
       <a class="brand" href="#" aria-label="KUSC 처음으로"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span></a>
-      <nav aria-label="홈페이지 메뉴"><a href="#" data-to="jobs">직무</a><a href="#" data-to="course">커리큘럼</a><a href="#" data-to="space">학회원 공간</a><a href="#" data-to="vision">비전</a></nav>
+      <nav aria-label="홈페이지 메뉴"><a href="#" data-to="what">활동</a><a href="#" data-to="year">한 학기</a><a href="#" data-to="jobs">직무</a><a href="#" data-to="space">학회원 공간</a></nav>
       <button class="lbtn sm" data-login>${S.user?(S.prof?"내 공간":"가입 마치기"):"로그인"}</button>
     </div>
   </header>
 
   <section class="lhero">
-    <p class="kicker">건국대학교 경영대학 전략학회 KUSC</p>
-    <h1>당신의 모양에 맞는<br>전략 직무를 찾아요</h1>
-    <p class="lsub">IB, PE, VC, 컨설팅, 전략기획, PM.<br>여섯 직무를 준비하는 학부생이 모여, 한 학기 동안 함께 길을 그려요.</p>
-    <div class="lcta"><button class="lbtn" data-login>${S.user?(S.prof?"내 공간으로 가기":"가입 마치기"):"학회원 로그인"}</button><button class="lbtn ghost" data-to="course">커리큘럼 보기</button></div>
-    <figure class="lfig">${landHex()}<figcaption>1강 역량 진단에서 그리는 나의 모양 (예시)</figcaption></figure>
+    <div class="lin hgrid">
+      <div class="htext">
+        <p class="kicker">건국대학교 경영대학 전략학회 KUSC</p>
+        <h1>실제 기업의 문제를<br>전략으로 풀어요</h1>
+        <p class="lsub">수업에서 배운 전략경영 이론을 실제 기업과 산업에 적용하고, 팀으로 분석하고 토론해 전략을 제안해요. 그 경험으로 IB, PE, VC, 컨설팅, 전략기획, PM을 향해 나아가요.</p>
+        <div class="lcta"><button class="lbtn" data-login>${inLabel}</button><button class="lbtn ghost" data-to="what">활동 보기</button></div>
+      </div>
+      <figure class="lfig">${landDeck()}</figure>
+    </div>
+  </section>
+
+  <section class="lsec gray" id="what">
+    <div class="lin">
+      <h2>KUSC에서 하는 일</h2>
+      <p class="lsub">이론은 수업에서 배우고, 여기서는 그걸 실제 기업에 써 봐요.</p>
+      <div class="ldo">${LAND_DO.map(([k,t,d])=>`<div class="ljob">${icon(k)}<h3>${t}</h3><p>${d}</p></div>`).join("")}</div>
+      <p class="lnote">학기 말에는 학회칙의 출석과 활동 기준을 채운 학회원에게 학장 명의 수료증을 드려요.</p>
+    </div>
+  </section>
+
+  <section class="lsec" id="year">
+    <div class="lin narrow">
+      <h2>한 학기는 이렇게 흘러가요</h2>
+      <p class="lsub">단발성 행사가 아니라, 학기 단위로 꾸준히 이어지는 학회예요.</p>
+      <ol class="lsteps when">${LAND_YEAR.map(([w,t,d])=>`<li><span class="no">${w}</span><div><h3>${t}</h3><p>${d}</p></div></li>`).join("")}</ol>
+    </div>
   </section>
 
   <section class="lsec gray" id="jobs">
     <div class="lin">
-      <h2>여섯 직무만, 깊게 봐요</h2>
-      <p class="lsub">범위를 좁혀야 깊이 갈 수 있어요. KUSC는 이 여섯 직무에 집중해요.</p>
+      <h2>여섯 직무를 향해요</h2>
+      <p class="lsub">분석하고 제안하는 힘이 그대로 쓰이는 직무들이에요. KUSC는 이 여섯 직무에 집중해요.</p>
       <div class="ljobs">${LAND_JOBS.map(([k,n,d])=>`<div class="ljob"><div class="lart">${typeof chr==="function"?chr(k):""}</div><h3>${n}</h3><p>${d}</p></div>`).join("")}</div>
     </div>
   </section>
 
-  <section class="lsec" id="course">
-    <div class="lin narrow">
-      <h2>한 학기, 네 번의 강의</h2>
-      <p class="lsub">직무를 알고, 구조를 보고, 현직자에게 확인하고, 서류로 들어가요.</p>
-      <ol class="lsteps">${LAND_STEPS.map(([t,d,g],i)=>`<li><span class="no">${i+1}강</span><div><h3>${t}</h3><p>${d}</p><span class="got">${g}</span></div></li>`).join("")}</ol>
+  <section class="lsec" id="program">
+    <div class="lin pgrid">
+      <div class="ptext">
+        <p class="kicker">함께하는 프로그램</p>
+        <h2>전략 직무 진출 커리큘럼</h2>
+        <p class="lsub">현직 컨설턴트 선배와 함께하는 네 번의 강의로, 나에게 맞는 직무를 찾고 서류까지 준비해요.</p>
+        <ol class="lsteps tight">${LAND_STEPS.map(([t,d],i)=>`<li><span class="no">${i+1}강</span><div><h3>${t}</h3><p>${d}</p></div></li>`).join("")}</ol>
+      </div>
+      <figure class="lfig hexfig" id="hexfig">${landHex()}<figcaption>1강 역량 진단으로 그리는 나의 모양 (예시)</figcaption></figure>
     </div>
   </section>
 
   <section class="lsec gray">
     <div class="lin">
-      <h2>이번 학기, 이만큼 모였어요</h2>
+      <h2>이번 학기 KUSC</h2>
       <div class="lnums">
-        <div><b>약 70명</b><span>3강 현직자 강연에 함께한 학우</span></div>
-        <div><b>6명</b><span>여섯 직무에서 모신 현직자 연사</span></div>
-        <div><b>36명</b><span>1강 역량 진단에 참여한 학회원</span></div>
+        <div><b>36명</b><span>함께한 학회원</span></div>
+        <div><b>8회</b><span>학기 정기 세션</span></div>
+        <div><b>약 70명</b><span>공개 현직자 강연에 함께한 학우</span></div>
       </div>
     </div>
   </section>
@@ -233,12 +311,20 @@ function viewLanding(){
   <section class="lsec" id="space">
     <div class="lin">
       <h2>학회원만 들어오는 공간</h2>
-      <p class="lsub">강의가 끝나도, 내 진단 결과와 학회 소식이 한곳에 남아요.</p>
+      <p class="lsub">공지와 일정, 커뮤니티, 내 진단 결과까지 한곳에 모여 있어요.</p>
       <div class="lphones">
-        <figure><div class="phone"><img src="img/screen-shape.webp" alt="내 역량 육각형과 가장 닮은 직무를 보여 주는 화면" loading="lazy" width="390" height="844"></div><figcaption><b>내 역량의 모양</b>진단 결과를 언제든 다시 봐요</figcaption></figure>
-        <figure><div class="phone"><img src="img/screen-events.webp" alt="행사 참석과 뒤풀이 참석을 고르는 화면" loading="lazy" width="390" height="844"></div><figcaption><b>행사와 뒤풀이</b>참석 여부를 한 번에 답해요</figcaption></figure>
+        <figure><div class="phone"><img src="img/screen-events.webp" alt="행사 참석과 뒤풀이 참석을 고르는 화면" loading="lazy" width="390" height="844"></div><figcaption><b>공지와 일정</b>행사와 뒤풀이 참석을 한 번에 답해요</figcaption></figure>
         <figure><div class="phone"><img src="img/screen-board.webp" alt="질문, 스터디, 정보 공유 글이 모인 커뮤니티 화면" loading="lazy" width="390" height="844"></div><figcaption><b>커뮤니티</b>묻고, 모이고, 나눠요</figcaption></figure>
+        <figure><div class="phone"><img src="img/screen-shape.webp" alt="내 역량 육각형과 가장 닮은 직무를 보여 주는 화면" loading="lazy" width="390" height="844"></div><figcaption><b>내 역량의 모양</b>진단 결과를 언제든 다시 봐요</figcaption></figure>
       </div>
+    </div>
+  </section>
+
+  <section class="lsec gray">
+    <div class="lin">
+      <h2>학회를 함께 꾸리는 사람들</h2>
+      <p class="lsub">임원진이 역할을 나눠 학회를 운영하고, 지도교수님이 함께해요.</p>
+      <div class="lroles">${LAND_ROLES.map(([t,d])=>`<div><h3>${t}</h3><p>${d}</p></div>`).join("")}</div>
     </div>
   </section>
 
@@ -246,7 +332,7 @@ function viewLanding(){
     ${landStars()}
     <div class="lin narrow">
       <h2>여기서 반짝인 별들이<br>다시 연사로 돌아와요</h2>
-      <p class="lsub">경험 하나하나가 별이 되고, 그 별을 이어 나만의 길을 그려요. 그렇게 원하는 직무로 나간 선배가 다시 후배들 앞에 서는 학회를 만들어요.</p>
+      <p class="lsub">실제 기업을 놓고 전략을 세워 본 경험이 쌓여 원하는 직무로 나아가고, 그렇게 나간 선배가 다시 후배들 앞에 서는 학회. 교내 대표 전략 학회로 KUSC가 그리는 모습이에요.</p>
       <div class="lduo">
         <div><h3>소수 정예</h3><p>진출 의지가 분명한 학생을 서류와 면접으로 뽑아, 깊게 함께해요.</p></div>
         <div><h3>열린 행사</h3><p>학기마다 두 번 안팎, 모든 학우에게 열린 공개 행사를 열어요.</p></div>
@@ -258,17 +344,21 @@ function viewLanding(){
     <div class="lin narrow">
       <h2>학회원이라면,<br>지금 들어오세요</h2>
       <p class="lsub">학회원 명단의 이름과 학번으로 가입해요. 새로 들어온 학회원은 가입 요청을 남기면 임원진이 확인해요.</p>
-      <div class="lcta"><button class="lbtn" data-login>${S.user?(S.prof?"내 공간으로 가기":"가입 마치기"):"학회원 로그인"}</button></div>
+      <div class="lcta"><button class="lbtn" data-login>${inLabel}</button></div>
       <p class="lnote">다음 학기 모집 안내는 준비되는 대로 이곳에 올라와요.</p>
     </div>
   </section>
 
-  <footer class="lfoot"><div class="lin"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span><span>KUSC 전략 직무 진출 커리큘럼 · Jason Baek</span></div></footer>
+  <footer class="lfoot"><div class="lin"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span><span>© 2026 KUSC</span></div></footer>
   <div class="sheet" id="sheet" hidden><div class="sheetbg" data-close></div><div class="sheetcard" role="dialog" aria-modal="true" aria-label="로그인" id="sheetcard"></div></div>`;
   $$("[data-to]").forEach(a=>a.onclick=e=>{ e.preventDefault(); const t=document.getElementById(a.dataset.to); if(t) t.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); });
   $$("[data-login]").forEach(b=>b.onclick=()=>{ if(S.user) location.hash = S.prof ? "#home" : "#join"; else openLogin(); });
   const nav=$("#lnav"), onScroll=()=>nav.classList.toggle("on",scrollY>8);
   window.onscroll=onScroll; onScroll();
+  /* 육각형은 화면에 들어왔을 때 그려지게 */
+  const hf=$("#hexfig");
+  if(hf && "IntersectionObserver" in window){ const io=new IntersectionObserver(es=>{ if(es.some(x=>x.isIntersecting)){ hf.classList.add("play"); io.disconnect(); } },{threshold:.35}); io.observe(hf); }
+  else if(hf) hf.classList.add("play");
   if(S.sheetOpen) openLogin();
 }
 function openLogin(){

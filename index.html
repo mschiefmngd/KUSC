@@ -206,8 +206,10 @@ main.land{max-width:none;padding:0;background:#fff;color:#191F28;--page:#F2F4F6;
 .lhex{width:100%;height:auto;overflow:visible}
 .lhex .ring{fill:none;stroke:#E5E8EB;stroke-width:1.5}
 .lhex .spoke{stroke:#EEF0F2;stroke-width:1.5}
-.lhex .shape{fill:rgba(3,107,63,.12);stroke:#036B3F;stroke-width:4;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;fill-opacity:0;animation:draw 1.6s .3s cubic-bezier(.65,0,.35,1) forwards,fillin .8s 1.6s ease forwards}
-.lhex .dot{fill:#036B3F;transform-box:fill-box;transform-origin:center;transform:scale(0);animation:pop .35s calc(1.5s + var(--i)*.07s) cubic-bezier(.34,1.56,.64,1) forwards}
+.lhex .shape{fill:rgba(3,107,63,.12);stroke:#036B3F;stroke-width:4;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;fill-opacity:0}
+.play .lhex .shape{animation:draw 1.6s .2s cubic-bezier(.65,0,.35,1) forwards,fillin .8s 1.5s ease forwards}
+.lhex .dot{fill:#036B3F;transform-box:fill-box;transform-origin:center;transform:scale(0)}
+.play .lhex .dot{animation:pop .35s calc(1.4s + var(--i)*.07s) cubic-bezier(.34,1.56,.64,1) forwards}
 .lhex text{font:700 17px "Pretendard Variable",Pretendard,sans-serif;fill:#4E5968}
 @keyframes draw{to{stroke-dashoffset:0}}
 @keyframes fillin{to{fill-opacity:1}}
@@ -285,7 +287,66 @@ main.land{max-width:none;padding:0;background:#fff;color:#191F28;--page:#F2F4F6;
   @keyframes up{from{transform:translateY(100%)}}
 }
 @media (max-width:420px){.lhero h1{font-size:36px}.ljob{padding:20px 16px 22px}.ljob p{font-size:14.5px}}
-@media (prefers-reduced-motion:reduce){.lhex .shape{animation:none;stroke-dashoffset:0;fill-opacity:1}.lhex .dot{animation:none;transform:none}}
+
+.lhero{text-align:left}
+.hgrid{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center}
+.hgrid .lcta{justify-content:flex-start}
+.lhero .lfig{margin:0;max-width:none}
+.ldeck{width:100%;height:auto;overflow:visible}
+.ldeck .sl rect:first-child{fill:#fff;stroke:#E5E8EB;stroke-width:1.5}
+.ldeck .back rect{fill:#F2F4F6!important}
+.ldeck .front{filter:drop-shadow(0 24px 40px rgba(2,32,19,.16))}
+.ldeck .tb{fill:#036B3F}
+.ldeck .t1{font:800 19px "Pretendard Variable",Pretendard,sans-serif;fill:#fff;letter-spacing:-.02em}
+.ldeck .t2{font:700 13px "Pretendard Variable",Pretendard,sans-serif;fill:#6B7684}
+.ldeck .t3{font:800 13px "Pretendard Variable",Pretendard,sans-serif;fill:#036B3F}
+.ldeck .bar{fill:#C7E3D5;transform-box:fill-box;transform-origin:bottom;animation:grow .7s calc(.5s + var(--i)*.09s) cubic-bezier(.2,.8,.2,1) both}
+.ldeck .bar.hi{fill:#036B3F}
+.ldeck .ax{stroke:#D1D6DB;stroke-width:1.5}
+.ldeck .mx{fill:#F9FAFB;stroke:#E5E8EB}
+.ldeck .pt{fill:#B0D7C3}
+.ldeck .pt.hi{fill:#036B3F}
+.ldeck .ln{fill:#EEF0F2}
+.ldeck .tag{fill:#E8F3EE}
+.ldeck .back,.ldeck .mid{transform-box:view-box;transform-origin:320px 230px}
+.ldeck .back{transform:rotate(-6deg);animation:fanl .9s .1s cubic-bezier(.2,.8,.2,1) both}
+.ldeck .mid{transform:rotate(4deg);animation:fanr .9s .1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes grow{from{transform:scaleY(0)}}
+@keyframes fanl{from{transform:rotate(0deg)}}
+@keyframes fanr{from{transform:rotate(0deg)}}
+.ldo{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:64px;text-align:left}
+.lic{width:40px;height:40px;fill:none;stroke:#036B3F;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;background:#E8F3EE;border-radius:12px;padding:6px}
+.ldo .ljob h3{margin-top:18px}
+.lsec .lnote{font-size:15px;color:#6B7684;margin-top:28px}
+.lsteps.when li{grid-template-columns:120px 1fr}
+.lsteps.when .no{font-size:16px}
+.pgrid{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center;text-align:left}
+.pgrid .kicker{margin-bottom:10px}
+.lsteps.tight{margin-top:36px}
+.lsteps.tight li{grid-template-columns:56px 1fr;padding:18px 0}
+.lsteps.tight h3{font-size:21px}
+.lsteps.tight p{font-size:15.5px;margin-top:4px}
+.hexfig{margin:0!important}
+.lroles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px;text-align:left}
+.lroles div{background:#fff;border-radius:24px;padding:26px 24px}
+.lroles h3{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.lroles p{font-size:15.5px;line-height:1.6;color:#4E5968;margin-top:6px}
+@media (max-width:900px){
+  .hgrid,.pgrid{grid-template-columns:1fr;gap:28px}
+  .lhero{text-align:center}
+  .hgrid .lcta{justify-content:center}
+  .lhero .lfig{max-width:520px;margin:8px auto 0}
+  .ldo{grid-template-columns:1fr 1fr;gap:12px;margin-top:40px}
+  .lroles{grid-template-columns:1fr 1fr;gap:12px;margin-top:40px}
+  .lroles div{padding:20px 18px}
+  .pgrid .ptext{text-align:center}
+  .lsteps.tight{text-align:left}
+  .lsteps.when li{grid-template-columns:1fr}
+  .hexfig{max-width:420px;margin:0 auto!important}
+}
+@media (max-width:420px){.ldo,.lroles{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.ldeck .bar,.ldeck .back,.ldeck .mid{animation:none}}
+@media (prefers-reduced-motion:reduce){.lhex .shape{animation:none!important;stroke-dashoffset:0;fill-opacity:1}.lhex .dot{animation:none!important;transform:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
