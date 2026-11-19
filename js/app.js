@@ -147,52 +147,173 @@ function viewAbout(){
   app.innerHTML = header("학회 소개","")+aboutBody()+(S.user?"":`<div class="row"><a class="btn pri" href="#">로그인 화면으로</a></div>`)+foot();
 }
 
-/* ───────── 로그인 ───────── */
+/* ───────── 첫 화면 (로그인 전): 학회 홈페이지 ───────── */
+const LAND_JOBS = [
+  ["IB","IB","기업의 인수, 상장, 자금 조달 같은 큰 거래를 설계하고 성사시켜요"],
+  ["PE","PE","회사를 인수해 가치를 키운 뒤 다시 팔아 수익을 내요"],
+  ["VC","VC","될 만한 초기 스타트업을 골라 투자하고 함께 키워요"],
+  ["CS","컨설팅","기업이 가장 풀기 어려운 문제를 쪼개서 답을 내요"],
+  ["BP","전략기획","회사 안에서 다음 사업과 나아갈 방향을 정해요"],
+  ["PM","PM","고객의 문제를 풀 제품을 정의하고 끝까지 만들어 내요"]
+];
+const LAND_STEPS = [
+  ["정의하기","여섯 직무를 해부하고, 일상 상황 17개로 나의 역량 모양을 그려요.","역량 진단"],
+  ["구조화하기","디저트 브랜드가 매각되기까지 7년을 따라가며, 회사가 클 때마다 어떤 직무가 왜 필요한지 봐요.","성장 시뮬레이션"],
+  ["검증하기","여섯 직무의 현직자를 한자리에 모셔, 진출 경로와 실제 하루를 직접 들어요.","현직자 강연"],
+  ["진입하기","공고를 읽는 법부터 국문 이력서, 영문 레쥬메, 자소서, 인터뷰까지 준비해요.","서류 양식과 작성 요령"]
+];
+function landHex(){
+  const cx=260, cy=230, R=170, pt=(i,v)=>{ const a=-Math.PI/2+i*Math.PI/3; return [cx+Math.cos(a)*R*v, cy+Math.sin(a)*R*v]; };
+  const P=(i,v)=>pt(i,v).map(n=>n.toFixed(1)).join(",");
+  const me=[.88,.62,.76,.82,.7,.55];
+  return `<svg class="lhex" viewBox="0 0 520 470" role="img" aria-label="여섯 역량으로 그린 역량 육각형 예시">
+    ${[1,.75,.5,.25].map(f=>`<polygon points="${AXES.map((_,i)=>P(i,f)).join(" ")}" class="ring"/>`).join("")}
+    ${AXES.map((_,i)=>`<line x1="${cx}" y1="${cy}" x2="${pt(i,1)[0].toFixed(1)}" y2="${pt(i,1)[1].toFixed(1)}" class="spoke"/>`).join("")}
+    <polygon points="${me.map((v,i)=>P(i,v)).join(" ")}" class="shape" pathLength="1"/>
+    ${me.map((v,i)=>{ const [x,y]=pt(i,v); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" class="dot" style="--i:${i}"/>`; }).join("")}
+    ${AXES.map((t,i)=>{ const [x,y]=pt(i,1.17); return `<text x="${x.toFixed(1)}" y="${(y+6).toFixed(1)}" text-anchor="middle">${t}</text>`; }).join("")}
+  </svg>`;
+}
+function landStars(){
+  let s=7, rnd=()=>(s=(s*16807)%2147483647)/2147483647;
+  const dots=Array.from({length:110},()=>`<circle cx="${(rnd()*1200).toFixed(0)}" cy="${(rnd()*520).toFixed(0)}" r="${(rnd()*1.4+.4).toFixed(2)}" opacity="${(rnd()*.6+.25).toFixed(2)}"/>`).join("");
+  const C=[[820,120],[900,180],[870,270],[960,300],[1040,240],[1000,150]];
+  return `<svg class="stars" viewBox="0 0 1200 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g fill="#fff">${dots}</g>
+    <polyline points="${C.map(p=>p.join(",")).join(" ")}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>
+    ${C.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3.2" fill="#fff"/><circle cx="${x}" cy="${y}" r="9" fill="rgba(255,255,255,.12)"/>`).join("")}
+  </svg>`;
+}
 function viewLanding(){
+  app.className = "land";
+  app.innerHTML = `
+  <header class="lnav" id="lnav">
+    <div class="lin">
+      <a class="brand" href="#" aria-label="KUSC 처음으로"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span></a>
+      <nav aria-label="홈페이지 메뉴"><a href="#" data-to="jobs">직무</a><a href="#" data-to="course">커리큘럼</a><a href="#" data-to="space">학회원 공간</a><a href="#" data-to="vision">비전</a></nav>
+      <button class="lbtn sm" data-login>로그인</button>
+    </div>
+  </header>
+
+  <section class="lhero">
+    <p class="kicker">건국대학교 경영대학 전략학회 KUSC</p>
+    <h1>당신의 모양에 맞는<br>전략 직무를 찾아요</h1>
+    <p class="lsub">IB, PE, VC, 컨설팅, 전략기획, PM.<br>여섯 직무를 준비하는 학부생이 모여, 한 학기 동안 함께 길을 그려요.</p>
+    <div class="lcta"><button class="lbtn" data-login>학회원 로그인</button><button class="lbtn ghost" data-to="course">커리큘럼 보기</button></div>
+    <figure class="lfig">${landHex()}<figcaption>1강 역량 진단에서 그리는 나의 모양 (예시)</figcaption></figure>
+  </section>
+
+  <section class="lsec gray" id="jobs">
+    <div class="lin">
+      <h2>여섯 직무만, 깊게 봐요</h2>
+      <p class="lsub">범위를 좁혀야 깊이 갈 수 있어요. KUSC는 이 여섯 직무에 집중해요.</p>
+      <div class="ljobs">${LAND_JOBS.map(([k,n,d])=>`<div class="ljob"><div class="lart">${typeof chr==="function"?chr(k):""}</div><h3>${n}</h3><p>${d}</p></div>`).join("")}</div>
+    </div>
+  </section>
+
+  <section class="lsec" id="course">
+    <div class="lin narrow">
+      <h2>한 학기, 네 번의 강의</h2>
+      <p class="lsub">직무를 알고, 구조를 보고, 현직자에게 확인하고, 서류로 들어가요.</p>
+      <ol class="lsteps">${LAND_STEPS.map(([t,d,g],i)=>`<li><span class="no">${i+1}강</span><div><h3>${t}</h3><p>${d}</p><span class="got">${g}</span></div></li>`).join("")}</ol>
+    </div>
+  </section>
+
+  <section class="lsec gray">
+    <div class="lin">
+      <h2>이번 학기, 이만큼 모였어요</h2>
+      <div class="lnums">
+        <div><b>약 70명</b><span>3강 현직자 강연에 함께한 학우</span></div>
+        <div><b>6명</b><span>여섯 직무에서 모신 현직자 연사</span></div>
+        <div><b>36명</b><span>1강 역량 진단에 참여한 학회원</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lsec" id="space">
+    <div class="lin">
+      <h2>학회원만 들어오는 공간</h2>
+      <p class="lsub">강의가 끝나도, 내 진단 결과와 학회 소식이 한곳에 남아요.</p>
+      <div class="lphones">
+        <figure><div class="phone"><img src="img/screen-shape.webp" alt="내 역량 육각형과 가장 닮은 직무를 보여 주는 화면" loading="lazy" width="390" height="844"></div><figcaption><b>내 역량의 모양</b>진단 결과를 언제든 다시 봐요</figcaption></figure>
+        <figure><div class="phone"><img src="img/screen-events.webp" alt="행사 참석과 뒤풀이 참석을 고르는 화면" loading="lazy" width="390" height="844"></div><figcaption><b>행사와 뒤풀이</b>참석 여부를 한 번에 답해요</figcaption></figure>
+        <figure><div class="phone"><img src="img/screen-board.webp" alt="질문, 스터디, 정보 공유 글이 모인 커뮤니티 화면" loading="lazy" width="390" height="844"></div><figcaption><b>커뮤니티</b>묻고, 모이고, 나눠요</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="lsec dark" id="vision">
+    ${landStars()}
+    <div class="lin narrow">
+      <h2>여기서 반짝인 별들이<br>다시 연사로 돌아와요</h2>
+      <p class="lsub">경험 하나하나가 별이 되고, 그 별을 이어 나만의 길을 그려요. 그렇게 원하는 직무로 나간 선배가 다시 후배들 앞에 서는 학회를 만들어요.</p>
+      <div class="lduo">
+        <div><h3>소수 정예</h3><p>진출 의지가 분명한 학생을 서류와 면접으로 뽑아, 깊게 함께해요.</p></div>
+        <div><h3>열린 행사</h3><p>학기마다 두 번 안팎, 모든 학우에게 열린 공개 행사를 열어요.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lsec lend">
+    <div class="lin narrow">
+      <h2>학회원이라면,<br>지금 들어오세요</h2>
+      <p class="lsub">학회원 명단의 이름과 학번으로 가입해요. 새로 들어온 학회원은 가입 요청을 남기면 임원진이 확인해요.</p>
+      <div class="lcta"><button class="lbtn" data-login>학회원 로그인</button></div>
+      <p class="lnote">다음 학기 모집 안내는 준비되는 대로 이곳에 올라와요.</p>
+    </div>
+  </section>
+
+  <footer class="lfoot"><div class="lin"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span><span>KUSC 전략 직무 진출 커리큘럼 · Jason Baek</span></div></footer>
+  <div class="sheet" id="sheet" hidden><div class="sheetbg" data-close></div><div class="sheetcard" role="dialog" aria-modal="true" aria-label="로그인" id="sheetcard"></div></div>`;
+  $$("[data-to]").forEach(a=>a.onclick=e=>{ e.preventDefault(); const t=document.getElementById(a.dataset.to); if(t) t.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); });
+  $$("[data-login]").forEach(b=>b.onclick=()=>openLogin());
+  const nav=$("#lnav"), onScroll=()=>nav.classList.toggle("on",scrollY>8);
+  window.onscroll=onScroll; onScroll();
+  if(S.sheetOpen) openLogin();
+}
+function openLogin(){
+  S.sheetOpen=true;
+  const sh=$("#sheet"); if(!sh) return;
+  sh.hidden=false; document.body.style.overflow="hidden";
+  renderLogin();
+  sh.querySelector("[data-close]").onclick=closeLogin;
+  document.onkeydown=e=>{ if(e.key==="Escape") closeLogin(); };
+}
+function closeLogin(){ S.sheetOpen=false; const sh=$("#sheet"); if(sh) sh.hidden=true; document.body.style.overflow=""; document.onkeydown=null; }
+function renderLogin(){
   const isUp = S.auth==="signup", isReset = S.auth==="reset";
   const gIcon = `<svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`;
-  app.innerHTML = header("KUSC 학회원 공간","학회원만 들어올 수 있어요. 처음이면 가입부터, 이미 계정이 있으면 바로 로그인하세요.")+`
-  <div class="grid">
-    <section class="card">
-      <h2>${isReset?"비밀번호 다시 설정":isUp?"이메일로 가입하기":"로그인"}</h2>
-      <p class="desc">${isReset?"가입한 이메일로 비밀번호를 다시 정하는 링크를 보내 드려요.":"가입하면 학회원 명단과 이름, 학번을 맞춰 확인해요."}</p>
-      ${inApp && !isReset ? `<div class="notice">카카오톡이나 인스타그램 안에서 열면 구글 로그인이 막혀 있어요.<br>
-        <button class="link" id="ext" style="color:inherit;font-weight:800">다른 브라우저로 열기</button> 또는 이메일로 로그인해 주세요.</div>`:""}
-      ${isReset?"":`<button class="btn line block" id="google" style="margin-top:18px">${gIcon}구글 계정으로 계속하기</button>
-      <div class="divider">또는 이메일</div>`}
-      ${field("em","이메일","",{type:"email",ph:"name@example.com"})}
-      ${isReset?"":field("pw","비밀번호","",{type:"password",opt:isUp?"6자 이상":""})}
-      <p class="err" id="err"></p>${S.msg?`<p class="ok">${esc(S.msg)}</p>`:""}
-      <button class="btn pri block" id="go" style="margin-top:18px">${isReset?"링크 보내기":isUp?"가입하기":"로그인"}</button>
-      <div style="display:flex;justify-content:space-between;margin-top:14px;gap:10px">
-        ${isReset?`<button class="link" data-mode="login">로그인으로 돌아가기</button>`
-          :`<button class="link" data-mode="${isUp?"login":"signup"}">${isUp?"이미 계정이 있어요":"처음이에요, 이메일로 가입할게요"}</button>
-            <button class="link" data-mode="reset">비밀번호를 잊었어요</button>`}
-      </div>
-    </section>
-    <section class="card">
-      <div class="lesson">학회원이 되면</div>
-      <h2 style="margin-top:4px">이곳에서 할 수 있어요</h2>
-      <div class="files">
-        <div class="file"><div class="ic doc">1</div><div class="t"><b>내 역량 진단 결과</b><small>여섯 역량의 모양과 닮은 직무</small></div></div>
-        <div class="file"><div class="ic doc">2</div><div class="t"><b>공지와 일정</b><small>행사 참석 응답, 정산 안내, 회비 확인</small></div></div>
-        <div class="file"><div class="ic doc">3</div><div class="t"><b>커뮤니티</b><small>질문, 스터디와 모임, 정보 공유</small></div></div>
-        <div class="file"><div class="ic doc">4</div><div class="t"><b>강의실</b><small>1강부터 4강까지 도구와 서류 양식</small></div></div>
-      </div>
-      <div class="row"><a class="btn sec" href="#about">학회 소개 보기</a></div>
-    </section>
-  </div>`+foot();
-  $$("[data-mode]").forEach(b=>b.onclick=()=>{ S.auth=b.dataset.mode; S.msg=""; viewLanding(); });
+  const card=$("#sheetcard");
+  card.innerHTML = `<button class="sheetx" data-close aria-label="닫기">×</button>
+    <h2>${isReset?"비밀번호 다시 설정":isUp?"이메일로 가입하기":"학회원 로그인"}</h2>
+    <p class="desc">${isReset?"가입한 이메일로 비밀번호를 다시 정하는 링크를 보내 드려요.":"가입하면 학회원 명단과 이름, 학번을 맞춰 확인해요."}</p>
+    ${inApp && !isReset ? `<div class="notice">카카오톡이나 인스타그램 안에서 열면 구글 로그인이 막혀 있어요.<br>
+      <button class="link" id="ext" style="color:inherit;font-weight:800">다른 브라우저로 열기</button> 또는 이메일로 로그인해 주세요.</div>`:""}
+    ${isReset?"":`<button class="btn line block" id="google" style="margin-top:18px">${gIcon}구글 계정으로 계속하기</button>
+    <p class="hint" style="text-align:center">구글 화면에 kusc-77206.firebaseapp.com이 보이면, KUSC 사이트의 로그인 주소예요.</p>
+    <div class="divider">또는 이메일</div>`}
+    ${field("em","이메일","",{type:"email",ph:"name@example.com"})}
+    ${isReset?"":field("pw","비밀번호","",{type:"password",opt:isUp?"6자 이상":""})}
+    <p class="err" id="err"></p>${S.msg?`<p class="ok">${esc(S.msg)}</p>`:""}
+    <button class="btn pri block" id="go" style="margin-top:18px">${isReset?"링크 보내기":isUp?"가입하기":"로그인"}</button>
+    <div style="display:flex;justify-content:space-between;margin-top:14px;gap:10px">
+      ${isReset?`<button class="link" data-mode="login">로그인으로 돌아가기</button>`
+        :`<button class="link" data-mode="${isUp?"login":"signup"}">${isUp?"이미 계정이 있어요":"처음이에요, 이메일로 가입할게요"}</button>
+          <button class="link" data-mode="reset">비밀번호를 잊었어요</button>`}
+    </div>`;
+  card.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeLogin);
+  $$("[data-mode]").forEach(b=>b.onclick=()=>{ S.auth=b.dataset.mode; S.msg=""; renderLogin(); });
   if($("#ext")) $("#ext").onclick=()=>{ location.href = /KAKAOTALK/i.test(navigator.userAgent) ? "kakaotalk://web/openExternal?url="+encodeURIComponent(location.href) : location.href; };
   if($("#google")) $("#google").onclick=async()=>{ try{ await F.signInGoogle(); }catch(e){ showErr(authMsg(e)); } };
   $("#go").onclick=async()=>{
     const em=val("em"), pw=$("#pw")?$("#pw").value:"";
     const b=$("#go"); b.disabled=true;
     try{
-      if(isReset){ await F.resetPw(em); S.msg="메일을 보냈어요. 받은편지함과 스팸함을 확인해 주세요"; S.auth="login"; viewLanding(); return; }
+      if(isReset){ await F.resetPw(em); S.msg="메일을 보냈어요. 받은편지함과 스팸함을 확인해 주세요"; S.auth="login"; renderLogin(); return; }
       if(isUp) await F.signUpEmail(em,pw); else await F.signInEmail(em,pw);
     }catch(e){ b.disabled=false; showErr(authMsg(e)); }
   };
+  setTimeout(()=>{ const f=$("#em"); if(f&&matchMedia("(min-width:701px)").matches) f.focus(); },50);
 }
 
 /* ───────── 가입: 명단 확인 → 정보 확인 → 관심과 동의 ───────── */
@@ -847,6 +968,8 @@ function xSystem(box){
 async function render(){
   if(!S.ready) return;
   const {r, arg} = route();
+  window.onscroll=null; document.body.style.overflow="";
+  if(S.user || r==="about") app.className="wrap";
   if(r==="about") return viewAbout();
   if(!S.user) return viewLanding();
   if(!S.prof){
@@ -865,7 +988,7 @@ async function render(){
 window.addEventListener("hashchange",()=>{ S.me=null; if(!location.hash.startsWith("#post/")) S.draft=null; render(); scrollTo(0,0); });
 window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); window.__bip=e; });
 F.onUser(async u=>{
-  S.user=u; S.prof=null; S.role=null; S.req=null; S.join=null; S.me=null; S.cache={};
+  S.user=u; S.sheetOpen=false; S.prof=null; S.role=null; S.req=null; S.join=null; S.me=null; S.cache={};
   if(u){
     try{ S.prof=await F.getProfile(u.uid); }catch(e){ S.prof=null; }
     S.role=await F.getRole(u.uid);
