@@ -1,5 +1,5 @@
 /* 오프라인 캐시 — 페이지는 최신을 먼저 받고, 안 되면 저장본을 보여줍니다 */
-const CACHE = "kusc-v9";
+const CACHE = "kusc-v10";
 const CORE = ["./", "./index.html", "./diagnostic.html", "./simulation.html", "./apply.html", "./download.html", "./js/fb.js", "./js/app.js", "./manifest.json"];
 
 self.addEventListener("install", e => {

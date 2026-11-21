@@ -172,15 +172,15 @@ const LAND_YEAR = [
   ["12월","산학협력 최종 발표","기업 실무진 앞에서 발표하고, 기준을 채운 학회원은 학장 명의 수료증을 받아요."]
 ];
 const LAND_STEPS = [
-  ["정의하기","여섯 직무를 해부하고, 일상 상황 17개로 나의 역량 모양을 그려요."],
-  ["구조화하기","회사가 클 때마다 어떤 직무가 왜 필요해지는지 시뮬레이션으로 따라가요."],
-  ["검증하기","여섯 직무의 현직자를 한자리에 모셔 진출 경로와 실제 하루를 들어요."],
-  ["진입하기","공고 읽기부터 이력서, 레쥬메, 자소서, 인터뷰까지 준비해요."]
+  ["정의하기","여섯 직무를 해부하고, 일상 상황 17개로 각자의 역량 모양을 그렸어요."],
+  ["구조화하기","회사가 클 때마다 어떤 직무가 왜 필요해지는지 시뮬레이션으로 따라갔어요."],
+  ["검증하기","여섯 직무의 현직자를 한자리에 모셔 진출 경로와 실제 하루를 들었어요. 경영대학과 함께 연 공개 행사였어요."],
+  ["진입하기","공고 읽기부터 이력서, 레쥬메, 자소서, 인터뷰까지 서류를 준비했어요."]
 ];
 const LAND_ROLES = [
   ["학회장","운영 방향과 정기 세션 기획, 대외 소통과 지도교수님 협의를 맡아요"],
   ["부학회장","학회장을 도와 운영 전반에 참여하고, 운영진과 학회원 사이를 이어 줘요"],
-  ["총무","일정과 출결, 수료 기준을 관리해요"],
+  ["총무","회비를 걷고 학회 재정과 정산을 맡아요. 출결과 수료 기준도 함께 챙겨요"],
   ["디자인","홍보물과 발표 자료 등 학회의 얼굴을 만들어요"],
   ["대외협력","기업과 현직자를 잇고 커리큘럼을 함께 논의해요"],
   ["지도교수","케이스 스터디를 이끌고, 학기 말 발표를 평가하고 피드백해요"]
@@ -203,8 +203,8 @@ function landDeck(){
       <rect x="80" y="54" width="480" height="62" rx="18" class="tb"/><rect x="80" y="96" width="480" height="20" class="tb"/>
       <text x="108" y="92" class="t1">가상의 기업 A, 다음 3년의 성장 전략</text>
       <text x="108" y="148" class="t2">시장별 매출 성장률 (%)</text>
-      ${[[118,212,28],[160,190,50],[202,170,70],[244,140,100],[286,118,122]].map(([x,y,h],i)=>`<rect x="${x}" y="${y}" width="28" height="${h}" rx="5" class="bar ${i===4?"hi":""}" style="--i:${i}"/>`).join("")}
-      <line x1="108" y1="312" x2="326" y2="312" class="ax"/>
+      ${[[118,40],[160,64],[202,90],[244,116],[286,142]].map(([x,h])=>[x,310-h,h]).map(([x,y,h],i)=>`<rect x="${x}" y="${y}" width="28" height="${h}" rx="5" class="bar ${i===4?"hi":""}" style="--i:${i}"/>`).join("")}
+      <line x1="108" y1="311" x2="326" y2="311" class="ax"/>
       <text x="360" y="148" class="t2">우선순위 판단</text>
       <rect x="360" y="160" width="172" height="152" rx="10" class="mx"/>
       <line x1="446" y1="160" x2="446" y2="312" class="ax"/><line x1="360" y1="236" x2="532" y2="236" class="ax"/>
@@ -238,13 +238,13 @@ function landStars(){
 }
 function viewLanding(){
   app.className = "land";
-  const inLabel = S.user ? (S.prof ? "내 공간으로 가기" : "가입 마치기") : "학회원 로그인";
+  const inLabel = S.user ? (S.prof ? "내 공간으로 가기" : "가입하기") : "학회원 로그인";
   app.innerHTML = `
   <header class="lnav" id="lnav">
     <div class="lin">
       <a class="brand" href="#" aria-label="KUSC 처음으로"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span></a>
       <nav aria-label="홈페이지 메뉴"><a href="#" data-to="what">활동</a><a href="#" data-to="year">한 학기</a><a href="#" data-to="jobs">직무</a><a href="#" data-to="space">학회원 공간</a></nav>
-      <button class="lbtn sm" data-login>${S.user?(S.prof?"내 공간":"가입 마치기"):"로그인"}</button>
+      <button class="lbtn sm" data-login>${S.user?(S.prof?"내 공간":"가입하기"):"로그인"}</button>
     </div>
   </header>
 
@@ -288,12 +288,13 @@ function viewLanding(){
   <section class="lsec" id="program">
     <div class="lin pgrid">
       <div class="ptext">
-        <p class="kicker">함께하는 프로그램</p>
+        <p class="kicker">2026년 2학기 특별 프로그램</p>
         <h2>전략 직무 진출 커리큘럼</h2>
-        <p class="lsub">현직 컨설턴트 선배와 함께하는 네 번의 강의로, 나에게 맞는 직무를 찾고 서류까지 준비해요.</p>
+        <p class="lsub">이번 학기에는 현직 컨설턴트 선배와 네 번의 강의로, 나에게 맞는 직무를 찾고 서류까지 준비했어요.</p>
         <ol class="lsteps tight">${LAND_STEPS.map(([t,d],i)=>`<li><span class="no">${i+1}강</span><div><h3>${t}</h3><p>${d}</p></div></li>`).join("")}</ol>
+        <p class="lnote">특별 프로그램은 학기마다 새로 기획해요. 다음 학기에는 또 다른 주제로 찾아와요.</p>
       </div>
-      <figure class="lfig hexfig" id="hexfig">${landHex()}<figcaption>1강 역량 진단으로 그리는 나의 모양 (예시)</figcaption></figure>
+      <figure class="lfig hexfig" id="hexfig">${landHex()}<figcaption>1강 역량 진단으로 그린 모양 (예시)</figcaption></figure>
     </div>
   </section>
 
@@ -331,21 +332,21 @@ function viewLanding(){
   <section class="lsec dark" id="vision">
     ${landStars()}
     <div class="lin narrow">
-      <h2>여기서 반짝인 별들이<br>다시 연사로 돌아와요</h2>
-      <p class="lsub">실제 기업을 놓고 전략을 세워 본 경험이 쌓여 원하는 직무로 나아가고, 그렇게 나간 선배가 다시 후배들 앞에 서는 학회. 교내 대표 전략 학회로 KUSC가 그리는 모습이에요.</p>
-      <div class="lduo">
-        <div><h3>소수 정예</h3><p>진출 의지가 분명한 학생을 서류와 면접으로 뽑아, 깊게 함께해요.</p></div>
-        <div><h3>열린 행사</h3><p>학기마다 두 번 안팎, 모든 학우에게 열린 공개 행사를 열어요.</p></div>
+      <h2>우리의 목표는<br>카르텔이에요</h2>
+      <p class="lsub">여기서 함께 반짝인 별들이 업계 곳곳에 자리 잡고, 서로를 끌어주는 별자리가 되는 것. 졸업한 선배는 한 번 강연하고 끝나는 손님이 아니라, 후배를 이끌고 기회를 나누며 학회를 함께 키우는 사람이에요.</p>
+      <div class="lduo trio">
+        <div><h3>엄격하게 고르고</h3><p>진출 의지가 분명한 학생을 서류와 면접으로 골라요. 들어오기 어려운 만큼 서로를 믿을 수 있어요.</p></div>
+        <div><h3>깊게 단련하고</h3><p>실제 기업의 문제로 한 학기를 채워요. 같은 문제를 끝까지 붙들어 본 사이라 서로의 실력을 알아요.</p></div>
+        <div><h3>끝까지 이어져요</h3><p>먼저 나간 선배가 멘토링과 서류 피드백, 프로젝트와 기회를 들고 다시 돌아와요. 그 후배가 또 다음 후배를 끌어줘요.</p></div>
       </div>
     </div>
   </section>
 
   <section class="lsec lend">
     <div class="lin narrow">
-      <h2>학회원이라면,<br>지금 들어오세요</h2>
-      <p class="lsub">학회원 명단의 이름과 학번으로 가입해요. 새로 들어온 학회원은 가입 요청을 남기면 임원진이 확인해요.</p>
-      <div class="lcta"><button class="lbtn" data-login>${inLabel}</button></div>
-      <p class="lnote">다음 학기 모집 안내는 준비되는 대로 이곳에 올라와요.</p>
+      <h2>다음 별을<br>기다리고 있어요</h2>
+      <p class="lsub">전공과 학년에 관계없이, 전략 직무로 나아가려는 의지가 분명한 건국대학교 학생이라면 지원할 수 있어요. 다음 모집 일정은 정해지는 대로 이곳에 올라와요.</p>
+      <p class="lnote">이미 KUSC 학회원인가요? <button class="link" data-login>${S.user?(S.prof?"내 공간으로 가기":"가입하기"):"학회원 로그인"}</button></p>
     </div>
   </section>
 
@@ -438,7 +439,6 @@ function viewJoin(){
   app.innerHTML = header("","")+`<section class="card" style="margin-top:22px">${bars}${body}
     <p class="err" id="err"></p>
     <div class="row" style="margin-top:24px"><button class="btn sec" id="back" style="flex:0 0 96px">${step===1?"나가기":"이전"}</button><button class="btn pri" id="next" style="flex:1">${step===3?"가입 완료":"다음"}</button></div>
-    ${step===1?`<p class="hint" style="margin-top:14px">계정 번호 (임원진 지정용): <span style="user-select:all">${esc(S.user.uid)}</span></p>`:""}
     ${step===1&&isExec()?`<p class="hint" style="margin-top:14px">임원진 계정이에요. 명단을 먼저 올리려면 <a href="#exec" style="color:var(--ku);font-weight:800">임원진 공간</a>으로 가세요.</p>`:""}
   </section>`+foot();
   const keep=()=>{ if(step===1){ d.name=val("name"); d.sid=val("sid"); } if(step===2){ d.phone=val("phone"); d.age=val("age"); d.major=val("major"); d.major2=val("major2"); } };
@@ -797,7 +797,6 @@ function viewMe(){
     <p class="desc">${esc(S.user.email||"")} · ${provider}로 로그인</p>
     <p class="err" id="err3"></p>
     <div class="row"><button class="btn sec" id="out">로그아웃</button><button class="btn sec" id="del" style="color:var(--red)">회원 탈퇴</button></div>
-    <p class="hint" style="margin-top:16px">계정 번호 (임원진 지정용): <span style="user-select:all">${esc(S.user.uid)}</span></p>
   </section>`+foot();
   const keep=()=>{ d.phone=val("phone"); d.age=val("age"); d.major=val("major"); d.major2=val("major2"); };
   bindChips(d, ()=>{ keep(); viewMe(); });
