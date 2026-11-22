@@ -1063,9 +1063,10 @@ function viewMe(){
   </div>
   <section class="card">
     <h3>계정</h3>
-    <p class="desc">${esc(S.user.email||"")} · ${provider}로 로그인</p>
+    ${p.viewAs?`<p class="desc">${esc(p.email||"이메일 정보 없음")}</p>`:`<p class="desc">${esc(S.user.email||"")} · ${provider}로 로그인</p>`}
     <p class="err" id="err3"></p>
-    <div class="row"><button class="btn sec" id="out">로그아웃</button><button class="btn sec" id="del" style="color:var(--red)">회원 탈퇴</button></div>
+    <div class="row"><button class="btn sec" id="out" ${p.viewAs?"disabled":""}>로그아웃</button><button class="btn sec" id="del" style="color:var(--red)" ${p.viewAs?"disabled":""}>회원 탈퇴</button></div>
+    ${p.viewAs?`<p class="hint">마스터 보기에서는 이 학회원의 계정 버튼을 누를 수 없어요.</p>`:""}
   </section>`+foot();
   const keep=()=>{ d.phone=val("phone"); d.age=val("age"); d.major=val("major"); d.major2=val("major2"); };
   bindChips(d, ()=>{ keep(); viewMe(); });
@@ -1075,8 +1076,8 @@ function viewMe(){
     try{ const patch={phone:fmtPhone(d.phone),grade:d.grade,age:d.age,gender:d.gender,major:d.major,major2:d.major2,jobs:d.jobs,stage:d.stage};
       await F.updateProfile(S.user.uid,patch); Object.assign(S.prof,patch); $("#saved").style.display="block"; $("#err").style.display="none"; }
     catch(e){ showErr(authMsg(e)); } };
-  $("#out").onclick=()=>F.signOut();
-  $("#del").onclick=async()=>{ const b=$("#del");
+  $("#out").onclick=()=>{ if(!p.viewAs) F.signOut(); };
+  $("#del").onclick=async()=>{ if(p.viewAs) return; const b=$("#del");
     if(b.dataset.armed!=="1"){ b.dataset.armed="1"; b.textContent="정말 탈퇴할게요 (한 번 더 누르기)"; return; }
     b.disabled=true; try{ await F.deleteMe(S.user, S.prof); }catch(e){ b.disabled=false; showErr(authMsg(e),"err3"); } };
 }
