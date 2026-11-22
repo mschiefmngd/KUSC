@@ -581,8 +581,8 @@ async function viewHome(){
     p.master ? `<span class="badge ku">마스터 계정</span> 진단과 기록을 직접 해 보며 확인하는 테스트 공간이에요. 여기 기록은 나만 보여요.`
     : `${esc(p.major)} ${esc(p.grade)} <span class="badge ku">KUSC 학회원</span>${isExec()?' <span class="badge">임원진</span>':""}`)+`
   <div class="grid">
-    <section class="card" id="hnot"><div class="lesson">공지</div><div class="skel sm"></div></section>
-    <section class="card" id="hev"><div class="lesson">다가오는 일정</div><div class="skel sm"></div></section>
+    <section class="card act" id="hnot"><div class="lesson">공지</div><div class="skel sm"></div></section>
+    <section class="card act" id="hev"><div class="lesson">다가오는 일정</div><div class="skel sm"></div></section>
   </div>
   ${dg?`<section class="card">
       <div class="lesson">1강 · 내 역량 진단</div>
@@ -594,25 +594,25 @@ async function viewHome(){
           <div class="fact"><small>내가 원했던 직무</small><b>${esc(JOBNAME[dg.want]||dg.want)}</b></div>
           <div class="fact"><small>가장 강한 역량</small><b>${esc(best)}</b></div>
         </div></div>
-      <div class="row">${nHist>1?`<a class="btn pri" href="#growth">처음과 지금 비교하기</a>`:`<a class="btn pri" href="${diagHref("new")}">학기말 진단하고 비교하기</a><a class="btn sec" href="#growth">목표 실행 기록하기</a>`}<a class="btn sec" href="${diagHref("view")}">결과 자세히 보기</a></div>
+      <div class="gos">${nHist>1?`<a class="go" href="#growth">처음과 지금 비교하기<b>→</b></a>`:`<a class="go" href="${diagHref("new")}">학기말 진단하고 비교하기<b>→</b></a><a class="go" href="#growth">목표 실행 기록하기<b>→</b></a>`}<a class="go" href="${diagHref("view")}">결과 자세히 보기<b>→</b></a></div>
     </section>`
   :`<section class="card">
       <div class="lesson">먼저 해 볼 것</div>
       <h2 style="margin-top:4px">내 역량 진단부터 시작해요</h2>
       <p class="desc">일상 속 상황 17개로 여섯 역량의 모양을 그리고, 여섯 전략 직무 중 어디와 닮았는지 확인해요. 기본 정보는 가입할 때 받은 걸로 채워서 바로 문항부터 시작해요.</p>
       <div class="meta"><span>약 8분</span><span>개인 결과</span><span>이번 학기 목표 3가지</span></div>
-      <div class="row"><a class="btn pri" href="${diagHref("new")}">진단 시작하기 →</a></div>
+      <a class="go" href="${diagHref("new")}">진단 시작하기<b>→</b></a>
     </section>`}
   <div class="grid">
-    <section class="card">
+    <section class="card act">
       <div class="lesson">이번 학기 강의</div>
       <div id="hatt"><div class="skel sm"></div></div>
     </section>
-    ${p.master?"":`<section class="card">
+    ${p.master?"":`<section class="card act">
       <div class="lesson">${TERM_LABEL} 회비</div>
       <h3 style="margin-top:6px">${paid?"납부 확인됐어요":"아직 확인 전이에요"} <span class="badge ${paid?"ku":""}">${DUES}</span></h3>
       <p class="desc">${paid?`${day(paid)}에 임원진이 확인했어요.`:"입금 계좌는 소식의 정산 공지에 늘 올라와 있어요. 입금 후 임원진이 확인하면 여기에 표시돼요."}</p>
-      <div class="row"><a class="btn sec sm" href="#news">소식 보기</a></div>
+      <a class="go" href="#news">${paid?"소식 보기":"입금 계좌 보기"}<b>→</b></a>
     </section>`}
   </div>
   <section class="card">
@@ -625,17 +625,17 @@ async function viewHome(){
     const names=["정의","구조화","검증","진입"], n=got?LECS.filter((_,i)=>has(i)).length:0;
     box.innerHTML = `<h3 style="margin-top:6px">${got?`4개 중 ${n}개를 들었어요`:"강의 후기를 남기면 들은 강의가 표시돼요"}</h3>
       <div class="prog">${names.map((t,i)=>`<div class="${has(i)?"done":""}"><small>${i+1}강</small><b>${t}</b></div>`).join("")}</div>
-      <div class="row"><a class="btn sec sm" href="#class">강의실 가기</a></div>`;
-  }).catch(()=>{ const box=$("#hatt"); if(box) box.innerHTML=`<div class="row"><a class="btn sec sm" href="#class">강의실 가기</a></div>`; });
+      <a class="go" href="#class">강의실 가기<b>→</b></a>`;
+  }).catch(()=>{ const box=$("#hatt"); if(box) box.innerHTML=`<a class="go" href="#class">강의실 가기<b>→</b></a>`; });
   try{
     const [ns, evs] = await Promise.all([load("notices",F.listNotices), load("events",F.listEvents)]);
     const top = [...ns].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)).slice(0,3);
     $("#hnot").innerHTML = `<div class="lesson">공지</div>${top.length?top.map(x=>`<a class="li" href="#news"><span class="badge ${x.tag==="정산"?"ku":""}">${esc(x.tag||"공지")}</span><b>${x.pinned?"📌 ":""}${esc(x.title)}</b><small>${day(x.createdAt)}</small></a>`).join("")
-      :`<p class="desc">아직 공지가 없어요.</p>`}`;
+      :`<p class="desc">아직 공지가 없어요.</p>`}<a class="go" href="#news">공지 전체 보기<b>→</b></a>`;
     const up = evs.filter(e=>e.date>=today()).sort((a,b)=>a.date.localeCompare(b.date))[0];
     $("#hev").innerHTML = `<div class="lesson">다가오는 일정</div>${up?`<h3 style="margin-top:6px">${esc(up.title)}</h3>
       <p class="desc">${ymd(up.date)} ${esc(up.time||"")} · ${esc(up.place||"장소 미정")}</p>
-      <div class="row"><a class="btn pri sm" href="#news/events">참석 응답하기</a></div>`:`<p class="desc">예정된 일정이 없어요.</p>`}`;
+      <a class="go" href="#news/events">참석 응답하기<b>→</b></a>`:`<p class="desc">예정된 일정이 없어요.</p><a class="go" href="#news/events">달력 보기<b>→</b></a>`}`;
   }catch(e){ $("#hnot").innerHTML=`<p class="err" style="display:block">${authMsg(e)}</p>`; }
 }
 

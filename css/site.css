@@ -468,3 +468,11 @@ td.down{color:var(--red);font-weight:800}
 .gtrack{display:grid;grid-template-columns:36px 1fr;gap:12px;padding:18px 0;border-top:1px solid var(--line);margin-top:14px}
 .gtrack .gn{width:32px;height:32px;border-radius:10px;background:var(--ku-soft);color:var(--ku);font-weight:900;display:flex;align-items:center;justify-content:center}
 .gtrack h3{font-size:17px}
+
+/* 내 공간: 강의실과 같은 액션 줄 (초록 화살표) */
+.card.act{display:flex;flex-direction:column}
+.card.act #hatt{display:flex;flex-direction:column;flex:1}
+.gos{margin-top:18px;border-top:1px solid var(--line)}
+.gos .go{margin-top:0;padding:14px 0;border-bottom:1px solid var(--line)}
+.gos .go:last-child{border-bottom:0;padding-bottom:0}
+.go:focus-visible{outline:3px solid var(--ku);outline-offset:4px;border-radius:12px}
