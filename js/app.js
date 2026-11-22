@@ -965,7 +965,7 @@ function viewGrowth(){
       ${AXES.map((t,i)=>{ const x=+(f.a[i]||0), y=+(l.a[i]||0), dv=y-x; return `<tr><td>${t}</td><td>${x}</td><td><b>${y}</b></td><td class="${dv>0?"up":dv<0?"down":""}">${sign(dv)}</td></tr>`; }).join("")}
       <tr><td><b>합계</b></td><td>${sum(f.a)}</td><td><b>${sum(l.a)}</b></td><td class="${sum(l.a)-sum(f.a)>0?"up":sum(l.a)-sum(f.a)<0?"down":""}">${sign(sum(l.a)-sum(f.a))}</td></tr></table></div>
       <p class="hint" style="margin-top:8px">변화 = 지금 점수 − 처음 점수<br>지금 점수에서 처음 점수를 뺀 값이에요.<br>0보다 크면 그 역량이 처음보다 높게 나왔다는 뜻이에요.</p>`:""}
-    <div class="row" style="margin-top:16px"><a class="btn ${two?"sec":"pri"}" href="${diagHref("new")}">${two?"한 번 더 진단하기":"지금 다시 진단하기"}</a><a class="btn sec" href="${diagHref("view")}">최근 결과 자세히 보기</a></div>
+    <div class="row" style="margin-top:16px"><a class="btn ${two?"sec":"pri"}" href="${diagHref("new")}">${two?"한 번 더 진단하기":"학기말 진단하고 비교하기"}</a><a class="btn sec" href="${diagHref("view")}">최근 결과 자세히 보기</a></div>
   </section>
   <section class="card">
     <h2>처음 진단이 제안한 목표, 해냈나요?</h2>
@@ -1547,7 +1547,7 @@ F.onUser(async u=>{
     /* 가입 전에 1강 진단을 했는데 계정에 결과가 없으면 명단에 있는 결과를 내 기록으로 가져옴 */
     if(S.prof && !S.prof.diag && S.prof.rosterId){ try{ const r=await F.getRoster(S.prof.rosterId);
       if(r && r.diag){ const add={diag:r.diag, diagAt:r.diag.ts||"", diagFrom:"1강 진단", diagHist:[F.diagSummary(r.diag)]};
-        await F.updateProfile(u.uid, add); Object.assign(S.prof, add); } }catch(e){ console.log("heal",e&&(e.code||e.message)); } }
+        await F.updateProfile(u.uid, add); Object.assign(S.prof, add); } }catch(e){} }
     S.ownProf=S.prof;   /* 내 계정의 실제 회원 정보 (마스터는 없음) */
     S.myName=(S.prof&&S.prof.name)||"";
     if(S.role && !S.myName){ const a=await F.getAdmin(u.uid); S.myName=(a&&a.name)||"관리자"; }
