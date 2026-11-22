@@ -4,13 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>역량을 전략적으로</title>
-<meta name="theme-color" content="#FDFCF7">
+<meta name="theme-color" content="#F2F4F6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="전략 진단">
 <link rel="manifest" href="manifest.json">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&family=Gowun+Dodum&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 :root{
   --desk:#DEDACF; --paper:#FDFCF7; --ink:#232018; --ink-60:#6B6459; --ink-30:#A9A295;
@@ -206,6 +204,64 @@ details.exp .ex q{color:var(--ink);quotes:"“" "”"}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 .homelink{display:inline-block;font-size:13px;color:var(--ink-60);text-decoration:none;padding-top:18px}
 .homelink:hover{color:var(--pen)}
+</style>
+<style id="kusc-modern">
+/* 학회원 사이트와 같은 디자인으로 덮어쓰기 (노트 스타일 대신 카드형) */
+:root{--desk:#F2F4F6;--paper:#FFFFFF;--ink:#191F28;--ink-60:#4E5968;--ink-30:#8B95A1;--rule:#E5E8EB;--line:transparent;
+  --pen:#036B3F;--pen-soft:rgba(3,107,63,.08);--red:#E5484D;--grn:#036B3F;--amb:#B7791F;--tint:#F7F8FA;--tint2:rgba(3,107,63,.07)}
+html,body{background:var(--desk)}
+body{font-family:"Pretendard Variable",Pretendard,system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.7;word-break:keep-all;overflow-wrap:break-word;padding-bottom:40px}
+.mono{font-family:inherit;font-feature-settings:"tnum"}
+.sheet{background:#fff;background-image:none;box-shadow:0 2px 6px rgba(0,0,0,.03),0 18px 50px rgba(0,0,0,.05);border-radius:28px;margin:24px auto;padding:0 36px 56px;min-height:auto;overflow:visible}
+.sheet:before{display:none}
+.prog{margin:0 -36px;height:4px;border-radius:28px 28px 0 0;overflow:hidden;background:var(--rule)}
+.stamp,.qnum,.rcode{letter-spacing:.02em;font-weight:700}
+h1{font-family:inherit;font-size:42px;font-weight:800;letter-spacing:-.03em;line-height:1.25;margin:36px 0 6px}
+.lede{font-size:16.5px;line-height:1.8}
+.lede b,.card b,details.exp .ex b{background:none;font-weight:700;color:var(--ink)}
+.note{font-family:inherit;transform:none;font-size:16px;font-weight:800;color:var(--pen)}
+.qtext{font-family:inherit;font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.45}
+.qask{font-family:inherit;font-size:16px;font-weight:800}
+.grp{font-family:inherit;font-size:16px;font-weight:800;color:var(--ink)}
+.opt{background:#fff;border:2px solid var(--rule);border-radius:16px;padding:16px 18px;font-size:15.5px}
+.opt:hover{transform:none;border-color:var(--pen);background:var(--pen-soft)}
+.opt .k{font-family:inherit;font-size:14px;font-weight:900;line-height:1.75}
+.chk label,.radio label{background:#fff;border:2px solid var(--rule);border-radius:14px}
+.btn{font-family:inherit;font-weight:800;background:var(--pen);color:#fff;border-radius:16px;padding:17px 24px}
+.btn:hover{background:#02572F}
+.btn.alt{background:#F2F4F6;color:var(--ink-60);border:0}
+.btn.alt:hover{background:#E5E8EB;color:var(--ink)}
+.btn.restart{background:#F2F4F6;color:var(--ink)}
+.btn.restart:hover{background:#E5E8EB}
+.btn.ghostpen{background:var(--pen-soft);border:0}
+.rtitle{font-family:inherit;font-size:32px;font-weight:800;letter-spacing:-.03em;line-height:1.35}
+.blabel{font-family:inherit;font-size:19px;font-weight:800;color:var(--ink);margin:40px 0 14px}
+.card{background:var(--tint);border:0;border-radius:18px;padding:20px 22px}
+.card.hl{background:var(--tint2)}
+.card .ct{font-family:inherit;font-size:17px;font-weight:800;margin-bottom:6px}
+.goal{background:#fff;border:1px solid var(--rule);border-radius:18px;padding:20px 22px}
+.goal .gt{font-family:inherit;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.goal .why-tag{font-weight:700}
+.sc{border-top:1px solid var(--rule)}
+.scr,.kv{border-bottom:1px solid var(--rule)}
+.scr .tk{background:var(--ink)}
+details.exp{border-bottom:1px solid var(--rule)}
+details.exp[open]{background:var(--tint);border:0;border-radius:16px}
+details.exp[open] summary{border-bottom:1px solid var(--rule)}
+details.exp summary{font-weight:600}
+.mychoice{background:#fff}
+.foot{border-top:1px solid var(--rule)}
+.field input,.field select,.pw{background:#F7F8FA;border:2px solid transparent;border-radius:14px}
+.field input:focus,.field select:focus,.pw:focus{border-color:var(--pen);background:#fff}
+.banner{border:0}
+.tbl th{border-bottom:1px solid var(--rule);font-weight:700}
+.tbl td{border-bottom:1px solid var(--rule)}
+#offbadge{background:var(--ink)}
+@media(max-width:600px){
+  .sheet{margin:0;border-radius:0;padding:0 20px 56px;box-shadow:none}
+  .prog{margin:0 -20px;border-radius:0}
+  h1{font-size:32px}.rtitle{font-size:26px}.qtext{font-size:21px}
+}
 </style>
 </head>
 <body>
@@ -603,14 +659,14 @@ function hex(a,cmp,Z){
   for(let k=1;k<=4;k++)s+=`<polygon points="${[...Array(6)].map((_,i)=>pt(50*k/4,i,R).join(",")).join(" ")}" fill="none" stroke="#E6E1D4"/>`;
   for(let i=0;i<6;i++){const[x,y]=pt(50,i,R);s+=`<line x1="${c}" y1="${c}" x2="${x}" y2="${y}" stroke="#E6E1D4"/>`}
   if(cmp)s+=`<polygon points="${cmp.map((v,i)=>pt(v,i,R).join(",")).join(" ")}" fill="none" stroke="#232018" stroke-width="1.6" stroke-dasharray="5 4"/>`;
-  s+=`<polygon points="${a.map((v,i)=>pt(v,i,R).join(",")).join(" ")}" fill="rgba(47,91,208,.15)" stroke="#2F5BD0" stroke-width="2.4" stroke-linejoin="round"/>`;
-  a.forEach((v,i)=>{const[x,y]=pt(v,i,R);s+=`<circle cx="${x}" cy="${y}" r="3.6" fill="#2F5BD0"/>`});
+  s+=`<polygon points="${a.map((v,i)=>pt(v,i,R).join(",")).join(" ")}" fill="rgba(3,107,63,.14)" stroke="#036B3F" stroke-width="2.4" stroke-linejoin="round"/>`;
+  a.forEach((v,i)=>{const[x,y]=pt(v,i,R);s+=`<circle cx="${x}" cy="${y}" r="3.6" fill="#036B3F"/>`});
   AXES.forEach((n,i)=>{
     const[x,y]=pt(62,i,R);
     let anc="middle",dy=5;
     if(i===0)dy=-4; else if(i===3)dy=15;
     else if(i===1||i===2)anc="start"; else anc="end";
-    s+=`<text x="${x}" y="${y+dy}" text-anchor="${anc}" font-family="Gaegu,cursive" font-size="16" font-weight="700" fill="#232018">${n}</text>`});
+    s+=`<text x="${x}" y="${y+dy}" text-anchor="${anc}" font-family="Pretendard Variable,Pretendard,sans-serif" font-size="13" font-weight="700" fill="#4E5968">${n}</text>`});
   return `<svg viewBox="0 0 ${Z} ${Z}" width="100%" style="max-width:${Z}px" xmlns="http://www.w3.org/2000/svg">${s}</svg>`}
 
 function scorecard(a,bench,label){
@@ -778,6 +834,7 @@ async function persist(){
   try{ if(window.KUSC_saveDiag) window.KUSC_saveDiag(rec); }catch(e){}   /* 로그인한 회원이면 내 계정에도 저장 */
   window.__local=(window.__local||[]).concat(rec);
   lsSet("kusc:mine",lsGet("kusc:mine","[]").concat(rec));   /* 본인 기기 기록 */
+  if(window.KUSC_NOSHEET) return;          /* 마스터 테스트 진단은 응답 시트에 보내지 않음 */
   if(ENDPOINT){
     lsSet("kusc:outbox",lsGet("kusc:outbox","[]").concat(rec));
     await flushOutbox();
@@ -911,9 +968,9 @@ function result(){
           ${sel!=null?`<div class="mychoice"><em>당신의 선택</em>${q.o[sel][0]}</div>`:""}
           ${q.e.map(x=>`<p>${x}</p>`).join("")}
         </div></details>`}).join("")}
-    <div class="card" style="margin-top:28px"><div class="ct">📸 이 화면, 캡처해두세요</div>
-      <p>세 가지 목표는 이번 학기 내내 꺼내보셔야 해요.</p>
-      <p>지금 캡처해두시는 게 제일 확실합니다.</p></div>
+    <div class="card" style="margin-top:28px"><div class="ct">📌 세 가지 목표는 이번 학기 내내 꺼내 보세요</div>
+      <p>학회원 사이트에 로그인해 있다면 '내 역량의 변화'에 자동으로 저장돼요.</p>
+      <p>로그인하지 않았다면 지금 캡처해 두는 게 가장 확실해요.</p></div>
     <button class="btn restart" onclick="resetAll(true)">처음부터 다시 하기</button>
     <div class="foot">이건 합격 공식이 아니라, 지금 가장 비어 있는 곳부터 채우는 순서예요.<br>
       그리고 이 진단은 여섯 직무 안에서의 상대 비교입니다. 세상에는 더 많은 길이 있어요 🙂</div>`;
@@ -1184,8 +1241,20 @@ F.onUser(async u=>{
   /* 마스터 보기: 관리자가 ?as=학회원으로 들어오면 그 학회원의 결과만 보여주고 아무것도 저장하지 않음 */
   const as=q.get("as"); let ro=false, p=null;
   if(as && q.get("view")==="mine" && (await F.getRole(u.uid))==="admin"){ try{ p=await F.getProfile(as); ro=true; }catch(e){} }
+  let lab=false;
   if(!ro){ try{ p=await F.getProfile(u.uid); }catch(e){} }
+  /* 학회원이 아닌 관리자(마스터): 테스트 공간(lab)에 저장하고 비교 기능을 똑같이 씀 */
+  if(!ro && !p && (await F.getRole(u.uid))==="admin"){ lab=true; try{ p=(await F.getLab(u.uid))||{}; }catch(e){ p={}; } p.name=p.name||""; }
   if(!p){ if(q.has("view")) location.replace("index.html"); return; }
+  if(lab){
+    window.KUSC_NOSHEET=true;
+    window.KUSC_saveDiag=rec=>F.saveLabDiag(u.uid,rec).catch(()=>{});
+    const a=document.createElement("a"); a.href="index.html#growth"; a.textContent="← 내 역량의 변화";
+    a.style.cssText="position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:#036B3F;color:#fff;font:800 14px Pretendard,sans-serif;padding:11px 16px;border-radius:14px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.18)";
+    document.body.appendChild(a);
+    if(q.get("view")==="mine"){ if(p.diag) window.KUSC_showResult(p.diag); else location.replace("diagnostic.html?from=app"); }
+    return;
+  }
   if(ro){ if(p.diag) window.KUSC_showResult(p.diag); else location.replace("index.html#home");
     const b=document.createElement("a"); b.href="index.html#home"; b.textContent="← 마스터 보기로";
     b.style.cssText="position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:#0E2A1E;color:#fff;font:800 14px 'Noto Sans KR',sans-serif;padding:11px 16px;border-radius:14px;text-decoration:none";

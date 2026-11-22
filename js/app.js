@@ -572,28 +572,12 @@ function viewPending(){
 /* ───────── 홈 ───────── */
 async function viewHome(){
   const p=S.prof, dg=p.diag, g=p.progress||{};
-  if(p.master){
-    app.innerHTML = header(`${esc(p.name)} 님, 반가워요`, `<span class="badge ku">마스터 계정</span> 학회원 화면을 둘러보는 중이에요`)+`
-    <div class="grid">
-      <section class="card" id="hnot"><div class="lesson">공지</div><div class="skel sm"></div></section>
-      <section class="card" id="hev"><div class="lesson">다가오는 일정</div><div class="skel sm"></div></section>
-    </div>
-    <section class="card"><div class="lesson">마스터 계정</div>
-      <p class="desc" style="margin-top:6px">학회원 명단과 회원 수에는 들어가지 않는 관리자 계정이에요. 학회원 화면은 이렇게 둘러볼 수 있고, 관리는 운영실에서 해요.</p>
-      <div class="row"><a class="btn pri sm" href="admin.html">운영실로 가기</a></div></section>`+foot();
-    try{
-      const [ns, evs] = await Promise.all([load("notices",F.listNotices), load("events",F.listEvents)]);
-      $("#hnot").innerHTML = `<div class="lesson">공지</div>${ns.length?ns.slice(0,3).map(x=>`<a class="li" href="#news"><span class="badge">${esc(x.tag||"공지")}</span><b>${esc(x.title)}</b><small>${day(x.createdAt)}</small></a>`).join(""):`<p class="desc">아직 공지가 없어요.</p>`}`;
-      const up = evs.filter(e=>e.date>=today()).sort((a,b)=>a.date.localeCompare(b.date))[0];
-      $("#hev").innerHTML = `<div class="lesson">다가오는 일정</div>${up?`<h3 style="margin-top:6px">${esc(up.title)}</h3><p class="desc">${ymd(up.date)} ${esc(up.time||"")}</p>`:`<p class="desc">예정된 일정이 없어요.</p>`}`;
-    }catch(e){}
-    return;
-  }
   const LECS=["1강","2강","3강","4강"];
   const best = dg ? AXES[dg.a.indexOf(Math.max(...dg.a))] : "";
   const paid = p.dues && p.dues[TERM];
   app.innerHTML = header(`${esc(p.name)} 님, 반가워요`,
-    `${esc(p.major)} ${esc(p.grade)} <span class="badge ku">KUSC 학회원</span>${isExec()?' <span class="badge">임원진</span>':""}`)+`
+    p.master ? `<span class="badge ku">마스터 계정</span> 진단과 기록을 직접 해 보며 확인하는 테스트 공간이에요. 여기 기록은 나만 보여요.`
+    : `${esc(p.major)} ${esc(p.grade)} <span class="badge ku">KUSC 학회원</span>${isExec()?' <span class="badge">임원진</span>':""}`)+`
   <div class="grid">
     <section class="card" id="hnot"><div class="lesson">공지</div><div class="skel sm"></div></section>
     <section class="card" id="hev"><div class="lesson">다가오는 일정</div><div class="skel sm"></div></section>
@@ -622,12 +606,12 @@ async function viewHome(){
       <div class="lesson">이번 학기 강의</div>
       <div id="hatt"><div class="skel sm"></div></div>
     </section>
-    <section class="card">
+    ${p.master?"":`<section class="card">
       <div class="lesson">${TERM_LABEL} 회비</div>
       <h3 style="margin-top:6px">${paid?"납부 확인됐어요":"아직 확인 전이에요"} <span class="badge ${paid?"ku":""}">${DUES}</span></h3>
       <p class="desc">${paid?`${day(paid)}에 임원진이 확인했어요.`:"입금 계좌는 소식의 정산 공지에 늘 올라와 있어요. 입금 후 임원진이 확인하면 여기에 표시돼요."}</p>
       <div class="row"><a class="btn sec sm" href="#news">소식 보기</a></div>
-    </section>
+    </section>`}
   </div>
   <section class="card">
     <div class="lesson">곧 열려요</div>
@@ -1002,7 +986,7 @@ function viewGrowth(){
   $$("[data-gs]").forEach(c=>c.onclick=()=>{ keepNotes(); const g=goals[+c.dataset.gs]; d[g.t]={...(d[g.t]||{}), status:c.dataset.v}; viewGrowth(); });
   if($("#gsave")) $("#gsave").onclick=async()=>{ keepNotes();
     const nowIso=new Date().toISOString(); goals.forEach(g=>{ if(d[g.t]) d[g.t].at=nowIso; });
-    try{ await F.updateProfile(S.user.uid,{goalTrack:d}); S.prof.goalTrack=JSON.parse(JSON.stringify(d)); $("#gsaved").style.display="block"; $("#err").style.display="none"; }
+    try{ await (S.prof.master ? F.setLab(S.user.uid,{goalTrack:d}) : F.updateProfile(S.user.uid,{goalTrack:d})); S.prof.goalTrack=JSON.parse(JSON.stringify(d)); $("#gsaved").style.display="block"; $("#err").style.display="none"; }
     catch(e){ showErr(authMsg(e)); } };
 }
 
@@ -1507,7 +1491,9 @@ async function masterPick(u, uid){
   S.members=us;
   let pick=uid; if(!pick){ try{ pick=localStorage.getItem("kusc:viewAs"); }catch(e){} }
   const m=us.find(x=>x.uid===pick);
-  if(!m){ const a=await F.getAdmin(u.uid); S.prof={name:(a&&a.name)||"관리자", master:true, progress:{}}; }   /* 기본: 마스터 본인 화면 */
+  if(!m){   /* 기본: 마스터 본인 화면. 진단과 목표 기록은 나만 보는 테스트 공간(lab)에 저장 */
+    const a=await F.getAdmin(u.uid); let lab=null; try{ lab=await F.getLab(u.uid); }catch(e){}
+    S.prof={progress:{}, ...(lab||{}), name:(a&&a.name)||"관리자", master:true}; }
   else S.prof={...m, viewAs:m.uid};
   try{ localStorage.setItem("kusc:viewAs", m?m.uid:"__me"); }catch(e){}
 }

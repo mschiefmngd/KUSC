@@ -93,6 +93,11 @@ export const saveDiag = (uid, rec, prev) => {
   return updateDoc(doc(db, "users", uid), { diag: rec, diagAt: rec.ts || new Date().toISOString(), diagHist: arrayUnion(...add),
     diagFrom: deleteField(), updatedAt: now() });
 };
+/* 마스터의 테스트 공간: 진단과 목표 기록을 학회원 데이터와 섞지 않고 따로 저장 */
+export async function getLab(uid) { const s = await getDoc(doc(db, "lab", uid)); return s.exists() ? s.data() : null; }
+export const setLab = (uid, patch) => setDoc(doc(db, "lab", uid), { ...patch, updatedAt: now() }, { merge: true });
+export const saveLabDiag = (uid, rec) => setDoc(doc(db, "lab", uid),
+  { diag: rec, diagAt: rec.ts || new Date().toISOString(), diagHist: arrayUnion(diagSummary(rec)), updatedAt: now() }, { merge: true });
 /* 예전 결과만 있고 기록이 없을 때, 그 결과를 첫 기록으로 만듦 (목표 포함) */
 export const initDiagHist = (uid, first) => updateDoc(doc(db, "users", uid), { diagHist: [diagSummary(first)], updatedAt: now() });
 export const markProgress = (uid, key) =>

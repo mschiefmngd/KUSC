@@ -119,6 +119,11 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // 마스터(관리자)의 테스트 공간: 본인만
+    match /lab/{uid} {
+      allow read, write: if isAdmin() && request.auth.uid == uid;
+    }
+
     match /ledger/{id} {
       allow read: if canUse();
       allow write: if isExec();
