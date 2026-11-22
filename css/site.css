@@ -434,3 +434,12 @@ a.back{display:inline-block;margin-top:14px;font-weight:800;color:var(--sub);tex
 .trio3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}
 .trio3 .ph3{aspect-ratio:1}
 @media (max-width:700px){.story .st{padding:26px 20px;border-radius:24px}.story .st h2{font-size:22px}.story .st.hero h2{font-size:25px}.sprow{grid-template-columns:76px 1fr}}
+.spkmini span{display:inline-flex;align-items:center;gap:6px}
+.spkmini img{height:16px;width:auto;max-width:72px;object-fit:contain}
+.sprow img.lg{height:18px;width:auto;max-width:90px;object-fit:contain;vertical-align:-3px;margin-left:6px}
+/* 마스터 보기 막대 */
+.viewas{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#0E2A1E;color:#fff;border-radius:16px;padding:10px 14px;margin-top:14px;font-size:13.5px}
+.viewas b{font-weight:900;color:#7FE0B0}
+.viewas select{font:inherit;font-weight:800;border:0;border-radius:10px;padding:6px 10px;background:#fff;color:#0E2A1E}
+.viewas span{color:rgba(255,255,255,.8)}
+.viewas a{margin-left:auto;color:#fff;font-weight:800}

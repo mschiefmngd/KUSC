@@ -1174,8 +1174,15 @@ import * as F from "./js/fb.js";
 const q=new URLSearchParams(location.search);
 F.onUser(async u=>{
   if(!u){ if(q.has("view")) location.replace("index.html"); return; }
-  let p=null; try{ p=await F.getProfile(u.uid); }catch(e){}
+  /* 마스터 보기: 관리자가 ?as=학회원으로 들어오면 그 학회원의 결과만 보여주고 아무것도 저장하지 않음 */
+  const as=q.get("as"); let ro=false, p=null;
+  if(as && q.get("view")==="mine" && (await F.getRole(u.uid))==="admin"){ try{ p=await F.getProfile(as); ro=true; }catch(e){} }
+  if(!ro){ try{ p=await F.getProfile(u.uid); }catch(e){} }
   if(!p){ if(q.has("view")) location.replace("index.html"); return; }
+  if(ro){ if(p.diag) window.KUSC_showResult(p.diag); else location.replace("index.html#home");
+    const b=document.createElement("a"); b.href="index.html#home"; b.textContent="← 마스터 보기로";
+    b.style.cssText="position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:#0E2A1E;color:#fff;font:800 14px 'Noto Sans KR',sans-serif;padding:11px 16px;border-radius:14px;text-decoration:none";
+    document.body.appendChild(b); return; }
   window.KUSC_saveDiag=rec=>F.saveDiag(u.uid,rec).catch(()=>{});
   window.KUSC_PROFILE={name:p.name||"",sid:p.sid||"",grade:p.grade||"",age:p.age||"",major:p.major||"",major2:p.major2||"",gender:p.gender||""};
   /* 내 홈으로 돌아가는 버튼 */

@@ -2,7 +2,13 @@
    KUSC 회원 사이트 — 화면
    데이터는 js/fb.js 를 통해서만 읽고 씁니다.
    ───────────────────────────────────────────── */
-import * as F from "./fb.js";
+import * as FB from "./fb.js";
+/* 마스터 보기: 다른 학회원의 화면을 그대로 보되, 아무것도 바꾸지 못하게 쓰기 함수를 막음 */
+const WRITES = new Set(["updateProfile","saveDiag","markProgress","deleteMe","submitRequest","deleteRequest","joinMember","setRsvp",
+  "addPost","updatePost","deletePost","addComment","deleteComment","submitFeedback","setAttendance"]);
+const F = new Proxy(FB, { get(t, k){
+  if(WRITES.has(k) && typeof S!=="undefined" && S.prof && S.prof.viewAs && MODE!=="exec") return async()=>{ throw {code:"view-only"}; };
+  return t[k]; } });
 import { SURVEY, rowsOf, optsOf, allQs, shown, allRows } from "./survey.js";
 
 /* ───────── 고정 값 (학기마다 여기만 고치면 됨) ───────── */
@@ -44,8 +50,11 @@ const day = x => { const d=toD(x); return d&&!isNaN(d) ? `${d.getFullYear()}.${S
 const ymd = s => { if(!s) return ""; const [y,m,d]=String(s).split("-"); const w="일월화수목금토"[new Date(+y,+m-1,+d).getDay()]; return `${+m}월 ${+d}일(${w})`; };
 const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
 const won = n => (Number(n)||0).toLocaleString("ko-KR")+"원";
-const isExec = () => !!S.role;
+const isExec = () => !!S.role && !(S.prof && S.prof.viewAs);   /* 마스터 보기 중에는 그 학회원과 똑같이 보이게 */
 const isMember = () => !!S.prof;
+/* 진단 링크: 마스터 보기 중에는 그 학회원의 결과만 보고, 새로 진단하지 않음 */
+const diagHref = mode => (S.prof && S.prof.viewAs) ? (mode==="view" ? `diagnostic.html?view=mine&as=${S.prof.viewAs}` : "javascript:void 0") : (mode==="view" ? "diagnostic.html?view=mine" : "diagnostic.html?from=app");
+const myUid = () => (S.prof && S.prof.viewAs) || (S.user && S.user.uid);
 const myName = () => (S.prof&&S.prof.name) || (S.user&&S.user.displayName) || "운영진";
 
 /* ───────── 공통 조각 ───────── */
@@ -59,7 +68,7 @@ function header(title, lead){
     ${isMember()?`<a href="#home" class="${on("home")}">내 공간</a><a href="#class" class="${on("class")}">강의실</a>
     <a href="#news" class="${on("news")}">소식</a><a href="#board" class="${on("board")}">커뮤니티</a>
     <a href="#me" class="${on("me")}">내 정보</a>`:""}</nav>` : "";
-  return `<div class="top"><a class="brand" href="#" aria-label="KUSC 홈페이지"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span></a>${tabs}</div>
+  return viewAsBar()+`<div class="top"><a class="brand" href="#" aria-label="KUSC 홈페이지"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span></a>${tabs}</div>
     ${title?`<h1>${title}</h1>`:""}${lead?`<p class="lead">${lead}</p>`:""}`;
 }
 const foot = () => `<p class="foot">KUSC 전략 직무 진출 커리큘럼 · Jason Baek</p>`;
@@ -104,7 +113,8 @@ function authMsg(e){
     "auth/network-request-failed":"네트워크가 불안정해요. 잠시 후 다시 해 주세요",
     "auth/requires-recent-login":"보안을 위해 로그아웃 후 다시 로그인한 뒤 시도해 주세요",
     "auth/unauthorized-domain":"이 주소에서는 로그인이 아직 허용되지 않았어요. 임원진에게 알려주세요",
-    "permission-denied":"권한이 없어요. 임원진에게 알려주세요"
+    "permission-denied":"권한이 없어요. 임원진에게 알려주세요",
+    "view-only":"마스터 보기에서는 아무것도 바꾸지 않아요. 화면만 볼 수 있어요"
   })[c] || "문제가 생겼어요. 잠시 후 다시 해 주세요" + (c?` (${c})`:"");
 }
 const inApp = /KAKAOTALK|Instagram|FBAN|FBAV|NAVER|Line\//i.test(navigator.userAgent);
@@ -571,14 +581,14 @@ async function viewHome(){
           <div class="fact"><small>내가 원했던 직무</small><b>${esc(JOBNAME[dg.want]||dg.want)}</b></div>
           <div class="fact"><small>가장 강한 역량</small><b>${esc(best)}</b></div>
         </div></div>
-      <div class="row"><a class="btn pri" href="diagnostic.html?view=mine">결과 자세히 보기</a><a class="btn sec" href="diagnostic.html?from=app">다시 진단하기</a></div>
+      <div class="row"><a class="btn pri" href="${diagHref("view")}">결과 자세히 보기</a><a class="btn sec" href="${diagHref("new")}">다시 진단하기</a></div>
     </section>`
   :`<section class="card">
       <div class="lesson">먼저 해 볼 것</div>
       <h2 style="margin-top:4px">내 역량 진단부터 시작해요</h2>
       <p class="desc">일상 속 상황 17개로 여섯 역량의 모양을 그리고, 여섯 전략 직무 중 어디와 닮았는지 확인해요. 기본 정보는 가입할 때 받은 걸로 채워서 바로 문항부터 시작해요.</p>
       <div class="meta"><span>약 8분</span><span>개인 결과</span><span>이번 학기 목표 3가지</span></div>
-      <div class="row"><a class="btn pri" href="diagnostic.html?from=app">진단 시작하기 →</a></div>
+      <div class="row"><a class="btn pri" href="${diagHref("new")}">진단 시작하기 →</a></div>
     </section>`}
   <div class="grid">
     <section class="card">
@@ -597,7 +607,7 @@ async function viewHome(){
     <h3 style="margin-top:6px">작성실</h3>
     <p class="desc">내 경험을 정리하고, 4강 방식대로 레쥬메 불릿과 자소서를 써 보는 곳이에요. 쓴 내용은 계정에 저장돼서 어느 기기에서든 이어 쓸 수 있어요.</p>
   </section>`+foot();
-  F.getAttendance(S.user.uid).then(at=>{ const box=$("#hatt"); if(!box) return;
+  F.getAttendance(myUid()).then(at=>{ const box=$("#hatt"); if(!box) return;
     const got=(at&&at[TERM])||null, has=i=>!!got&&got.some(x=>x.startsWith(LECS[i]));
     const names=["정의","구조화","검증","진입"], n=got?LECS.filter((_,i)=>has(i)).length:0;
     box.innerHTML = `<h3 style="margin-top:6px">${got?`4개 중 ${n}개를 들었어요`:"강의 후기를 남기면 들은 강의가 표시돼요"}</h3>
@@ -633,7 +643,7 @@ async function viewNews(){
       const evs=[...await load("events",F.listEvents)].sort((a,b)=>a.date.localeCompare(b.date));
       const up=evs.filter(e=>e.date>=today()), past=evs.filter(e=>e.date<today()).reverse();
       const card=async e=>{
-        const rs=await F.listRsvp(e.id); const mine=rs.find(r=>r.uid===S.user.uid)||{};
+        const rs=await F.listRsvp(e.id); const mine=rs.find(r=>r.uid===myUid())||{};
         const yes=rs.filter(r=>r.status==="참석").length, party=rs.filter(r=>r.party==="참석").length;
         const open=e.date>=today();
         return `<section class="card tight" data-eid="${e.id}" data-date="${esc(e.date)}">
@@ -742,7 +752,7 @@ async function viewPost(id){
   try{
     const p=await F.getPost(id);
     if(!p){ app.innerHTML=header("","")+`<section class="card"><p class="desc">지워진 글이에요.</p><div class="row"><a class="btn sec" href="#board">목록으로</a></div></section>`; return; }
-    const cs=await F.listComments(id), mine=p.uid===S.user.uid;
+    const cs=await F.listComments(id), mine=p.uid===myUid();
     app.innerHTML = header("","")+`<section class="card">
       <span class="badge">${esc(p.cat)}</span>
       <h2 style="margin-top:8px">${esc(p.title)}</h2>
@@ -753,7 +763,7 @@ async function viewPost(id){
     <section class="card">
       <h3>댓글 ${cs.length}</h3>
       ${cs.map(c=>`<div class="cmt"><b>${esc(c.anon?"익명":c.authorName)}</b><small>${day(c.createdAt)}</small>
-        <p>${nl(c.body)}</p>${(c.uid===S.user.uid||isExec())?`<button class="link" data-cdel="${c.id}">지우기</button>`:""}</div>`).join("")||`<p class="desc">첫 댓글을 남겨 보세요.</p>`}
+        <p>${nl(c.body)}</p>${(c.uid===myUid()||isExec())?`<button class="link" data-cdel="${c.id}">지우기</button>`:""}</div>`).join("")||`<p class="desc">첫 댓글을 남겨 보세요.</p>`}
       ${field("cbody","댓글 쓰기","",{area:1,rows:3})}
       <label class="check"><input type="checkbox" id="canon"> 익명으로</label>
       <p class="err" id="err"></p>
@@ -771,8 +781,8 @@ async function viewPost(id){
 /* 3강 기록: 연사와 현장 사진. 사진은 잠긴 파일이고, 학회원만 받는 열쇠로 화면에서 풀어 보여줌 */
 const L3_INFO = {
   attended: 80,
-  speakers: [["PM","신지환","카카오페이"],["전략기획","황성준","현대기아자동차"],["IB","봉찬희","NH투자증권"],
-             ["PE","백승현","J&M Partners"],["컨설팅","백재웅","PwC컨설팅"],["VC","장원준","Google"]],
+  speakers: [["PM","신지환","카카오페이","kakaopay"],["전략기획","황성준","현대기아자동차","hyundai"],["IB","봉찬희","NH투자증권","nh"],
+             ["PE","백승현","J&M Partners","jm"],["컨설팅","백재웅","PwC컨설팅","pwc"],["VC","장원준","Google","google"]],
   photos: [
     ["01","10월 28일, 강연장"],["02","김추연 담당교수님 오프닝"],["03","컨설팅 백재웅"],
     ["04","VC 장원준"],["05","PE 백승현"],["06","IB 봉찬희"],["07","전략기획 황성준"],["08","PM 신지환"],
@@ -833,8 +843,8 @@ function viewL3(){
     </section>
     <section class="st">
       <h2>여섯 직무를,<br>그 일을 하는 선배에게 직접 들었어요</h2>
-      <div class="sp3">${[...L3_INFO.speakers].sort((a,b)=>SP[a[0]].localeCompare(SP[b[0]])).map(([j,n,c])=>`<div class="sprow">${ph(SP[j],"t","sq")}
-        <div><small>${esc(j)}</small><b>${esc(n)} <span>${esc(c)}</span></b><p>${esc(LINE[j])}</p></div></div>`).join("")}</div>
+      <div class="sp3">${[...L3_INFO.speakers].sort((a,b)=>SP[a[0]].localeCompare(SP[b[0]])).map(([j,n,c,lg])=>`<div class="sprow">${ph(SP[j],"t","sq")}
+        <div><small>${esc(j)}</small><b>${esc(n)} <img class="lg" src="img/logo/${lg}.png" alt="${esc(c)}" title="${esc(c)}"></b><p>${esc(LINE[j])}</p></div></div>`).join("")}</div>
     </section>
     <section class="st">
       <h2>화려한 이력보다,<br>어떻게 들어갔는지를 물었어요</h2>
@@ -879,7 +889,7 @@ function viewClass(){
       <div class="lesson" style="margin-top:20px">1강 · 전략 직무 정의하기${ok(0)}</div>
       <h2 style="margin-top:4px">직무 성향 진단</h2>
       <p class="desc">일상 속 상황 17개로 나의 역량 모양을 그리고, 여섯 전략 직무 중 어디와 닮았는지 확인해요.</p>
-      <a class="go" href="${p.diag?"diagnostic.html?view=mine":"diagnostic.html?from=app"}">${p.diag?"내 결과 보기":"진단 시작하기"}<b>→</b></a>
+      <a class="go" href="${diagHref(p.diag?"view":"new")}">${p.diag?"내 결과 보기":"진단 시작하기"}<b>→</b></a>
     </section>
     <section class="card lec">
       <div class="art" id="cast"></div>
@@ -892,7 +902,7 @@ function viewClass(){
       <div class="lesson">3강 · 전략 직무 검증하기${ok(2)}</div>
       <h2 style="margin-top:4px">여섯 직무 현직자 강연</h2>
       <p class="desc">10월 28일, 여섯 직무의 현직자 선배들과 학회원, 비학회원 약 ${L3_INFO.attended}명이 함께한 경영대학 공동 행사였어요.</p>
-      <div class="spkmini">${L3_INFO.speakers.map(([j,n,c])=>`<span><small>${esc(j)}</small>${esc(n)}<em>${esc(c)}</em></span>`).join("")}</div>
+      <div class="spkmini">${L3_INFO.speakers.map(([j,n,c,lg])=>`<span><small>${esc(j)}</small>${esc(n)}<img src="img/logo/${lg}.png" alt="${esc(c)}" title="${esc(c)}"></span>`).join("")}</div>
       <a class="go" href="#l3" ${mark("l3")}>그날의 현장 돌아보기<b>→</b></a>
     </section>
     <section class="card lec">
@@ -910,8 +920,8 @@ function viewClass(){
     <p class="desc">${SURVEY.intro}</p>
     <div id="fbgo" style="margin-top:16px"><div class="skel" style="height:52px"></div></div>
   </section>`+foot();
-  if(S.prof.master){ const g=$("#fbgo"); if(g) g.innerHTML=`<p class="hint" style="margin:0">마스터 계정은 응답하지 않아요. 응답은 운영실의 강의 후기 탭에서 볼 수 있어요.</p>`; }
-  else F.getFeedbackDone(S.user.uid, SURVEY.term).then(done=>{ const g=$("#fbgo"); if(!g) return;
+  if(S.prof.master && !S.prof.viewAs){ const g=$("#fbgo"); if(g) g.innerHTML=`<p class="hint" style="margin:0">마스터 계정은 응답하지 않아요. 응답은 운영실의 강의 후기 탭에서 볼 수 있어요.</p>`; }
+  else F.getFeedbackDone(myUid(), SURVEY.term).then(done=>{ const g=$("#fbgo"); if(!g) return;
     g.innerHTML = done ? `<p class="ok" style="margin:0">후기를 남겨 주셔서 고마워요. 다음 학기 설계에 그대로 쓸게요.</p>`
       : `<a class="btn pri" href="#feedback">후기 남기기</a>`; }).catch(()=>{ const g=$("#fbgo"); if(g) g.innerHTML=`<a class="btn pri" href="#feedback">후기 남기기</a>`; });
   if(typeof chr==="function") $("#cast").innerHTML=["VC","PM","BP","CS","PE","IB"].map(k=>chr(k)).join("");
@@ -977,9 +987,9 @@ function fbQuestion(q,a,no){
   return `<div class="field fq">${head}<textarea id="${q.id}" rows="${q.rows||4}" placeholder="${esc(q.ph||"")}">${esc(a[q.id]||"")}</textarea></div>`;
 }
 async function viewFeedback(){
-  if(S.prof.master){ location.hash="#class"; return; }
+  if(S.prof.master && !S.prof.viewAs){ location.hash="#class"; return; }
   const T=SURVEY, st=S.fb||(S.fb={p:0,a:{}});
-  if(st.done===undefined){ app.innerHTML=header("","")+`<div class="skel"></div>`; try{ st.done=await F.getFeedbackDone(S.user.uid,T.term); }catch(e){ st.done=false; } }
+  if(st.done===undefined){ app.innerHTML=header("","")+`<div class="skel"></div>`; try{ st.done=await F.getFeedbackDone(myUid(),T.term); }catch(e){ st.done=false; } }
   if(st.done){ app.innerHTML=header("강의 후기","")+`<section class="card"><h2>이미 후기를 남겼어요</h2>
       <p class="desc">${esc(T.title)}에 답해 줘서 고마워요. 한 학기에 한 번만 낼 수 있어요.</p>
       <div class="row" style="margin-top:18px"><a class="btn pri" href="#class">강의실로</a></div></section>`+foot(); return; }
@@ -1406,6 +1416,23 @@ async function render(){
   if(r==="me") return viewMe();
   return viewHome();
 }
+/* 마스터 보기: 고른 학회원의 실제 화면을 읽기 전용으로 보여줌 */
+async function masterPick(u, uid){
+  let us=[]; try{ us=(await F.listUsers()).sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko")); }catch(e){}
+  S.members=us;
+  if(!us.length){ const a=await F.getAdmin(u.uid); S.prof={name:(a&&a.name)||"관리자", master:true, progress:{}}; return; }
+  let pick=uid; if(!pick){ try{ pick=localStorage.getItem("kusc:viewAs"); }catch(e){} }
+  const m=us.find(x=>x.uid===pick)||us[0];
+  S.prof={...m, viewAs:m.uid};
+  try{ localStorage.setItem("kusc:viewAs", m.uid); }catch(e){}
+}
+function viewAsBar(){
+  if(!(S.prof && S.prof.viewAs)) return "";
+  return `<div class="viewas"><b>마스터 보기</b><select id="vas" aria-label="화면을 볼 학회원">${(S.members||[]).map(m=>`<option value="${m.uid}" ${m.uid===S.prof.viewAs?"selected":""}>${esc(m.name)}${m.grade?` (${esc(m.grade)})`:""}</option>`).join("")}</select>
+    <span>님에게 보이는 화면이에요. 읽기 전용이라 아무것도 바뀌지 않아요.</span><a href="admin.html">운영실</a></div>`;
+}
+document.addEventListener("change",async e=>{ if(e.target && e.target.id==="vas"){ await masterPick(S.user, e.target.value); S.cache={}; S.fb=null; S.me=null; render(); } });
+
 /* 운영실(admin.html) 입구: 임원진 계정만 통과 */
 function renderExecDoor(){
   app.className="wrap";
@@ -1435,7 +1462,7 @@ F.onUser(async u=>{
     try{ S.prof=await F.getProfile(u.uid); }catch(e){ S.prof=null; }
     S.role=await F.getRole(u.uid);
     /* 마스터(관리자) 계정: 학회원이 아니어도 학회원 화면을 둘러볼 수 있게 가상의 프로필을 씀. 회원 수에는 들어가지 않음 */
-    if(!S.prof && S.role==="admin"){ const a=await F.getAdmin(u.uid); S.prof={name:(a&&a.name)||"관리자", master:true, progress:{}}; }
+    if(!S.prof && S.role==="admin" && MODE!=="exec") await masterPick(u);
     if(!S.prof){ try{ S.req=await F.getMyRequest(u.uid); }catch(e){} }
     if(S.afterLogin){ S.afterLogin=false; S.ready=true; const to = MODE==="exec" ? "#exec" : S.prof ? "#home" : "#join"; if(location.hash!==to){ location.hash = to; return; } }
   }
