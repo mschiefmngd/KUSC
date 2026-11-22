@@ -347,3 +347,12 @@ main.land{max-width:none;padding:0;background:#fff;color:#191F28;--page:#F2F4F6;
 @media (prefers-reduced-motion:reduce){.lhex .shape{animation:none!important;stroke-dashoffset:0;fill-opacity:1}.lhex .dot{animation:none!important;transform:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .gate .sheetx{display:none}
+/* 커리큘럼 피드백 설문 */
+.fq{margin-top:24px}
+.fq .l{line-height:1.5}
+.fq input.etc{margin-top:10px}
+.grow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-top:1px solid var(--line)}
+.grow .gl{font-size:14.5px;font-weight:700;color:var(--ink);flex:1;line-height:1.45}
+.grow .chips{flex:none;gap:6px}
+.grow .chip{padding:8px 0;min-width:42px;text-align:center}
+@media (max-width:700px){.grow{flex-direction:column;align-items:stretch;gap:8px}.grow .chips{flex-wrap:nowrap}.grow .chip{flex:1;min-width:0}}

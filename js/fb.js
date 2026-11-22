@@ -113,6 +113,22 @@ export const listMinutes = () => list("minutes", 200, "date");
 export const addMinute = d => add("minutes", d);
 export const deleteMinute = id => del("minutes", id);
 
+/* ── 커리큘럼 피드백 (이름 없이 저장) ──
+   feedback/{자동}        : 응답 내용. 누가 썼는지 기록하지 않음
+   feedbackDone/{uid_학기} : 냈는지 여부만. 한 사람이 한 학기에 한 번만 낼 수 있게 함 */
+export const getFeedbackDone = async (uid, term) => (await getDoc(doc(db, "feedbackDone", uid + "_" + term))).exists();
+export async function submitFeedback(uid, term, answers) {
+  const b = writeBatch(db);
+  b.set(doc(db, "feedbackDone", uid + "_" + term), { term });
+  b.set(doc(collection(db, "feedback")), { term, answers, createdAt: now() });
+  await b.commit();
+}
+export async function listFeedback(term) { return (await list("feedback", 1000)).filter(x => x.term === term); }
+export async function listFeedbackDone(term) {
+  const s = await getDocs(collection(db, "feedbackDone"));
+  return s.docs.filter(d => d.data().term === term).map(d => d.id.split("_")[0]);
+}
+
 /* ── 커뮤니티 ── */
 export const listPosts = () => list("posts", 300);
 export async function getPost(id) { const s = await getDoc(doc(db, "posts", id)); return s.exists() ? { id, ...s.data() } : null; }

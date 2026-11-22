@@ -86,6 +86,24 @@ service cloud.firestore {
       }
     }
 
+    // 커리큘럼 피드백: 내용(feedback)에는 누가 썼는지 남기지 않고, 낸 여부(feedbackDone)만 따로 둔다
+    match /feedback/{id} {
+      allow read: if isExec();
+      allow create: if canUse()
+        && request.resource.data.keys().hasOnly(['term', 'answers', 'createdAt'])
+        && request.resource.data.term is string
+        && !exists(/databases/$(db)/documents/feedbackDone/$(request.auth.uid + '_' + request.resource.data.term))
+        && existsAfter(/databases/$(db)/documents/feedbackDone/$(request.auth.uid + '_' + request.resource.data.term));
+      allow delete: if isAdmin();
+    }
+    match /feedbackDone/{id} {
+      allow get: if signedIn() && (id.matches('^' + request.auth.uid + '_.+$') || isExec());
+      allow list: if isExec();
+      allow create: if canUse() && id == request.auth.uid + '_' + request.resource.data.term
+        && request.resource.data.keys().hasOnly(['term']);
+      allow delete: if isAdmin();
+    }
+
     match /ledger/{id} {
       allow read: if canUse();
       allow write: if isExec();
