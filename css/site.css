@@ -476,3 +476,57 @@ td.down{color:var(--red);font-weight:800}
 .gos .go{margin-top:0;padding:14px 0;border-bottom:1px solid var(--line)}
 .gos .go:last-child{border-bottom:0;padding-bottom:0}
 .go:focus-visible{outline:3px solid var(--ku);outline-offset:4px;border-radius:12px}
+
+/* ───── 목표 트래킹 ───── */
+.gsum p{margin:0 0 12px}
+.gprog{display:flex;gap:8px}
+.gprog button{flex:1;height:36px;border:0;border-radius:10px;cursor:pointer;background:var(--soft);color:var(--mute);font-family:inherit;font-weight:800;font-size:13px;line-height:1;position:relative;overflow:hidden;transition:transform .12s}
+.gprog button span{position:relative;z-index:1}
+.gprog button.doing{background:repeating-linear-gradient(-45deg,var(--ku-soft) 0 8px,rgba(3,107,63,.24) 8px 16px);color:var(--ku);box-shadow:inset 0 0 0 2px var(--ku)}
+.gprog button.done{background:var(--ku);color:#fff}
+.gprog button:hover{transform:translateY(-1px)}
+.gprog button:focus-visible,.ghead:focus-visible,.seg3 button:focus-visible{outline:3px solid var(--ku);outline-offset:3px}
+.glegend{display:flex;gap:14px;margin-top:8px;font-size:12.5px;color:var(--mute);font-weight:600}
+.glegend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-1px;background:var(--soft);border:1px solid var(--line)}
+.glegend i.done{background:var(--ku);border-color:var(--ku)}
+.glegend i.doing{background:repeating-linear-gradient(-45deg,var(--ku-soft) 0 3px,rgba(3,107,63,.3) 3px 6px);border-color:var(--ku)}
+.gnudge{margin:14px 0 0;padding:12px 14px;border-radius:14px;background:var(--ku-soft);color:var(--ink);font-size:14px;font-weight:600}
+.gitem{border-top:1px solid var(--line)}
+.gitem:first-of-type{margin-top:16px}
+.ghead{width:100%;display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;padding:14px 0;background:none;border:0;text-align:left;cursor:pointer;color:inherit;font:inherit}
+.ghead .gn{width:32px;height:32px;border-radius:10px;background:var(--soft);color:var(--sub);font-weight:900;display:flex;align-items:center;justify-content:center}
+.ghead .gn.doing{background:var(--ku-soft);color:var(--ku)}
+.ghead .gn.done{background:var(--ku);color:#fff}
+.ghead .gt b{display:block;font-size:16px;line-height:1.35}
+.ghead .gt small{display:block;margin-top:2px;font-size:12.5px;color:var(--mute);font-weight:600}
+.gpill{display:inline-block;padding:5px 10px;border-radius:999px;font-size:12.5px;font-weight:800;background:var(--soft);color:var(--sub);white-space:nowrap}
+.gpill.doing{background:var(--ku-soft);color:var(--ku)}
+.gpill.done{background:var(--ku);color:#fff}
+.gbody{padding:0 0 18px 44px}
+.gbody .hint{margin:0 0 12px}
+.seg3{display:flex;background:var(--soft);border-radius:14px;padding:4px;gap:4px}
+.seg3 button{flex:1;border:0;background:none;border-radius:11px;padding:10px 0;font-family:inherit;font-weight:800;font-size:14px;color:var(--sub);cursor:pointer}
+.seg3 button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg3 button.on.doing,.seg3 button.on.done{color:var(--ku)}
+.gadd{display:flex;gap:8px;align-items:flex-end;margin-top:12px}
+.gadd textarea{flex:1;min-height:52px;resize:vertical}
+.gadd .btn{white-space:nowrap}
+.tl{list-style:none;margin:16px 0 0;padding:0 0 0 14px;border-left:2px solid var(--line)}
+.tl li{position:relative;padding:0 0 14px 14px}
+.tl li:last-child{padding-bottom:0}
+.tl li::before{content:"";position:absolute;left:-21px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--card);border:2px solid var(--line)}
+.tl li.nt::before{border-color:var(--ku)}
+.tl li.ev.doing::before{background:var(--ku-soft);border-color:var(--ku)}
+.tl li.ev.done::before{background:var(--ku);border-color:var(--ku)}
+.tl .d{display:block;font-size:12.5px;color:var(--mute);font-weight:700}
+.tl li.ev span:last-child{font-size:14px;font-weight:700;color:var(--sub)}
+.tl li.ev.done span:last-child{color:var(--ku)}
+.tl li.nt p{margin:4px 0 0;font-size:15px;line-height:1.6;color:var(--ink)}
+.tl .x{margin-top:4px;border:0;background:none;padding:2px 0;font-family:inherit;font-weight:600;font-size:12.5px;color:var(--mute);cursor:pointer}
+.tl .x.arm{color:#D64545}
+.gempty{margin-top:14px !important}
+.more{display:inline-block;margin-top:10px;font-weight:700;color:var(--ku) !important}
+.gtoast{margin:0;height:0;overflow:hidden;opacity:0;transition:opacity .2s;font-size:14px;font-weight:700;color:var(--ku)}
+.gtoast.show{height:auto;margin-top:12px;opacity:1}
+.gtoast.bad{color:#D64545}
+@media (max-width:560px){.gbody{padding-left:0}.gadd{flex-direction:column;align-items:stretch}}

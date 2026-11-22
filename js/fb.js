@@ -95,10 +95,9 @@ export const saveDiag = (uid, rec, prev) => {
 };
 /* 마스터의 테스트 공간: 진단과 목표 기록을 학회원 데이터와 섞지 않고 따로 저장 */
 export async function getLab(uid) { const s = await getDoc(doc(db, "lab", uid)); return s.exists() ? s.data() : null; }
-/* ── 목표 실행 기록: 본인과 관리자만 읽음. coach는 관리자만 씀 ── */
+/* ── 목표 실행 기록: 본인과 관리자만 읽음 ── */
 export async function getGoals(uid) { const s = await getDoc(doc(db, "goals", uid)); return s.exists() ? s.data() : null; }
 export const setGoalTrack = (uid, track) => setDoc(doc(db, "goals", uid), { track, updatedAt: now() }, { merge: true });
-export const setCoach = (uid, text) => setDoc(doc(db, "goals", uid), { coach: { text, at: new Date().toISOString() }, updatedAt: now() }, { merge: true });
 export async function listGoals() { const s = await getDocs(collection(db, "goals")); return s.docs.map(d => ({ uid: d.id, ...d.data() })); }
 export const setLab = (uid, patch) => setDoc(doc(db, "lab", uid), { ...patch, updatedAt: now() }, { merge: true });
 export const saveLabDiag = (uid, rec) => setDoc(doc(db, "lab", uid),
