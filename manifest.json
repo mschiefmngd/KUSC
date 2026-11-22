@@ -1,17 +1,31 @@
 {
   "name": "KUSC 학회원 공간",
   "short_name": "KUSC",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#F2F4F6",
   "theme_color": "#036B3F",
   "lang": "ko",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%23036B3F'/%3E%3Cpolygon points='256,110 382,183 382,329 256,402 130,329 130,183' fill='none' stroke='%23fff' stroke-width='30'/%3E%3C/svg%3E",
+      "src": "img/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "scope": "./",
+  "id": "./"
 }
