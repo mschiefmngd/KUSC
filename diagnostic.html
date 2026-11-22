@@ -262,6 +262,8 @@ details.exp summary{font-weight:600}
   .prog{margin:0 -20px;border-radius:0}
   h1{font-size:32px}.rtitle{font-size:26px}.qtext{font-size:21px}
 }
+.field input.lock,.field select.lock{background:#EEF1F4;color:#6B7684;cursor:default;pointer-events:none}
+.field select.lock{-webkit-appearance:none;appearance:none;opacity:1}
 </style>
 </head>
 <body>
@@ -688,7 +690,7 @@ function prog(n){el("prog").style.width=(n*100)+"%"}
 function render(){
   const A=el("app");
   /* 회원 사이트에서 로그인한 학회원: 기본 정보는 가입 정보로 채우고 바로 문항으로 */
-  if(st.step==="profile"&&window.KUSC_PROFILE&&!st.admin){st.profile={...window.KUSC_PROFILE};st.step="q";st.i=0;}
+  if(st.step==="profile"&&window.KUSC_PROFILE&&!window.KUSC_KNOWN&&!st.admin){st.profile={...window.KUSC_PROFILE};st.step="q";st.i=0;}
   if(st.step==="intro"){prog(0);
     A.innerHTML=`<a class="homelink" href="./">← KUSC 홈</a><div class="stamp mono">진단지 · 약 8분</div>
       <h1>역량을<br><i>전략적으로</i></h1>
@@ -699,6 +701,34 @@ function render(){
       <button class="adm" onclick="askPw()">· 강사용 모드</button>`;return}
 
   if(st.step==="profile"){prog(.02);
+    /* 로그인한 학회원: 가입 정보와 지난 진단으로 이미 아는 칸은 잠그고, 모두 알면 이 화면을 건너뜀 */
+    const K=(!st.admin&&window.KUSC_KNOWN)||null;
+    if(K){
+      const ok={name:!!K.name,sid:!!K.sid,grade:GRADES.includes(K.grade),age:/^\d{2}$/.test(String(K.age||"")),major:!!K.major,major2:true,gender:GENDERS.includes(K.gender)};
+      if(Object.values(ok).every(Boolean)){ st.profile={name:K.name,sid:K.sid,grade:K.grade,age:String(K.age),major:K.major,major2:K.major2||"",gender:K.gender}; st.step="q";st.i=0;render();return; }
+      const lk=(k)=>ok[k]?' readonly tabindex="-1" class="lock"':"";
+      const val=(k)=>ok[k]?` value="${String(K[k]||"").replace(/"/g,"&quot;")}"`:"";
+      const sel=(k,arr)=>`<select id="f_${k}"${ok[k]?' disabled class="lock"':""}>${arr.map(g=>`<option${ok[k]&&K[k]===g?" selected":""}>${g}</option>`).join("")}</select>`;
+      A.innerHTML=`<div class="topbar"><button class="home" id="homebtn" onclick="home()">← 처음으로</button></div>
+      <div class="qnum mono">시작하기 전에</div>
+      <div class="qtext">비어 있는 칸만 채워 주세요</div>
+      <div class="qsub">이름, 학번, 전공처럼 바뀌지 않는 정보는 가입할 때 받은 걸로 채우고 잠가 두었어요.</div>
+      <div class="two">
+        <div class="field"><label>이름</label><input id="f_name"${val("name")}${lk("name")}></div>
+        <div class="field"><label>학번</label><input id="f_sid" inputmode="numeric"${val("sid")}${lk("sid")}></div>
+      </div>
+      <div class="two">
+        <div class="field"><label>학년</label>${sel("grade",GRADES)}</div>
+        <div class="field"><label>나이 (만)</label><input id="f_age" placeholder="24" inputmode="numeric"${val("age")}${lk("age")}></div>
+      </div>
+      <div class="field"><label>전공</label><input id="f_major" placeholder="경영학과"${val("major")}${lk("major")}></div>
+      <div class="two">
+        <div class="field"><label>복수·부전공</label><input id="f_major2"${val("major2")}${lk("major2")} placeholder="없음"></div>
+        <div class="field"><label>성별</label>${sel("gender",GENDERS)}</div>
+      </div>
+      <div class="err" id="perr">이름과 학번은 꼭 입력해주세요.</div>
+      <button class="btn" onclick="saveProfile()">다음</button>`;
+      return}
     A.innerHTML=`${st.admin?'<div class="banner">강사 모드입니다. 지금 진행하는 응답은 저장되지 않아요.</div>':''}
       <div class="topbar"><button class="home" id="homebtn" onclick="home()">← 처음으로</button></div>
       <div class="qnum mono">시작하기 전에</div>
@@ -1237,6 +1267,8 @@ window.KUSC_showResult=function(r){
 <script type="module">
 import * as F from "./js/fb.js";
 const q=new URLSearchParams(location.search);
+/* 이미 아는 기본 정보: 가입 정보를 먼저, 없으면 가장 최근 진단에서 */
+const known=p=>{ const d=(p&&p.diag)||{}, o={}; ["name","sid","grade","age","major","major2","gender"].forEach(k=>{ const v=(p&&p[k]!==undefined&&p[k]!=="")?p[k]:d[k]; o[k]=v===undefined||v===null?"":String(v); }); return o; };
 F.onUser(async u=>{
   if(!u){ if(q.has("view")) location.replace("index.html"); return; }
   /* 마스터 보기: 관리자가 ?as=학회원으로 들어오면 그 학회원의 결과만 보여주고 아무것도 저장하지 않음 */
@@ -1247,6 +1279,7 @@ F.onUser(async u=>{
     let m=null;
     try{ if(pv.startsWith("r:")) m=await F.getRoster(pv.slice(2)); else { m=await F.getProfile(pv); } }catch(e){}
     m=m||{};
+    window.KUSC_KNOWN=known(m);
     window.KUSC_NOSHEET=true;
     window.KUSC_saveDiag=()=>{};
     window.KUSC_PREVIEW=rec=>{ try{ sessionStorage.setItem("kusc:preview:"+pv, JSON.stringify(rec)); }catch(e){} };
@@ -1274,6 +1307,7 @@ F.onUser(async u=>{
   if(!ro && !p && (await F.getRole(u.uid))==="admin"){ lab=true; try{ p=(await F.getLab(u.uid))||{}; }catch(e){ p={}; } p.name=p.name||""; }
   if(!p){ if(q.has("view")) location.replace("index.html"); return; }
   if(lab){
+    window.KUSC_KNOWN=known(p);
     window.KUSC_NOSHEET=true;
     window.KUSC_saveDiag=rec=>F.saveLabDiag(u.uid,rec).catch(()=>{});
     const a=document.createElement("a"); a.href="index.html#growth"; a.textContent="← 내 역량의 변화";
@@ -1292,6 +1326,7 @@ F.onUser(async u=>{
     try{ await F.initDiagHist(u.uid, first); p.diagHist=[F.diagSummary(first)]; }catch(e){}
   }
   window.KUSC_saveDiag=rec=>F.saveDiag(u.uid,rec,p).catch(()=>{});
+  window.KUSC_KNOWN=known(p);
   window.KUSC_PROFILE={name:p.name||"",sid:p.sid||"",grade:p.grade||"",age:p.age||"",major:p.major||"",major2:p.major2||"",gender:p.gender||""};
   /* 내 홈으로 돌아가는 버튼 */
   const a=document.createElement("a");
