@@ -106,6 +106,18 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // 사진 열쇠 같은 설정: 학회원은 읽기만, 관리자만 씀
+    match /config/{id} {
+      allow read: if canUse();
+      allow write: if isAdmin();
+    }
+
+    // 이번 학기 들은 강의 (설문에서 고른 회차): 본인과 관리자만
+    match /attendance/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
     match /ledger/{id} {
       allow read: if canUse();
       allow write: if isExec();

@@ -22,7 +22,7 @@ const STAGES = ["이제 알아보는 중","준비를 시작함","지원 중이�
 const GENDERS = ["남","여","응답 안 함"];
 const JOBNAME = {IB:"IB",PE:"PE",VC:"VC",CONS:"컨설팅",BIZ:"전략기획",PM:"PM",NONE:"아직 없음"};
 const AXES = ["구조화","수치화","가설 수립","정보 탐색","커뮤니케이션","실행 지구력"];
-const BOARDS = ["자유","질문","스터디·모임","정보 공유"];
+const BOARDS = ["자유","질문","스터디·모임","정보 공유","합격 후기"];
 const NOTICE_TAGS = ["공지","행사","정산"];
 const FILES = [
   {n:"국문 이력서 양식", s:"Word · 빈 양식", ext:"DOC", href:"files/KUSC_KR_resume_form.docx", save:"국문_이력서_양식.docx"},
@@ -56,8 +56,8 @@ function header(title, lead){
     ${title?`<h1>${title}</h1>`:""}${lead?`<p class="lead">${lead}</p>`:""}`;
   const on = k => (r===k || (k==="board"&&r==="post") || (k==="news"&&r==="news")) ? "on" : "";
   const tabs = isMember() ? `<nav class="tabs" aria-label="메뉴">
-    ${isMember()?`<a href="#home" class="${on("home")}">내 공간</a><a href="#news" class="${on("news")}">소식</a>
-    <a href="#board" class="${on("board")}">커뮤니티</a><a href="#class" class="${on("class")}">강의실</a>
+    ${isMember()?`<a href="#home" class="${on("home")}">내 공간</a><a href="#class" class="${on("class")}">강의실</a>
+    <a href="#news" class="${on("news")}">소식</a><a href="#board" class="${on("board")}">커뮤니티</a>
     <a href="#me" class="${on("me")}">내 정보</a>`:""}</nav>` : "";
   return `<div class="top"><a class="brand" href="#" aria-label="KUSC 홈페이지"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span></a>${tabs}</div>
     ${title?`<h1>${title}</h1>`:""}${lead?`<p class="lead">${lead}</p>`:""}`;
@@ -535,7 +535,7 @@ function viewPending(){
 /* ───────── 홈 ───────── */
 async function viewHome(){
   const p=S.prof, dg=p.diag, g=p.progress||{};
-  const done=[!!dg,!!g.l2,!!g.l3,!!g.l4], n=done.filter(Boolean).length;
+  const LECS=["1강","2강","3강","4강"];
   const best = dg ? AXES[dg.a.indexOf(Math.max(...dg.a))] : "";
   const paid = p.dues && p.dues[TERM];
   app.innerHTML = header(`${esc(p.name)} 님, 반가워요`,
@@ -566,9 +566,7 @@ async function viewHome(){
   <div class="grid">
     <section class="card">
       <div class="lesson">이번 학기 강의</div>
-      <h3 style="margin-top:6px">4개 중 ${n}개를 함께했어요</h3>
-      <div class="prog">${["정의","구조화","검증","진입"].map((t,i)=>`<div class="${done[i]?"done":""}"><small>${i+1}강</small><b>${t}</b></div>`).join("")}</div>
-      <div class="row"><a class="btn sec sm" href="#class">강의실 가기</a></div>
+      <div id="hatt"><div class="skel sm"></div></div>
     </section>
     <section class="card">
       <div class="lesson">${TERM_LABEL} 회비</div>
@@ -582,6 +580,13 @@ async function viewHome(){
     <h3 style="margin-top:6px">작성실</h3>
     <p class="desc">내 경험을 정리하고, 4강 방식대로 레쥬메 불릿과 자소서를 써 보는 곳이에요. 쓴 내용은 계정에 저장돼서 어느 기기에서든 이어 쓸 수 있어요.</p>
   </section>`+foot();
+  F.getAttendance(S.user.uid).then(at=>{ const box=$("#hatt"); if(!box) return;
+    const got=(at&&at[TERM])||null, has=i=>!!got&&got.some(x=>x.startsWith(LECS[i]));
+    const names=["정의","구조화","검증","진입"], n=got?LECS.filter((_,i)=>has(i)).length:0;
+    box.innerHTML = `<h3 style="margin-top:6px">${got?`4개 중 ${n}개를 들었어요`:"강의 후기를 남기면 들은 강의가 표시돼요"}</h3>
+      <div class="prog">${names.map((t,i)=>`<div class="${has(i)?"done":""}"><small>${i+1}강</small><b>${t}</b></div>`).join("")}</div>
+      <div class="row">${got?`<a class="btn sec sm" href="#class">강의실 가기</a>`:`<a class="btn pri sm" href="#feedback">후기 남기기</a><a class="btn sec sm" href="#class">강의실 가기</a>`}</div>`;
+  }).catch(()=>{ const box=$("#hatt"); if(box) box.innerHTML=`<div class="row"><a class="btn sec sm" href="#class">강의실 가기</a></div>`; });
   try{
     const [ns, evs] = await Promise.all([load("notices",F.listNotices), load("events",F.listEvents)]);
     const top = [...ns].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)).slice(0,3);
@@ -614,7 +619,7 @@ async function viewNews(){
         const rs=await F.listRsvp(e.id); const mine=rs.find(r=>r.uid===S.user.uid)||{};
         const yes=rs.filter(r=>r.status==="참석").length, party=rs.filter(r=>r.party==="참석").length;
         const open=e.date>=today();
-        return `<section class="card tight" data-eid="${e.id}">
+        return `<section class="card tight" data-eid="${e.id}" data-date="${esc(e.date)}">
           <div class="lesson">${ymd(e.date)} ${esc(e.time||"")}${open?"":" · 지난 일정"}</div>
           <h3 style="margin-top:6px">${esc(e.title)}</h3>
           <div class="kv"><span>장소</span><b>${esc(e.place||"미정")}</b>${e.party?`<span>뒤풀이</span><b>${esc(e.party)}</b>`:""}${e.fee?`<span>참가비</span><b>${esc(e.fee)}</b>`:""}${e.account?`<span>입금 계좌</span><b>${esc(e.account)}</b>`:""}</div>
@@ -624,8 +629,32 @@ async function viewNews(){
           ${e.party?`<div class="field"><label class="l">뒤풀이</label><div class="chips">${["참석","불참","미정"].map(o=>`<span class="chip ${mine.party===o?"on":""}" data-rs="party" data-v="${o}">${o}</span>`).join("")}</div></div>`:""}`:""}
         </section>`;
       };
-      box.innerHTML = (up.length?(await Promise.all(up.map(card))).join(""):`<section class="card"><p class="desc">예정된 일정이 없어요.</p></section>`)
-        + (past.length?`<h3 style="margin:26px 0 0">지난 일정</h3>`+(await Promise.all(past.slice(0,6).map(card))).join(""):"");
+      /* 달력: 기본은 이번 달. 일정이 있는 날에 점, 누르면 그날 일정으로 이동 */
+      const cm = S.calM || today().slice(0,7);
+      const [cy, cmo] = cm.split("-").map(Number);
+      const first = new Date(cy, cmo-1, 1), days = new Date(cy, cmo, 0).getDate(), lead = first.getDay();
+      const inMonth = evs.filter(e=>String(e.date).slice(0,7)===cm);
+      const byDay = {}; inMonth.forEach(e=>{ (byDay[e.date]=byDay[e.date]||[]).push(e); });
+      const shift = k => { const d=new Date(cy, cmo-1+k, 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; };
+      const cells = [];
+      for(let i=0;i<lead;i++) cells.push(`<div class="cd empty"></div>`);
+      for(let d=1; d<=days; d++){
+        const ds=`${cm}-${String(d).padStart(2,"0")}`, es=byDay[ds]||[], wd=(lead+d-1)%7;
+        cells.push(`<button class="cd${ds===today()?" today":""}${es.length?" has":""}${wd===0?" sun":wd===6?" sat":""}" ${es.length?`data-day="${ds}"`:"disabled"} aria-label="${cmo}월 ${d}일${es.length?`, 일정 ${es.length}개`:""}">
+          <span>${d}</span>${es.length?`<i>${esc(es[0].title)}${es.length>1?` 외 ${es.length-1}`:""}</i>`:""}</button>`);
+      }
+      const list = inMonth.length ? (await Promise.all(inMonth.map(card))).join("")
+        : `<section class="card tight"><p class="desc">${cmo}월에는 등록된 일정이 없어요.${up.length?` 다음 일정은 ${ymd(up[0].date)} ${esc(up[0].title)}이에요.`:""}</p></section>`;
+      box.innerHTML = `<section class="card cal">
+          <div class="calhead"><button class="btn sec sm" id="calprev" aria-label="이전 달">‹</button><h2>${cy}년 ${cmo}월</h2><button class="btn sec sm" id="calnext" aria-label="다음 달">›</button></div>
+          <div class="calgrid">${["일","월","화","수","목","금","토"].map((w,i)=>`<div class="cw${i===0?" sun":i===6?" sat":""}">${w}</div>`).join("")}${cells.join("")}</div>
+          ${cm!==today().slice(0,7)?`<div class="row" style="margin-top:12px"><button class="btn sec sm" id="caltoday">이번 달로</button></div>`:""}
+        </section>
+        <h3 style="margin:22px 0 0">${cmo}월 일정</h3>${list}`;
+      $("#calprev").onclick=()=>{ S.calM=shift(-1); viewNews(); };
+      $("#calnext").onclick=()=>{ S.calM=shift(1); viewNews(); };
+      if($("#caltoday")) $("#caltoday").onclick=()=>{ S.calM=null; viewNews(); };
+      $$("[data-day]").forEach(b=>b.onclick=()=>{ const t=box.querySelector(`[data-date="${b.dataset.day}"]`); if(t){ t.scrollIntoView({behavior:"smooth",block:"start"}); t.classList.add("flash"); setTimeout(()=>t.classList.remove("flash"),1200); } });
       $$("[data-rs]").forEach(c=>c.onclick=async()=>{
         if(!isMember()) return;
         const sec=c.closest("[data-eid]"), eid=sec.dataset.eid;
@@ -722,6 +751,54 @@ async function viewPost(id){
 }
 
 /* ───────── 강의실 ───────── */
+/* 3강 기록: 연사와 현장 사진. 사진은 잠긴 파일이고, 학회원만 받는 열쇠로 화면에서 풀어 보여줌 */
+const L3_INFO = {
+  applied: 59,
+  speakers: [["PM","신지환"],["전략기획","황성준"],["IB","봉찬희"],["PE",""],["컨설팅","백재웅"],["VC","장원준"]],
+  photos: [
+    ["01","10월 28일, 강연장"],["02","오프닝"],["03","오프닝: Winning Mentality"],
+    ["04","VC 장원준"],["05","PE"],["06","IB 봉찬희"],["07","전략기획 황성준"],["08","PM 신지환"],
+    ["09","뒤풀이"],["10","뒤풀이"],["11","뒤풀이"]
+  ]
+};
+let galKey = null; const galCache = {};
+async function galOpen(){
+  if(galKey) return galKey;
+  const c = await F.getConfig("gallery");
+  if(!c || !c.key) return null;
+  const raw = Uint8Array.from(atob(c.key), ch=>ch.charCodeAt(0));
+  galKey = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]);
+  return galKey;
+}
+async function galImg(id, size){
+  const k = id+size; if(galCache[k]) return galCache[k];
+  const buf = new Uint8Array(await (await fetch(`img/l3/${k}.bin`)).arrayBuffer());
+  const plain = await crypto.subtle.decrypt({name:"AES-GCM", iv:buf.slice(0,12)}, await galOpen(), buf.slice(12));
+  return (galCache[k] = URL.createObjectURL(new Blob([plain], {type:"image/jpeg"})));
+}
+async function galRender(){
+  const box=$("#gal3"); if(!box) return;
+  let key=null; try{ key=await galOpen(); }catch(e){}
+  if(!key){ box.innerHTML=`<p class="hint">현장 사진을 준비하고 있어요.</p>`; return; }
+  const P=L3_INFO.photos;
+  box.innerHTML = P.map(([id,cap],i)=>`<button class="gi" data-gi="${i}" aria-label="${esc(cap)} 크게 보기"><span class="ph"></span><em>${esc(cap)}</em></button>`).join("");
+  $$("[data-gi]").forEach(b=>b.onclick=()=>galView(+b.dataset.gi));
+  for(const [i,[id]] of P.entries()){
+    try{ const u=await galImg(id,"t"); const b=box.querySelector(`[data-gi="${i}"] .ph`); if(b) b.outerHTML=`<img src="${u}" alt="">`; }catch(e){}
+  }
+}
+async function galView(i){
+  const P=L3_INFO.photos, n=P.length; i=(i+n)%n;
+  let lb=$("#lb"); if(!lb){ lb=document.createElement("div"); lb.id="lb"; lb.className="lb"; document.body.appendChild(lb); }
+  lb.innerHTML=`<div class="lbbg" data-x></div><figure><div class="lbimg"><div class="skel"></div></div><figcaption>${esc(P[i][1])} <small>${i+1} / ${n}</small></figcaption></figure>
+    <button class="lbx" data-x aria-label="닫기">×</button><button class="lbp" aria-label="이전 사진">‹</button><button class="lbn" aria-label="다음 사진">›</button>`;
+  lb.hidden=false; document.body.style.overflow="hidden";
+  const close=()=>{ lb.hidden=true; document.body.style.overflow=""; document.onkeydown=null; };
+  lb.querySelectorAll("[data-x]").forEach(x=>x.onclick=close);
+  lb.querySelector(".lbp").onclick=()=>galView(i-1); lb.querySelector(".lbn").onclick=()=>galView(i+1);
+  document.onkeydown=e=>{ if(e.key==="Escape") close(); if(e.key==="ArrowLeft") galView(i-1); if(e.key==="ArrowRight") galView(i+1); };
+  try{ const u=await galImg(P[i][0],"f"); const w=lb.querySelector(".lbimg"); if(w) w.innerHTML=`<img src="${u}" alt="${esc(P[i][1])}">`; }catch(e){}
+}
 function viewClass(){
   const p=S.prof, g=p.progress||{}, done=[!!p.diag,!!g.l2,!!g.l3,!!g.l4];
   const mark=k=>`data-mark="${k}"`, ok=i=>done[i]?' <span class="badge ku">완료</span>':"";
@@ -744,11 +821,13 @@ function viewClass(){
       <p class="desc">디저트 브랜드 ‘하프’가 매각되기까지 7년. 회사가 커질 때마다 어떤 직무가 왜 필요해지는지 따라갑니다.</p>
       <a class="go" href="simulation.html" ${mark("l2")}>시뮬레이션 열기<b>→</b></a>
     </section>
-    <section class="card lec">
+    <section class="card lec l3">
       <div class="lesson">3강 · 전략 직무 검증하기${ok(2)}</div>
       <h2 style="margin-top:4px">여섯 직무 현직자 강연</h2>
-      <p class="desc">IB, PE, VC, 컨설팅, 전략기획, PM 현직자의 진출 노하우와 출근 후기. 10월 28일에 함께했어요.</p>
-      ${tbu("강연 자료","연사분들께 공개 동의를 받는 대로 이곳에 올라와요")}
+      <p class="desc">10월 28일, 경영대학과 함께 연 공개 행사였어요. 학회원과 경영대 학우 ${L3_INFO.applied}명이 신청했고, 여섯 직무의 현직자가 진출 노하우와 출근 후기를 직접 들려줬어요.</p>
+      <p class="desc" style="margin-top:10px">이례적으로 지도교수님뿐 아니라 유재욱 경영대학장님께서도 직접 참석해, 학회에 대한 지원과 관심을 약속해 주셨어요. 학회 행사에 학장님이 함께하시는 일은 거의 없어서 더 뜻깊은 자리였어요.</p>
+      <div class="spk">${L3_INFO.speakers.map(([j,n])=>`<div><small>${esc(j)}</small><b>${esc(n||"현직자")}</b></div>`).join("")}</div>
+      <div class="gal" id="gal3"><div class="skel"></div></div>
       <a class="go" href="apply.html" ${mark("l3")}>그날의 신청 기록<b>→</b></a>
     </section>
     <section class="card lec">
@@ -770,6 +849,7 @@ function viewClass(){
     g.innerHTML = done ? `<p class="ok" style="margin:0">후기를 남겨 주셔서 고마워요. 다음 학기 설계에 그대로 쓸게요.</p>`
       : `<a class="btn pri" href="#feedback">후기 남기기</a>`; }).catch(()=>{ const g=$("#fbgo"); if(g) g.innerHTML=`<a class="btn pri" href="#feedback">후기 남기기</a>`; });
   if(typeof chr==="function") $("#cast").innerHTML=["VC","PM","BP","CS","PE","IB"].map(k=>chr(k)).join("");
+  galRender();
   $$("[data-mark]").forEach(a=>a.addEventListener("click",()=>{ const k=a.dataset.mark;
     if(!(S.prof.progress||{})[k]){ F.markProgress(S.user.uid,k).catch(()=>{}); S.prof.progress={...(S.prof.progress||{}),[k]:new Date().toISOString()}; } }));
 }
@@ -864,7 +944,7 @@ async function viewFeedback(){
     if(miss) return showErr(`${num[miss.id]}번 질문에 답해 주세요`);
     if(st.p<P.length-1){ st.p++; viewFeedback(); scrollTo(0,0); return; }
     const b=$("#next"); b.disabled=true; b.textContent="보내는 중…";
-    try{ const ans=fbAnswers(a), who={name:S.prof.name, sid:S.prof.sid}; await F.submitFeedback(S.user.uid, T.term, ans, who); sheetFeedback(ans, who); S.fb={done:true}; location.hash="#class"; }
+    try{ const ans=fbAnswers(a), who={name:S.prof.name, sid:S.prof.sid}; await F.submitFeedback(S.user.uid, T.term, ans, who); sheetFeedback(ans, who); F.setAttendance(S.user.uid, TERM, ans.a4||[]).catch(()=>{}); S.fb={done:true}; location.hash="#class"; }
     catch(e){ b.disabled=false; b.textContent="후기 보내기"; showErr(authMsg(e)); }
   };
 }
@@ -961,6 +1041,17 @@ async function xDash(box){
     ${tbu("KPI 정의","정체성과 연결한 학기 목표 지표. 임원진 확정 후 여기에 숫자로 걸어 둘 예정")}
     <p class="hint" style="margin-top:8px">지금 바로 볼 수 있는 지표: 가입률, 진단 완료, 회비 납부율, 일정별 참석 응답, 커뮤니티 활동</p>
   </section>`;
+  if(S.role==="admin"){   /* 관리자만: 3강 사진 열쇠 등록 */
+    let has=false; try{ const c=await F.getConfig("gallery"); has=!!(c&&c.key); }catch(e){}
+    const sec=document.createElement("section"); sec.className="card";
+    sec.innerHTML=`<div class="lesson">관리자 전용</div><h3 style="margin-top:6px">강의실 현장 사진 열쇠</h3>
+      <p class="desc">${has?"등록돼 있어요. 학회원은 강의실에서 3강 사진을 볼 수 있어요.":"사진은 잠긴 파일로 올라가 있어요. 열쇠를 한 번 등록하면 학회원에게만 보여요."}</p>
+      ${has?"":`${field("gkey","열쇠","",{ph:"받은 열쇠 문자열을 붙여 넣으세요"})}<p class="err" id="gerr"></p><div class="row"><button class="btn pri sm" id="gsave">등록</button></div>`}`;
+    box.appendChild(sec);
+    if($("#gsave")) $("#gsave").onclick=async()=>{ const k=val("gkey");
+      if(!/^[A-Za-z0-9+/]{43}=$/.test(k)) return showErr("열쇠 형식이 맞지 않아요. 받은 문자열 전체를 붙여 넣어 주세요","gerr");
+      try{ await F.setConfig("gallery",{key:k}); galKey=null; viewExec(); }catch(e){ showErr(authMsg(e),"gerr"); } };
+  }
 }
 
 async function xRoster(box){

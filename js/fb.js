@@ -129,6 +129,14 @@ export async function listFeedbackDone(term) {
   return s.docs.filter(d => d.data().term === term).map(d => d.id.split("_")[0]);
 }
 
+/* ── 설정 (사진 열쇠 등, 학회원만 읽고 관리자만 씀) ── */
+export async function getConfig(id) { const s = await getDoc(doc(db, "config", id)); return s.exists() ? s.data() : null; }
+export const setConfig = (id, data) => setDoc(doc(db, "config", id), { ...data, updatedAt: now() });
+
+/* ── 이번 학기 들은 강의 (본인과 관리자만 읽음) ── */
+export async function getAttendance(uid) { const s = await getDoc(doc(db, "attendance", uid)); return s.exists() ? s.data() : null; }
+export const setAttendance = (uid, term, lectures) => setDoc(doc(db, "attendance", uid), { [term]: lectures, updatedAt: now() }, { merge: true });
+
 /* ── 커뮤니티 ── */
 export const listPosts = () => list("posts", 300);
 export async function getPost(id) { const s = await getDoc(doc(db, "posts", id)); return s.exists() ? { id, ...s.data() } : null; }
