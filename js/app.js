@@ -9,7 +9,7 @@ import { SURVEY, rowsOf, optsOf, allQs, shown, allRows } from "./survey.js";
 /* 임원진 공간은 admin.html 에서만 열림 (학회원 사이트에는 입구가 없음) */
 const MODE = window.KUSC_MODE === "exec" ? "exec" : "site";
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbzr2-vwdBV4v7U6qliXPlFWWu0Mo9S7tC7_70xqGdqeCd0wPDmUB52FyB7xB510o-oT/exec";
-/* 가입과 가입 요청을 구글 시트 site_members 탭에도 한 줄씩 남김 (실패해도 가입에는 영향 없음) */
+/* 가입과 가입 요청 기록 사본 (실패해도 가입에는 영향 없음) */
 function sheetLog(kind, d){
   try{ fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
     body:JSON.stringify({type:"site",kind,name:d.name||"",sid:d.sid||"",phone:d.phone||"",grade:d.grade||"",age:d.age||"",gender:d.gender||"",
@@ -776,12 +776,12 @@ function viewClass(){
 
 /* ───────── 커리큘럼 피드백 설문 ───────── */
 const ETC = "기타";
-/* 엑셀과 구글 시트에 쓰는 열: 질문마다 한 열, 행이 있는 질문은 행마다 한 열 */
+/* 엑셀에 쓰는 열: 질문마다 한 열, 행이 있는 질문은 행마다 한 열 */
 function fbColumns(){ const cols=[]; let i=0;
   allQs().forEach(q=>{ i++; if(q.type==="grid") allRows(q).forEach(r=>cols.push([q.id,r,`${i}. ${q.q} - ${r}`])); else cols.push([q.id,null,`${i}. ${q.q}`]); });
   return cols; }
 function fbRow(ans, cols){ return cols.map(([id,row])=>{ const v=(ans||{})[id]; return row?((v||{})[row]||""):Array.isArray(v)?v.join(" / "):(v===undefined?"":v); }); }
-function sheetFeedback(ans){   /* 구글 시트 feedback 탭에도 한 줄 (이름 없이) */
+function sheetFeedback(ans){   /* 응답 기록 사본 (이름 없이) */
   const cols=fbColumns();
   try{ fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
     body:JSON.stringify({type:"feedback",term:SURVEY.term,cols:cols.map(c=>c[2]),row:fbRow(ans,cols)})}).catch(()=>{}); }catch(e){}
@@ -1021,13 +1021,13 @@ async function xMembers(box){
   const role=uid=>(admins.find(a=>a.uid===uid)||{}).role;
   users.sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko"));
   const paid=users.filter(u=>u.dues&&u.dues[TERM]).length;
-  setTimeout(()=>{ const b=$("#tosheet"); if(b) b.onclick=async()=>{ b.disabled=true;
+  setTimeout(()=>{ const b=$("#tosheet"); if(b && S.role==="admin") b.onclick=async()=>{ b.disabled=true;
     for(const u of users){ sheetLog("가입", u); await new Promise(r=>setTimeout(r,350)); }
-    b.textContent=`${users.length}명을 보냈어요. 시트의 site_members 탭을 확인하세요`; }; },0);
+    b.textContent=`${users.length}명을 보냈어요`; }; },0);
   box.innerHTML = `<section class="card">
     <h2>회원과 회비</h2>
     <p class="desc">${TERM_LABEL} 회비 ${DUES}: ${users.length}명 중 ${paid}명 확인. 입금을 확인하면 체크하세요. 본인 화면에도 바로 표시돼요.</p>
-    <div class="row"><button class="btn pri sm" id="mcsv">회원 연락망 CSV</button><button class="btn sec sm" id="unpaid">미납자 이름 복사</button><button class="btn sec sm" id="tosheet">가입자 전체를 구글 시트에 쓰기</button></div>
+    <div class="row"><button class="btn pri sm" id="mcsv">회원 연락망 CSV</button><button class="btn sec sm" id="unpaid">미납자 이름 복사</button>${S.role==="admin"?`<button class="btn sec sm" id="tosheet">가입자 전체를 기록 사본에 쓰기</button>`:""}</div>
     <p class="ok" id="cp" style="display:none"></p>
     <div class="scroll"><table class="tbl"><tr><th>회비</th><th>이름</th><th>학년</th><th>주전공</th><th>연락처</th><th>진단</th>${S.role==="admin"?"<th>임원진</th>":""}</tr>
       ${users.map(u=>`<tr><td><input type="checkbox" class="due" data-uid="${u.uid}" ${u.dues&&u.dues[TERM]?"checked":""} aria-label="${esc(u.name)} 회비"></td>
