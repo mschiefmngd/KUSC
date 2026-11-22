@@ -829,10 +829,11 @@ function viewL3(){
       <h2>10월 28일 저녁,<br>101호에 ${L3_INFO.attended}명이 모였어요</h2>
       <p>경영대학과 KUSC가 함께 연 첫 공개 행사였어요.<br>학회원뿐 아니라 직무가 궁금한 학우라면 누구나 신청할 수 있었어요.</p>
       ${ph("01","f","wide")}
+      ${ph("02","f","wide")}
     </section>
     <section class="st">
       <h2>여섯 직무를,<br>그 일을 하는 선배에게 직접 들었어요</h2>
-      <div class="sp3">${L3_INFO.speakers.map(([j,n,c])=>`<div class="sprow">${ph(SP[j],"t","sq")}
+      <div class="sp3">${[...L3_INFO.speakers].sort((a,b)=>SP[a[0]].localeCompare(SP[b[0]])).map(([j,n,c])=>`<div class="sprow">${ph(SP[j],"t","sq")}
         <div><small>${esc(j)}</small><b>${esc(n)} <span>${esc(c)}</span></b><p>${esc(LINE[j])}</p></div></div>`).join("")}</div>
     </section>
     <section class="st">
@@ -845,15 +846,14 @@ function viewL3(){
       <p>평소라면 한 분 모시기도 어려운, 우리 학교 최고의 아웃풋들이에요.<br>같은 강의실에 앉았던 선배들이라, 이야기가 더 가깝게 들렸어요.</p>
     </section>
     <section class="st">
-      <h2>학장님도<br>함께해 주셨어요</h2>
-      <p>김추연 지도교수님뿐 아니라 유재욱 경영대학장님께서도 직접 참석해 학회에 대한 지원과 관심을 약속해 주셨어요.</p>
-      <p>학회 행사에 학장님이 오시는 일은 거의 없어서, 더 뜻깊은 자리였어요.</p>
-      ${ph("02","f","wide")}
-    </section>
-    <section class="st">
       <h2>강연이 끝나도<br>이야기는 이어졌어요</h2>
       <p>뒤풀이에서는 관심 직무별로 테이블을 나눠, 선배 옆자리에서 묻고 싶었던 걸 마저 물었어요.</p>
       <div class="trio3">${ph("09","t","")}${ph("10","t","")}${ph("11","t","")}</div>
+    </section>
+    <section class="st">
+      <h2>학장님도<br>함께해 주셨어요</h2>
+      <p>김추연 지도교수님뿐 아니라 유재욱 경영대학장님께서도 직접 참석해 학회에 대한 지원과 관심을 약속해 주셨어요.</p>
+      <p>학회 행사에 학장님이 오시는 일은 거의 없어서, 더 뜻깊은 자리였어요.</p>
     </section>
     <section class="st next">
       <h2>다음은<br>여러분 차례예요</h2>
