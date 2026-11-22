@@ -119,6 +119,15 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // 학기 초 진단 목표의 실행 기록: 본인과 관리자만 읽음. 한마디(coach)는 관리자만 씀
+    match /goals/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAdmin() || (signedIn() && request.auth.uid == uid && !('coach' in request.resource.data));
+      allow update: if isAdmin() || (signedIn() && request.auth.uid == uid && untouched(['coach']));
+      allow delete: if isAdmin();
+    }
+
     // 마스터(관리자)의 테스트 공간: 본인만
     match /lab/{uid} {
       allow read, write: if isAdmin() && request.auth.uid == uid;

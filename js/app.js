@@ -5,7 +5,7 @@
 import * as FB from "./fb.js";
 /* 마스터 보기: 다른 학회원의 화면을 그대로 보되, 아무것도 바꾸지 못하게 쓰기 함수를 막음 */
 const WRITES = new Set(["updateProfile","saveDiag","markProgress","deleteMe","submitRequest","deleteRequest","joinMember","setRsvp",
-  "addPost","updatePost","deletePost","addComment","deleteComment","submitFeedback","setAttendance"]);
+  "addPost","updatePost","deletePost","addComment","deleteComment","submitFeedback","setAttendance","setGoalTrack"]);
 const F = new Proxy(FB, { get(t, k){
   if(WRITES.has(k) && typeof S!=="undefined" && S.prof && S.prof.viewAs && !inExec()) return async()=>{ throw {code:"view-only"}; };
   return t[k]; } });
@@ -594,6 +594,7 @@ async function viewHome(){
           <div class="fact"><small>내가 원했던 직무</small><b>${esc(JOBNAME[dg.want]||dg.want)}</b></div>
           <div class="fact"><small>가장 강한 역량</small><b>${esc(best)}</b></div>
         </div></div>
+      <p class="desc" id="hgoal" style="margin-top:14px"></p>
       <div class="gos">${nHist>1?`<a class="go" href="#growth">처음과 지금 비교하기<b>→</b></a>`:`<a class="go" href="${diagHref("new")}">학기말 진단하고 비교하기<b>→</b></a><a class="go" href="#growth">목표 실행 기록하기<b>→</b></a>`}<a class="go" href="${diagHref("view")}">결과 자세히 보기<b>→</b></a></div>
     </section>`
   :`<section class="card">
@@ -620,6 +621,8 @@ async function viewHome(){
     <h3 style="margin-top:6px">작성실</h3>
     <p class="desc">내 경험을 정리하고, 4강 방식대로 레쥬메 불릿과 자소서를 써 보는 곳이에요. 쓴 내용은 계정에 저장돼서 어느 기기에서든 이어 쓸 수 있어요.</p>
   </section>`+foot();
+  if(dg){ const gl=(HH[0]&&HH[0].goals&&HH[0].goals.length)?HH[0].goals:(dg.goals||[]);
+    if(gl.length) goalsDoc(p).then(gd=>{ const e=$("#hgoal"); if(e) e.innerHTML=`<b>${goalLine(gl, gd.track||p.goalTrack||{})}</b>`; }).catch(()=>{}); }
   F.getAttendance(myUid()).then(at=>{ const box=$("#hatt"); if(!box) return;
     const got=(at&&at[TERM])||null, has=i=>!!got&&got.some(x=>x.startsWith(LECS[i]));
     const names=["정의","구조화","검증","진입"], n=got?LECS.filter((_,i)=>has(i)).length:0;
@@ -940,8 +943,30 @@ function viewClass(){
 
 /* ───────── 내 역량의 변화: 처음과 지금 비교 + 목표 실행 기록 ───────── */
 const GOAL_ST = [["todo","아직"],["doing","하는 중"],["done","해냈어요"]];
-function viewGrowth(){
+/* 점수 대신 단계와 말로 보여 줌 (역량마다 0~50) */
+const LEVEL = v => v>=45?"두드러진 강점":v>=35?"강점":v>=25?"보통":v>=13?"기초":"시작 단계";
+const CHANGE = d => d>=12?["크게 늘었어요","up"]:d>=4?["늘었어요","up"]:d>-4?["비슷해요",""]:d>-12?["줄었어요","down"]:["크게 줄었어요","down"];
+/* 목표 기록 요약 문장 */
+function goalLine(goals, T){
+  const n=goals.length; if(!n) return "";
+  const c={done:0,doing:0}; goals.forEach(g=>{ const s=(T[g.t]||{}).status; if(c[s]!==undefined) c[s]++; });
+  if(!c.done && !c.doing) return `학기 초에 정한 목표 ${n}개, 얼마나 했는지 아직 기록하지 않았어요.`;
+  const parts=[]; if(c.done) parts.push(`${c.done}개는 해냈고`); if(c.doing) parts.push(`${c.doing}개는 하는 중`);
+  let t=parts.join(", "); t=t.endsWith("해냈고")?t.slice(0,-1)+"어요":t+"이에요";
+  return `학기 초에 정한 목표 ${n}개 중 ${t}.`;
+}
+async function goalsDoc(p){
+  const gid=p.master?"lab":(p.viewAs||S.user.uid);
+  if(S.gtFor!==gid){ S.gtFor=gid; S.gt=null;
+    if(p.master) S.gd={track:p.goalTrack||{}};
+    else if(String(gid).startsWith("r:")) S.gd={};
+    else { try{ S.gd=(await F.getGoals(gid))||{}; }catch(e){ S.gd={}; } } }
+  return S.gd||{};
+}
+async function viewGrowth(){
   const p=S.prof;
+  if(S.gtFor!==(p.master?"lab":(p.viewAs||S.user.uid))) app.innerHTML=header("내 역량의 변화","")+`<div class="skel"></div>`+foot();
+  const gd=await goalsDoc(p);
   const H=(p.diagHist&&p.diagHist.length) ? [...p.diagHist].sort((x,y)=>String(x.ts).localeCompare(String(y.ts))) : (p.diag?[{...p.diag}]:[]);
   /* 마스터 미리보기로 해 본 학기말 진단: 이 창에서만 지금 결과로 겹쳐 보여 줌 */
   let pvRec=null; if(p.viewAs){ try{ pvRec=JSON.parse(sessionStorage.getItem("kusc:preview:"+p.viewAs)||"null"); }catch(e){} }
@@ -950,7 +975,7 @@ function viewGrowth(){
     <div class="row" style="margin-top:14px"><a class="btn pri" href="${diagHref("new")}">진단 시작하기</a></div></section>`+foot(); return; }
   const f=H[0], l=H[H.length-1], two=H.length>1;
   const goals=(f.goals&&f.goals.length)?f.goals:((p.diag&&p.diag.goals)||[]);
-  const T=p.goalTrack||{}, d=S.gt||(S.gt=JSON.parse(JSON.stringify(T)));
+  const T=gd.track||p.goalTrack||{}, d=S.gt||(S.gt=JSON.parse(JSON.stringify(T)));
   const sum=a=>(a||[]).reduce((x,y)=>x+(+y||0),0);
   const sign=n=>n>0?`+${n}`:`${n}`;
   app.innerHTML = header("내 역량의 변화","학기 초 진단과 지금을 나란히 놓고, 그때 정한 목표를 얼마나 해냈는지 기록해요.")+`
@@ -966,15 +991,18 @@ function viewGrowth(){
         <div class="fact"><small>가장 닮은 직무</small><b>${esc(JOBNAME[f.fit]||f.fit||"-")}${two&&l.fit!==f.fit?` → ${esc(JOBNAME[l.fit]||l.fit)}`:""}</b></div>
         <div class="fact"><small>원하는 직무</small><b>${esc(JOBNAME[f.want]||f.want||"-")}${two&&l.want!==f.want?` → ${esc(JOBNAME[l.want]||l.want)}`:""}</b></div>
       </div></div>
-    ${two?`<div class="scroll"><table class="tbl"><tr><th>역량</th><th>처음</th><th>지금</th><th>변화</th></tr>
-      ${AXES.map((t,i)=>{ const x=+(f.a[i]||0), y=+(l.a[i]||0), dv=y-x; return `<tr><td>${t}</td><td>${x}</td><td><b>${y}</b></td><td class="${dv>0?"up":dv<0?"down":""}">${sign(dv)}</td></tr>`; }).join("")}
-      <tr><td><b>합계</b></td><td>${sum(f.a)}</td><td><b>${sum(l.a)}</b></td><td class="${sum(l.a)-sum(f.a)>0?"up":sum(l.a)-sum(f.a)<0?"down":""}">${sign(sum(l.a)-sum(f.a))}</td></tr></table></div>
-      <p class="hint" style="margin-top:8px">변화 = 지금 점수 − 처음 점수<br>지금 점수에서 처음 점수를 뺀 값이에요.<br>0보다 크면 그 역량이 처음보다 높게 나왔다는 뜻이에요.</p>`:""}
-    <div class="row" style="margin-top:16px"><a class="btn ${two?"sec":"pri"}" href="${diagHref("new")}">${two?"한 번 더 진단하기":"학기말 진단하고 비교하기"}</a><a class="btn sec" href="${diagHref("view")}">최근 결과 자세히 보기</a></div>
+    ${two?(()=>{ const ch=AXES.map((t,i)=>(+(l.a[i]||0))-(+(f.a[i]||0))), up=ch.filter(x=>x>=4).length, dn=ch.filter(x=>x<=-4).length;
+      const sum1=up&&dn?`여섯 역량 중 ${up}개는 늘고, ${dn}개는 줄었어요.`:up?`여섯 역량 중 ${up}개가 늘었어요.`:dn?`여섯 역량 중 ${dn}개가 줄었어요.`:"여섯 역량 모두 처음과 비슷해요.";
+      return `<p class="desc" style="margin-top:14px"><b>${sum1}</b></p>
+      <div class="scroll"><table class="tbl"><tr><th>역량</th><th>처음</th><th>지금</th><th>변화</th></tr>
+      ${AXES.map((t,i)=>{ const [w,c]=CHANGE(ch[i]); return `<tr><td>${t}</td><td>${LEVEL(+(f.a[i]||0))}</td><td><b>${LEVEL(+(l.a[i]||0))}</b></td><td class="${c}">${w}</td></tr>`; }).join("")}</table></div>
+      <p class="hint" style="margin-top:8px">단계는 역량마다 고른 답을 다섯 단계로 나눈 거예요.<br>시작 단계, 기초, 보통, 강점, 두드러진 강점 순으로 높아요.<br>변화는 같은 역량에서 처음과 지금 고른 답이 얼마나 달라졌는지 보여 줘요.<br>같은 단계 안에서도 늘거나 줄 수 있어요.</p>`; })():""}
+    <div class="gos"><a class="go" href="${diagHref("new")}">${two?"한 번 더 진단하기":"학기말 진단하고 비교하기"}<b>→</b></a><a class="go" href="${diagHref("view")}">최근 결과 자세히 보기<b>→</b></a></div>
   </section>
   <section class="card">
     <h2>처음 진단이 제안한 목표, 해냈나요?</h2>
-    <p class="desc">학기 초 진단에서 나온 세 가지 목표예요.<br>얼마나 했는지 고르고, 어떻게 했는지 적어 두면 다음 진단 때 함께 돌아볼 수 있어요.</p>
+    <p class="desc">학기 초 진단에서 나온 세 가지 목표예요.<br>얼마나 했는지 고르고, 어떻게 했는지 적어 두세요.<br>${p.master?"마스터 테스트 공간이라 여기 기록은 나만 봐요.":"적은 내용은 나와 백재웅 선배만 볼 수 있어요."}</p>
+    ${goals.length?`<p class="desc" style="margin-top:8px"><b>${goalLine(goals,d)}</b></p>`:""}
     ${goals.length?goals.map((g,i)=>{ const v=d[g.t]||{};
       return `<div class="gtrack">
         <div class="gn">${i+1}</div>
@@ -983,18 +1011,21 @@ function viewGrowth(){
           <textarea id="gn${i}" rows="3" placeholder="어떻게 했는지, 무엇이 남았는지 적어 두세요" style="margin-top:10px">${esc(v.note||"")}</textarea>
           ${v.at?`<p class="hint">${day(v.at)}에 마지막으로 적었어요</p>`:""}</div></div>`; }).join("")
       :`<p class="desc" style="margin-top:12px">처음 진단의 목표를 불러오는 중이에요.<br>1강 결과 화면을 한 번 열면 여기에 채워져요.</p><div class="row"><a class="btn sec sm" href="${diagHref("view")}">결과 화면 열기</a></div>`}
-    ${goals.length?`<p class="err" id="err"></p><p class="ok" id="gsaved" style="display:none">저장했어요</p>
+    ${goals.length?`<p class="err" id="err"></p><p class="ok" id="gsaved" style="display:none">저장했어요.<br>내 공간 첫 화면의 1강 카드에 진행 상황이 표시돼요.<br>백재웅 선배가 읽고 한마디를 남기면 이 화면 맨 아래에 나와요.</p>
       <div class="row" style="margin-top:14px"><button class="btn pri" id="gsave">기록 저장하기</button></div>`:""}
   </section>
   ${H.length>1?`<section class="card"><h3>진단 기록</h3>
-    <div class="scroll"><table class="tbl"><tr><th>날짜</th><th>역량 합계</th><th>가장 닮은 직무</th></tr>
-    ${H.map(h=>`<tr><td>${day(h.ts)}</td><td>${sum(h.a)}</td><td>${esc(JOBNAME[h.fit]||h.fit||"")}</td></tr>`).join("")}</table></div></section>`:""}`+foot();
+    <div class="scroll"><table class="tbl"><tr><th>날짜</th><th>가장 닮은 직무</th><th>가장 강한 역량</th></tr>
+    ${H.map(h=>`<tr><td>${day(h.ts)}${h.preview?" (미리보기)":""}</td><td>${esc(JOBNAME[h.fit]||h.fit||"")}</td><td>${(h.a&&h.a.length)?AXES[h.a.indexOf(Math.max(...h.a))]:""}</td></tr>`).join("")}</table></div></section>`:""}
+  ${gd.coach&&gd.coach.text?`<section class="card"><div class="lesson">백재웅 선배의 한마디</div>
+    <p class="body" style="margin-top:8px">${nl(gd.coach.text)}</p><p class="hint">${day(gd.coach.at)}에 남겼어요</p></section>`:""}`+foot();
   if($("#pvclr")) $("#pvclr").onclick=()=>{ try{ sessionStorage.removeItem("kusc:preview:"+p.viewAs); }catch(e){} viewGrowth(); };
-  const keepNotes=()=>goals.forEach((g,i)=>{ const e=$("#gn"+i); if(e){ d[g.t]={...(d[g.t]||{}), note:e.value}; } });
+  const keepNotes=()=>goals.forEach((g,i)=>{ const e=$("#gn"+i); if(e && (e.value.trim() || d[g.t])){ d[g.t]={...(d[g.t]||{}), note:e.value}; } });
   $$("[data-gs]").forEach(c=>c.onclick=()=>{ keepNotes(); const g=goals[+c.dataset.gs]; d[g.t]={...(d[g.t]||{}), status:c.dataset.v}; viewGrowth(); });
   if($("#gsave")) $("#gsave").onclick=async()=>{ keepNotes();
-    const nowIso=new Date().toISOString(); goals.forEach(g=>{ if(d[g.t]) d[g.t].at=nowIso; });
-    try{ await (S.prof.master ? F.setLab(S.user.uid,{goalTrack:d}) : F.updateProfile(S.user.uid,{goalTrack:d})); S.prof.goalTrack=JSON.parse(JSON.stringify(d)); $("#gsaved").style.display="block"; $("#err").style.display="none"; }
+    const nowIso=new Date().toISOString(); goals.forEach(g=>{ const v=d[g.t], o=T[g.t]||{}; if(v && (v.status!==o.status || (v.note||"")!==(o.note||""))) v.at=nowIso; });
+    try{ await (S.prof.master ? F.setLab(S.user.uid,{goalTrack:d}) : F.setGoalTrack(S.user.uid,d)); S.prof.goalTrack=JSON.parse(JSON.stringify(d)); S.gd={...(S.gd||{}), track:JSON.parse(JSON.stringify(d))};
+      viewGrowth(); setTimeout(()=>{ const o=$("#gsaved"); if(o){ o.style.display="block"; o.scrollIntoView({block:"center"}); } },30); }
     catch(e){ showErr(authMsg(e)); } };
 }
 
@@ -1156,16 +1187,17 @@ function viewMe(){
 }
 
 /* ───────── 임원진 공간 ───────── */
-const EXEC_TABS = [["dash","현황"],["roster","명단·요청"],["members","회원·회비"],["post","공지·일정"],["money","재정"],["minutes","회의록"],["fb","강의 후기"],["system","운영 체계"]];
+const EXEC_TABS = [["dash","현황"],["roster","명단·요청"],["members","회원·회비"],["post","공지·일정"],["money","재정"],["minutes","회의록"],["fb","강의 후기"],["growth","성장 기록"],["system","운영 체계"]];
+const ADMIN_TABS = ["fb","growth"];
 async function viewExec(){
   if(!S.role){ location.hash="#home"; return; }
   const tab = route().arg || "dash";
-  app.innerHTML = header("운영실","")+`<div class="seg scrollx">${EXEC_TABS.filter(([k])=>k!=="fb"||S.role==="admin").map(([k,t])=>`<a href="#exec/${k}" class="${tab===k?"on":""}">${t}</a>`).join("")}</div>
+  app.innerHTML = header("운영실","")+`<div class="seg scrollx">${EXEC_TABS.filter(([k])=>!ADMIN_TABS.includes(k)||S.role==="admin").map(([k,t])=>`<a href="#exec/${k}" class="${tab===k?"on":""}">${t}</a>`).join("")}</div>
     ${S.role!=="exec"||S.ownProf?"":`<div class="notice">아직 학회원 가입을 하지 않은 임원진 계정이에요. 명단·요청 탭에서 명단을 올린 뒤 <a href="#join" style="color:inherit;font-weight:800">학회원 사이트에서 가입하면</a> 내 공간, 소식, 커뮤니티도 쓸 수 있어요.</div>`}
     <div id="xbody"><div class="skel"></div></div>`+foot();
   const box=$("#xbody");
   const err=e=>{ box.innerHTML=`<section class="card"><p class="err" style="display:block">${authMsg(e)}</p></section>`; };
-  try{ await ({dash:xDash,roster:xRoster,members:xMembers,post:xPost,money:xMoney,minutes:xMinutes,fb:S.role==="admin"?xFeedback:xDash,system:xSystem}[tab]||xDash)(box); }catch(e){ err(e); }
+  try{ await ({dash:xDash,roster:xRoster,members:xMembers,post:xPost,money:xMoney,minutes:xMinutes,fb:S.role==="admin"?xFeedback:xDash,growth:S.role==="admin"?xGrowth:xDash,system:xSystem}[tab]||xDash)(box); }catch(e){ err(e); }
 }
 const bars=(o,order)=>{ const max=Math.max(1,...Object.values(o)); return (order||Object.keys(o)).map(k=>`<div class="bar"><span>${esc(k)}</span><span class="t"><i style="width:${(o[k]||0)/max*100}%"></i></span><b>${o[k]||0}</b></div>`).join(""); };
 const cnt=a=>a.reduce((m,x)=>(m[x]=(m[x]||0)+1,m),{});
@@ -1364,6 +1396,38 @@ async function xMoney(box){
   $$("[data-ldel]").forEach(b=>b.onclick=async()=>{ try{ await F.deleteLedger(b.dataset.ldel); drop("ledger"); xMoney(box); }catch(e){ alert(authMsg(e)); } });
 }
 
+/* 성장 기록 (관리자만): 학회원별 진단 횟수, 목표 실행 기록, 한마디 남기기 */
+async function xGrowth(box){
+  const [users, gs] = await Promise.all([F.listUsers(), F.listGoals().catch(()=>[])]);
+  const G=Object.fromEntries(gs.map(g=>[g.uid,g]));
+  const rows=users.filter(u=>u.diag).map(u=>{ const H=(u.diagHist&&u.diagHist.length)?[...u.diagHist].sort((x,y)=>String(x.ts).localeCompare(String(y.ts))):[u.diag];
+    const goals=(H[0].goals&&H[0].goals.length)?H[0].goals:(u.diag.goals||[]); const g=G[u.uid]||{}, T=g.track||{};
+    const c={done:0,doing:0,todo:0}; goals.forEach(x=>{ const s=(T[x.t]||{}).status; if(c[s]!==undefined) c[s]++; });
+    return {u,H,goals,g,T,c,wrote:goals.some(x=>T[x.t]&&(T[x.t].status||T[x.t].note))}; })
+    .sort((x,y)=>(y.wrote-x.wrote)||String(x.u.name).localeCompare(String(y.u.name),"ko"));
+  const twice=rows.filter(r=>r.H.length>1).length, wrote=rows.filter(r=>r.wrote).length;
+  box.innerHTML=`<section class="card">
+    <h2>성장 기록</h2>
+    <p class="desc">학회원이 학기 초 진단의 목표를 얼마나 했는지 적은 기록이에요.<br>이 화면과 기록은 관리자만 볼 수 있고, 임원진에게는 보이지 않아요.</p>
+    <div class="stat"><div><small>진단 결과 있음</small><b>${rows.length}</b></div><div><small>두 번 이상 진단</small><b>${twice}</b></div><div><small>목표 기록 남김</small><b>${wrote}</b></div></div>
+  </section>
+  ${rows.length?rows.map((r,ri)=>`<section class="card tight">
+    <details><summary style="cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center">
+      <span><b>${esc(r.u.name)}</b> <span class="hint">${esc(r.u.grade||"")}</span><br>
+      <span class="hint">진단 ${r.H.length}번, 처음 ${day(r.H[0].ts)}${r.H.length>1?`, 최근 ${day(r.H[r.H.length-1].ts)}`:""}</span></span>
+      <span class="badge ${r.c.done?"ku":""}">${r.wrote?`해냄 ${r.c.done} / 하는 중 ${r.c.doing}`:"기록 없음"}</span></summary>
+      <div style="margin-top:14px">${r.goals.map((x,i)=>{ const v=r.T[x.t]||{}; const st=(GOAL_ST.find(([k])=>k===v.status)||[,"기록 없음"])[1];
+        return `<div style="padding:12px 0;border-top:1px solid var(--line)"><b>${i+1}. ${esc(x.t)}</b> <span class="badge ${v.status==="done"?"ku":""}">${st}</span>
+          ${v.note?`<p class="body" style="margin-top:6px">${nl(v.note)}</p>`:""}${v.at?`<p class="hint">${day(v.at)}에 적음</p>`:""}</div>`; }).join("")}
+        <div class="field" style="margin-top:12px"><label class="l">한마디 남기기</label>
+          <textarea id="co${ri}" rows="3" placeholder="이 학회원의 '내 역량의 변화' 화면 맨 아래에 보여요">${esc((r.g.coach&&r.g.coach.text)||"")}</textarea></div>
+        <div class="row"><button class="btn pri sm" data-co="${ri}">한마디 저장하기</button><span class="ok" id="cok${ri}" style="display:none">저장했어요</span></div>
+      </div></details></section>`).join("")
+    :`<section class="card"><p class="desc">아직 진단 결과가 있는 학회원이 없어요.<br>명단을 올리면 1강 결과가 채워져요.</p></section>`}`;
+  $$("[data-co]").forEach(b=>b.onclick=async()=>{ const i=+b.dataset.co, r=rows[i];
+    try{ await F.setCoach(r.u.uid, $("#co"+i).value.trim()); $("#cok"+i).style.display="inline"; }catch(e){ alert(authMsg(e)); } });
+}
+
 async function xFeedback(box){
   const T=SURVEY;
   const [rs, doneUids, users] = await Promise.all([F.listFeedback(T.term), F.listFeedbackDone(T.term), F.listUsers()]);
@@ -1520,7 +1584,7 @@ function viewAsBar(){
   return `<div class="viewas"><b>마스터 보기</b><select id="vas" aria-label="화면을 볼 사람"><option value="__me" ${me?"selected":""}>마스터 (내 화면)</option>${(S.members||[]).map(m=>`<option value="${m.uid}" ${m.uid===S.prof.viewAs?"selected":""}>${esc(m.name)}${m.grade?` (${esc(m.grade)})`:""}${m.preJoin?" 가입 전":""}</option>`).join("")}</select>
     <span>${me?"학회원을 고르면 그 사람에게 보이는 화면을 읽기 전용으로 볼 수 있어요.":"님에게 보이는 화면이에요. 읽기 전용이라 아무것도 바뀌지 않아요."}</span><a href="admin.html">운영실</a></div>`;
 }
-document.addEventListener("change",async e=>{ if(e.target && e.target.id==="vas"){ await masterPick(S.user, e.target.value); S.cache={}; S.fb=null; S.me=null; render(); } });
+document.addEventListener("change",async e=>{ if(e.target && e.target.id==="vas"){ await masterPick(S.user, e.target.value); S.cache={}; S.gtFor=null; S.fb=null; S.me=null; render(); } });
 
 /* 운영실(admin.html) 입구: 임원진 계정만 통과 */
 function renderExecDoor(){
@@ -1546,7 +1610,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
 window.addEventListener("hashchange",()=>{ S.me=null; S.gt=null; if(!location.hash.startsWith("#post/")) S.draft=null; render(); scrollTo(0,0); });
 window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); window.__bip=e; });
 F.onUser(async u=>{
-  S.user=u; S.fb=null; S.sheetOpen=false; S.prof=null; S.ownProf=null; S.myName=""; S.role=null; S.req=null; S.join=null; S.me=null; S.cache={};
+  S.user=u; S.fb=null; S.sheetOpen=false; S.prof=null; S.ownProf=null; S.myName=""; S.role=null; S.req=null; S.join=null; S.me=null; S.cache={}; S.gtFor=null;
   if(u){
     try{ S.prof=await F.getProfile(u.uid); }catch(e){ S.prof=null; }
     S.role=await F.getRole(u.uid);
