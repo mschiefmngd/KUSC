@@ -86,12 +86,13 @@ service cloud.firestore {
       }
     }
 
-    // 커리큘럼 피드백: 내용(feedback)에는 누가 썼는지 남기지 않고, 낸 여부(feedbackDone)만 따로 둔다
-    // 응답 내용과 응답 여부는 관리자만 본다 (임원진도 못 봄)
+    // 커리큘럼 피드백: 응답(feedback)과 낸 여부(feedbackDone)
+    // 응답 내용과 응답자는 관리자만 본다 (임원진도 못 봄). 설문 첫 화면에 그렇게 안내함
     match /feedback/{id} {
       allow read: if isAdmin();
       allow create: if canUse()
-        && request.resource.data.keys().hasOnly(['term', 'answers', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['term', 'answers', 'uid', 'name', 'sid', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
         && request.resource.data.term is string
         && !exists(/databases/$(db)/documents/feedbackDone/$(request.auth.uid + '_' + request.resource.data.term))
         && existsAfter(/databases/$(db)/documents/feedbackDone/$(request.auth.uid + '_' + request.resource.data.term));

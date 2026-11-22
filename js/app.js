@@ -781,10 +781,10 @@ function fbColumns(){ const cols=[]; let i=0;
   allQs().forEach(q=>{ i++; if(q.type==="grid") allRows(q).forEach(r=>cols.push([q.id,r,`${i}. ${q.q} - ${r}`])); else cols.push([q.id,null,`${i}. ${q.q}`]); });
   return cols; }
 function fbRow(ans, cols){ return cols.map(([id,row])=>{ const v=(ans||{})[id]; return row?((v||{})[row]||""):Array.isArray(v)?v.join(" / "):(v===undefined?"":v); }); }
-function sheetFeedback(ans){   /* 응답 기록 사본 (이름 없이) */
+function sheetFeedback(ans, who){   /* 응답 기록 사본 */
   const cols=fbColumns();
   try{ fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
-    body:JSON.stringify({type:"feedback",term:SURVEY.term,cols:cols.map(c=>c[2]),row:fbRow(ans,cols)})}).catch(()=>{}); }catch(e){}
+    body:JSON.stringify({type:"feedback",term:SURVEY.term,cols:["이름","학번",...cols.map(c=>c[2])],row:[who.name||"","'"+(who.sid||""),...fbRow(ans,cols)]})}).catch(()=>{}); }catch(e){}
 }
 const SCALE = ["1","2","3","4","5"];
 function fbAnswers(a){   /* 화면용 임시 값(a)을 저장용 답으로 정리. 안 보인 질문은 버림 */
@@ -864,7 +864,7 @@ async function viewFeedback(){
     if(miss) return showErr(`${num[miss.id]}번 질문에 답해 주세요`);
     if(st.p<P.length-1){ st.p++; viewFeedback(); scrollTo(0,0); return; }
     const b=$("#next"); b.disabled=true; b.textContent="보내는 중…";
-    try{ const ans=fbAnswers(a); await F.submitFeedback(S.user.uid, T.term, ans); sheetFeedback(ans); S.fb={done:true}; location.hash="#class"; }
+    try{ const ans=fbAnswers(a), who={name:S.prof.name, sid:S.prof.sid}; await F.submitFeedback(S.user.uid, T.term, ans, who); sheetFeedback(ans, who); S.fb={done:true}; location.hash="#class"; }
     catch(e){ b.disabled=false; b.textContent="후기 보내기"; showErr(authMsg(e)); }
   };
 }
@@ -1135,12 +1135,13 @@ async function xFeedback(box){
       const pro=v.filter(x=>x>=9).length, det=v.filter(x=>x<=6).length, nps=v.length?Math.round((pro-det)/v.length*100):"-";
       return h+`<div class="stat three"><div><small>평균 (10점 만점)</small><b>${v.length?(v.reduce((s,y)=>s+y,0)/v.length).toFixed(1):"-"}</b></div><div><small>추천 지수 (NPS)</small><b>${nps}</b></div><div><small>응답 수</small><b>${v.length}</b></div></div>
         <p class="hint" style="margin-top:8px">추천 지수 = (9~10점 비율 − 0~6점 비율) × 100<br>9~10점을 준 사람의 비율에서 0~6점을 준 사람의 비율을 뺀 값이에요. 이번에는 9~10점 ${pro}명, 0~6점 ${det}명이에요. −100부터 100까지 나오고, 0보다 크면 추천하는 사람이 더 많다는 뜻이에요.</p>`; }
-    return h+(k?`<ul class="dl">${vals.map(x=>`<li>${nl(x)}</li>`).join("")}</ul>`:`<p class="desc muted">아직 답이 없어요.</p>`);
+    const tx=rs.filter(r=>(r.answers||{})[q.id]!==undefined);
+    return h+(k?`<ul class="dl">${tx.map(r=>`<li>${nl(r.answers[q.id])}<br><span class="hint">${esc(r.name||"")}</span></li>`).join("")}</ul>`:`<p class="desc muted">아직 답이 없어요.</p>`);
   });
   const left=users.filter(u=>!doneUids.includes(u.uid)).map(u=>u.name);
   box.innerHTML = `<section class="card">
     <h2>${esc(T.title)}</h2>
-    <p class="desc">응답 내용에는 이름이 남지 않아요. 누가 냈는지만 따로 알 수 있어서, 아직 안 낸 사람에게 부탁할 때 쓰면 돼요.</p>
+    <p class="desc">관리자만 보는 화면이에요. 임원진 화면에는 이 탭이 없어요.</p>
     <div class="stat three"><div><small>응답</small><b>${n}</b></div><div><small>가입한 학회원</small><b>${users.length}</b></div><div><small>응답률</small><b>${users.length?pct(doneUids.length,users.length)+"%":"-"}</b></div></div>
     <div class="row" style="margin-top:14px"><button class="btn pri sm" id="fbcsv"${n?"":" disabled"}>응답 엑셀(CSV) 받기</button>${left.length?`<button class="btn sec sm" id="fbleft">안 낸 사람 이름 복사</button>`:""}</div>
     <p class="ok" id="fbcopied" style="display:none">복사했어요</p>
@@ -1149,7 +1150,7 @@ async function xFeedback(box){
   if($("#fbleft")) $("#fbleft").onclick=async()=>{ try{ await navigator.clipboard.writeText(left.join(", ")); $("#fbcopied").style.display="block"; }catch(e){ prompt("복사해서 쓰세요", left.join(", ")); } };
   if($("#fbcsv")) $("#fbcsv").onclick=()=>{
     const cols=fbColumns();
-    csv(`KUSC_${T.term}_커리큘럼피드백.csv`,["응답 날짜",...cols.map(c=>c[2])], rs.map(r=>[day(r.createdAt),...fbRow(r.answers,cols)]));
+    csv(`KUSC_${T.term}_커리큘럼피드백.csv`,["응답 날짜","이름","학번",...cols.map(c=>c[2])], rs.map(r=>[day(r.createdAt),r.name||"",r.sid||"",...fbRow(r.answers,cols)]));
   };
 }
 

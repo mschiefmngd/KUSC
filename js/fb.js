@@ -113,14 +113,14 @@ export const listMinutes = () => list("minutes", 200, "date");
 export const addMinute = d => add("minutes", d);
 export const deleteMinute = id => del("minutes", id);
 
-/* ── 커리큘럼 피드백 (이름 없이 저장) ──
-   feedback/{자동}        : 응답 내용. 누가 썼는지 기록하지 않음
-   feedbackDone/{uid_학기} : 냈는지 여부만. 한 사람이 한 학기에 한 번만 낼 수 있게 함 */
+/* ── 커리큘럼 피드백 ──
+   feedback/{자동}        : 응답 내용과 응답자. 관리자만 읽음 (임원진 비공개)
+   feedbackDone/{uid_학기} : 냈는지 여부. 한 사람이 한 학기에 한 번만 낼 수 있게 함 */
 export const getFeedbackDone = async (uid, term) => (await getDoc(doc(db, "feedbackDone", uid + "_" + term))).exists();
-export async function submitFeedback(uid, term, answers) {
+export async function submitFeedback(uid, term, answers, who) {
   const b = writeBatch(db);
   b.set(doc(db, "feedbackDone", uid + "_" + term), { term });
-  b.set(doc(collection(db, "feedback")), { term, answers, createdAt: now() });
+  b.set(doc(collection(db, "feedback")), { term, answers, uid, name: who.name || "", sid: who.sid || "", createdAt: now() });
   await b.commit();
 }
 export async function listFeedback(term) { return (await list("feedback", 1000)).filter(x => x.term === term); }
