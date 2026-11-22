@@ -3,7 +3,7 @@
    데이터는 js/fb.js 를 통해서만 읽고 씁니다.
    ───────────────────────────────────────────── */
 import * as F from "./fb.js";
-import { SURVEY, rowsOf, optsOf, allQs } from "./survey.js";
+import { SURVEY, rowsOf, optsOf, allQs, shown, allRows } from "./survey.js";
 
 /* ───────── 고정 값 (학기마다 여기만 고치면 됨) ───────── */
 /* 임원진 공간은 admin.html 에서만 열림 (학회원 사이트에는 입구가 없음) */
@@ -776,68 +776,82 @@ function viewClass(){
 
 /* ───────── 커리큘럼 피드백 설문 ───────── */
 const ETC = "기타";
-function fbAnswers(a){   /* 화면용 임시 값(a)을 저장용 답으로 정리 */
+const SCALE = ["1","2","3","4","5"];
+function fbAnswers(a){   /* 화면용 임시 값(a)을 저장용 답으로 정리. 안 보인 질문은 버림 */
   const out={};
   for(const q of allQs()){
+    if(!shown(q,a)) continue;
     if(q.type==="grid"){ const o={}; rowsOf(q,a).forEach(r=>{ if(a[q.id+"|"+r]!==undefined) o[r]=a[q.id+"|"+r]; }); if(Object.keys(o).length) out[q.id]=o; continue; }
-    let v=a[q.id]; if(v===undefined||v===""||(Array.isArray(v)&&!v.length)) continue;
+    let v=a[q.id]; if(v===undefined||(typeof v==="string"&&!v.trim())||(Array.isArray(v)&&!v.length)) continue;
     if(q.etc){ const t=(a[q.id+"_etc"]||"").trim();
       if(Array.isArray(v)) v=v.map(x=>x===ETC?(t?ETC+": "+t:ETC):x); else if(v===ETC) v=t?ETC+": "+t:ETC; }
-    out[q.id]= q.type==="nps" ? Number(v) : v;
+    out[q.id]= q.type==="nps" ? Number(v) : (typeof v==="string" ? v.trim() : v);
   }
   return out;
 }
 function fbMissing(q,a){
-  if(!q.req) return false;
+  if(!q.req || !shown(q,a)) return false;
   if(q.type==="grid") return rowsOf(q,a).some(r=>a[q.id+"|"+r]===undefined);
-  const v=a[q.id]; if(v===undefined||v===""||(Array.isArray(v)&&!v.length)) return true;
+  const v=a[q.id]; if(v===undefined||(typeof v==="string"&&!v.trim())||(Array.isArray(v)&&!v.length)) return true;
   if(q.optsFrom && !optsOf(q,a).includes(v)) return true;
   if(q.etc && (v===ETC||(Array.isArray(v)&&v.includes(ETC))) && !(a[q.id+"_etc"]||"").trim()) return true;
   return false;
 }
-function fbQuestion(q,a,n){
-  const head=`<label class="l">${n}. ${esc(q.q)}${q.req?'<span class="req">*</span>':""}${q.sub?`<span class="opt">${esc(q.sub)}</span>`:""}</label>`;
+function fbNumber(a){ const m={}; let n=0; allQs().forEach(q=>{ if(shown(q,a)) m[q.id]=++n; }); return m; }
+function fbQuestion(q,a,no){
+  const head=`<label class="l">${no}. ${esc(q.q)}${q.req?'<span class="req">*</span>':""}${q.sub?`<span class="opt">${esc(q.sub)}</span>`:""}</label>`;
   if(q.type==="one"||q.type==="many"){
     const opts=[...optsOf(q,a), ...(q.etc?[ETC]:[])];
     const showEtc=q.etc && (a[q.id]===ETC || (Array.isArray(a[q.id])&&a[q.id].includes(ETC)));
     return `<div class="field fq">${head}${chips(q.id,opts,q.type==="many",a)}
-      ${showEtc?`<input type="text" class="etc" id="${q.id}_etc" placeholder="직접 입력해 주세요" value="${esc(a[q.id+"_etc"]||"")}">`:""}</div>`;
+      ${showEtc?`<input type="text" class="etc" id="${q.id}_etc" placeholder="직접 적어 주세요" value="${esc(a[q.id+"_etc"]||"")}">`:""}</div>`;
+  }
+  if(q.type==="scale"){
+    return `<div class="field fq">${head}<p class="hint" style="margin:2px 0 10px">1 = ${esc(q.lo)}, 5 = ${esc(q.hi)}</p>
+      <div class="sc">${chips(q.id,[...SCALE,...(q.na?[q.na]:[])],false,a)}</div></div>`;
   }
   if(q.type==="grid"){
-    const sc=["1","2","3","4","5",...(q.na?[q.na]:[])];
+    const sc=[...SCALE,...(q.na?[q.na]:[])];
     return `<div class="field fq">${head}<p class="hint" style="margin:2px 0 10px">1 = ${esc(q.lo)}, 5 = ${esc(q.hi)}</p>
       ${rowsOf(q,a).map(r=>`<div class="grow"><div class="gl">${esc(r)}</div>${chips(q.id+"|"+r,sc,false,a)}</div>`).join("")}</div>`;
   }
   if(q.type==="nps"){
-    return `<div class="field fq">${head}<p class="hint" style="margin:2px 0 10px">0 = 전혀 추천하지 않는다, 10 = 꼭 추천한다</p>
-      ${chips(q.id,Array.from({length:11},(_,i)=>String(i)),false,a)}</div>`;
+    return `<div class="field fq">${head}<p class="hint" style="margin:2px 0 10px">0 = 전혀 추천하지 않음, 10 = 적극 추천</p>
+      <div class="sc">${chips(q.id,Array.from({length:11},(_,i)=>String(i)),false,a)}</div></div>`;
   }
-  return `<div class="field fq">${head}<textarea id="${q.id}" rows="4" placeholder="${esc(q.ph||"")}">${esc(a[q.id]||"")}</textarea></div>`;
+  return `<div class="field fq">${head}<textarea id="${q.id}" rows="${q.rows||4}" placeholder="${esc(q.ph||"")}">${esc(a[q.id]||"")}</textarea></div>`;
 }
 async function viewFeedback(){
   const T=SURVEY, st=S.fb||(S.fb={p:0,a:{}});
   if(st.done===undefined){ app.innerHTML=header("","")+`<div class="skel"></div>`; try{ st.done=await F.getFeedbackDone(S.user.uid,T.term); }catch(e){ st.done=false; } }
   if(st.done){ app.innerHTML=header("강의 후기","")+`<section class="card"><h2>이미 후기를 남겼어요</h2>
-      <p class="desc">${T.title}에 응답해 주셔서 고마워요. 한 학기에 한 번만 낼 수 있어요.</p>
+      <p class="desc">${esc(T.title)}에 답해 줘서 고마워요. 한 학기에 한 번만 낼 수 있어요.</p>
       <div class="row" style="margin-top:18px"><a class="btn pri" href="#class">강의실로</a></div></section>`+foot(); return; }
-  const a=st.a, P=T.pages, page=P[st.p];
-  let n=P.slice(0,st.p).reduce((k,pg)=>k+pg.qs.length,0);
+  const a=st.a, P=T.pages, page=P[st.p], num=fbNumber(a), vis=page.qs.filter(q=>shown(q,a));
   app.innerHTML = header("","")+`<section class="card" style="margin-top:22px">
     <div class="steps">${P.map((_,i)=>`<i class="${i<=st.p?"on":""}"></i>`).join("")}</div>
     <div class="stepname">${st.p+1} / ${P.length} · ${esc(page.t)}</div>
-    ${st.p===0?`<h2>${esc(T.title)}</h2><p class="desc" style="margin-bottom:8px">${esc(T.intro)}</p>`:`<h2>${esc(page.t.replace(/^[A-Z]\.\s*/,""))}</h2>`}
-    ${page.qs.map(q=>fbQuestion(q,a,++n)).join("")}
+    ${st.p===0?`<h2>${esc(T.title)}</h2><p class="desc">${esc(T.intro)}</p>
+      <ul class="fbnote">${T.notes.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`
+      :`<h2>${esc(page.t.replace(/^[A-Z]\.\s*/,""))}</h2>`}
+    ${page.d?`<p class="desc" style="margin-top:${st.p===0?14:4}px">${esc(page.d)}</p>`:""}
+    ${vis.map(q=>fbQuestion(q,a,num[q.id])).join("")}
     <p class="err" id="err"></p>
     <div class="row" style="margin-top:24px"><button class="btn sec" id="back" style="flex:0 0 96px">${st.p===0?"나가기":"이전"}</button>
       <button class="btn pri" id="next" style="flex:1">${st.p===P.length-1?"후기 보내기":"다음"}</button></div>
   </section>`+foot();
-  const keep=()=>{ page.qs.forEach(q=>{ if(q.type==="text"){ const e=$("#"+q.id); if(e) a[q.id]=e.value; } const t=$("#"+q.id+"_etc"); if(t) a[q.id+"_etc"]=t.value; }); };
-  bindChips(a, ()=>{ keep(); viewFeedback(); });
+  const keep=()=>{ vis.forEach(q=>{ if(q.type==="text"){ const e=$("#"+q.id); if(e) a[q.id]=e.value; } const t=$("#"+q.id+"_etc"); if(t) a[q.id+"_etc"]=t.value; }); };
+  const before={}; vis.forEach(q=>{ if(q.none) before[q.id]=[...(a[q.id]||[])]; });
+  bindChips(a, ()=>{ keep();
+    vis.forEach(q=>{ if(!q.none) return; const now=a[q.id]||[];   /* '아직 없음' 같은 선택지는 다른 것과 같이 못 고름 */
+      if(now.includes(q.none) && !before[q.id].includes(q.none)) a[q.id]=[q.none];
+      else if(now.includes(q.none) && now.length>1) a[q.id]=now.filter(x=>x!==q.none); });
+    viewFeedback(); });
   $("#back").onclick=()=>{ keep(); if(st.p===0){ location.hash="#class"; } else { st.p--; viewFeedback(); scrollTo(0,0); } };
   $("#next").onclick=async()=>{
     keep();
-    const miss=page.qs.findIndex(q=>fbMissing(q,a));
-    if(miss>-1){ const no=P.slice(0,st.p).reduce((k,pg)=>k+pg.qs.length,0)+miss+1; return showErr(`${no}번 질문에 답해 주세요`); }
+    const miss=vis.find(q=>fbMissing(q,a));
+    if(miss) return showErr(`${num[miss.id]}번 질문에 답해 주세요`);
     if(st.p<P.length-1){ st.p++; viewFeedback(); scrollTo(0,0); return; }
     const b=$("#next"); b.disabled=true; b.textContent="보내는 중…";
     try{ await F.submitFeedback(S.user.uid, T.term, fbAnswers(a)); S.fb={done:true}; location.hash="#class"; }
@@ -1088,26 +1102,27 @@ async function xFeedback(box){
   const [rs, doneUids, users] = await Promise.all([F.listFeedback(T.term), F.listFeedbackDone(T.term), F.listUsers()]);
   const n=rs.length, A=rs.map(r=>r.answers||{});
   const pct=(k,t)=>t?Math.round(k/t*100):0;
-  const bars=(pairs,t)=>pairs.map(([l,k])=>`<div class="bar"><span>${esc(l)}</span><span class="t"><i style="width:${pct(k,t)}%"></i></span><b>${k}</b></div>`).join("");
-  const count=(q)=>{ const m=new Map(); A.forEach(x=>{ const v=x[q.id]; (Array.isArray(v)?v:v!==undefined?[v]:[]).forEach(o=>{ const key=String(o).startsWith(ETC)?ETC:o; m.set(key,(m.get(key)||0)+1); }); });
-    const order=[...(q.opts||[]),...(q.etc?[ETC]:[])], ix=k=>{ const i=order.indexOf(k); return i<0?999:i; };
+  const bars=(pairs,t)=>pairs.map(([l,k])=>`<div class="bar fbbar"><span>${esc(l)}</span><span class="t"><i style="width:${pct(k,t)}%"></i></span><b>${k}</b></div>`).join("");
+  const count=(q,vals)=>{ const m=new Map(); vals.forEach(v=>{ (Array.isArray(v)?v:v!==undefined?[v]:[]).forEach(o=>{ const key=String(o).startsWith(ETC)?ETC:String(o); m.set(key,(m.get(key)||0)+1); }); });
+    const order=[...(q.type==="scale"?[...SCALE,...(q.na?[q.na]:[])]:allRows({rowsFrom:q.optsFrom,rows:q.opts})),...(q.etc?[ETC]:[])], ix=k=>{ const i=order.indexOf(k); return i<0?999:i; };
     return [...m.entries()].sort((x,y)=>ix(x[0])-ix(y[0])||y[1]-x[1]); };
-  const gridAvg=(q)=>{ const rows=q.rowsFrom?(allQs().find(z=>z.id===q.rowsFrom).opts):q.rows;
-    return rows.map(r=>{ const v=A.map(x=>(x[q.id]||{})[r]).filter(v=>/^[1-5]$/.test(v)).map(Number);
-      return [r, v.length?(v.reduce((s,y)=>s+y,0)/v.length).toFixed(2):"-", v.length]; }); };
+  const avg=v=>v.length?(v.reduce((s,y)=>s+y,0)/v.length).toFixed(2):"-";
+  const nums=vals=>vals.filter(v=>/^[1-5]$/.test(v)).map(Number);
   let no=0;
   const blocks=allQs().map(q=>{ no++;
-    const h=`<h3 style="margin-top:22px">${no}. ${esc(q.q)}</h3>`;
-    if(q.type==="one"||q.type==="many"){ const etc=A.map(x=>x[q.id]).flat().filter(v=>typeof v==="string"&&v.startsWith(ETC+":"));
-      return h+bars(count(q),n)+(etc.length?`<p class="hint">기타 직접 입력: ${etc.map(v=>esc(v.slice(ETC.length+2))).join(", ")}</p>`:""); }
-    if(q.type==="grid") return h+`<table class="tbl"><tr><th>항목</th><th>평균 (5점 만점)</th><th>응답 수</th></tr>${gridAvg(q).map(([r,av,k])=>`<tr><td>${esc(r)}</td><td><b>${av}</b></td><td>${k}</td></tr>`).join("")}</table>`;
-    if(q.type==="nps"){ const v=A.map(x=>x[q.id]).filter(x=>typeof x==="number");
+    const vals=A.map(x=>x[q.id]).filter(v=>v!==undefined), k=vals.length;
+    const h=`<h3 style="margin-top:24px">${no}. ${esc(q.q)}</h3><p class="hint" style="margin:2px 0 6px">응답 ${k}명${q.showIf?` (해당 회차 참석자만)`:""}</p>`;
+    if(q.type==="one"||q.type==="many"){ const etc=vals.flat().filter(v=>typeof v==="string"&&v.startsWith(ETC+":"));
+      return h+bars(count(q,vals),k)+(etc.length?`<p class="hint">기타 직접 입력: ${etc.map(v=>esc(v.slice(ETC.length+2))).join(", ")}</p>`:""); }
+    if(q.type==="scale"){ const v=nums(vals);
+      return h+`<p style="margin:4px 0 6px">평균 <b>${avg(v)}</b> / 5${q.na?` <span class="hint">(${esc(q.na)} ${vals.filter(x=>x===q.na).length}명은 평균에서 뺌)</span>`:""}</p>`+bars(count(q,vals),k); }
+    if(q.type==="grid") return h+`<table class="tbl"><tr><th>항목</th><th>평균 (5점 만점)</th><th>응답 수</th></tr>${allRows(q).map(r=>{ const v=nums(A.map(x=>(x[q.id]||{})[r]));
+      return `<tr><td>${esc(r)}</td><td><b>${avg(v)}</b></td><td>${v.length}</td></tr>`; }).join("")}</table>`;
+    if(q.type==="nps"){ const v=vals.filter(x=>typeof x==="number");
       const pro=v.filter(x=>x>=9).length, det=v.filter(x=>x<=6).length, nps=v.length?Math.round((pro-det)/v.length*100):"-";
-      const avg=v.length?(v.reduce((s,y)=>s+y,0)/v.length).toFixed(1):"-";
-      return h+`<div class="stat three"><div><small>평균 (10점 만점)</small><b>${avg}</b></div><div><small>추천 지수 (NPS)</small><b>${nps}</b></div><div><small>응답 수</small><b>${v.length}</b></div></div>
+      return h+`<div class="stat three"><div><small>평균 (10점 만점)</small><b>${v.length?(v.reduce((s,y)=>s+y,0)/v.length).toFixed(1):"-"}</b></div><div><small>추천 지수 (NPS)</small><b>${nps}</b></div><div><small>응답 수</small><b>${v.length}</b></div></div>
         <p class="hint" style="margin-top:8px">추천 지수 = (9~10점 비율 − 0~6점 비율) × 100<br>9~10점을 준 사람의 비율에서 0~6점을 준 사람의 비율을 뺀 값이에요. 이번에는 9~10점 ${pro}명, 0~6점 ${det}명이에요. −100부터 100까지 나오고, 0보다 크면 추천하는 사람이 더 많다는 뜻이에요.</p>`; }
-    const t=A.map(x=>x[q.id]).filter(Boolean);
-    return h+(t.length?`<ul class="dl">${t.map(x=>`<li>${nl(x)}</li>`).join("")}</ul>`:`<p class="desc muted">아직 답이 없어요.</p>`);
+    return h+(k?`<ul class="dl">${vals.map(x=>`<li>${nl(x)}</li>`).join("")}</ul>`:`<p class="desc muted">아직 답이 없어요.</p>`);
   });
   const left=users.filter(u=>!doneUids.includes(u.uid)).map(u=>u.name);
   box.innerHTML = `<section class="card">
@@ -1120,7 +1135,7 @@ async function xFeedback(box){
   <section class="card">${n?blocks.join(""):`<p class="desc">아직 응답이 없어요. 학회원이 강의실의 '후기 남기기'에서 낼 수 있어요.</p>`}</section>`;
   if($("#fbleft")) $("#fbleft").onclick=async()=>{ try{ await navigator.clipboard.writeText(left.join(", ")); $("#fbcopied").style.display="block"; }catch(e){ prompt("복사해서 쓰세요", left.join(", ")); } };
   if($("#fbcsv")) $("#fbcsv").onclick=()=>{
-    const cols=[]; allQs().forEach(q=>{ if(q.type==="grid"){ const rows=q.rowsFrom?allQs().find(z=>z.id===q.rowsFrom).opts:q.rows; rows.forEach(r=>cols.push([q.id,r,q.q+" - "+r])); } else cols.push([q.id,null,q.q]); });
+    const cols=[]; let i=0; allQs().forEach(q=>{ i++; if(q.type==="grid") allRows(q).forEach(r=>cols.push([q.id,r,`${i}. ${q.q} - ${r}`])); else cols.push([q.id,null,`${i}. ${q.q}`]); });
     csv(`KUSC_${T.term}_커리큘럼피드백.csv`,["응답 날짜",...cols.map(c=>c[2])],
       rs.map(r=>[day(r.createdAt),...cols.map(([id,row])=>{ const v=(r.answers||{})[id]; return row?((v||{})[row]||""):Array.isArray(v)?v.join(" / "):(v===undefined?"":v); })]));
   };
