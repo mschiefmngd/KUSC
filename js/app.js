@@ -574,6 +574,8 @@ async function viewHome(){
   const p=S.prof, dg=p.diag, g=p.progress||{};
   const LECS=["1강","2강","3강","4강"];
   const best = dg ? AXES[dg.a.indexOf(Math.max(...dg.a))] : "";
+  const HH=(p.diagHist&&p.diagHist.length)?[...p.diagHist].sort((x,y)=>String(x.ts).localeCompare(String(y.ts))):(dg?[dg]:[]);
+  const nHist=HH.length, firstTs=nHist?(HH[0].ts||p.diagAt):"";
   const paid = p.dues && p.dues[TERM];
   app.innerHTML = header(`${esc(p.name)} 님, 반가워요`,
     p.master ? `<span class="badge ku">마스터 계정</span> 진단과 기록을 직접 해 보며 확인하는 테스트 공간이에요. 여기 기록은 나만 보여요.`
@@ -584,15 +586,15 @@ async function viewHome(){
   </div>
   ${dg?`<section class="card">
       <div class="lesson">1강 · 내 역량 진단</div>
-      <h2 style="margin-top:4px">내 역량의 모양</h2>
-      <p class="desc">${day(p.diagAt||dg.ts)} 진단${p.diagFrom?` · ${esc(p.diagFrom)}에서 불러왔어요`:""}</p>
+      <h2 style="margin-top:4px">${nHist>1?"처음과 지금, 내 역량의 변화":"학기 초에 그린 내 역량의 모양"}</h2>
+      <p class="desc">${nHist>1?`처음 ${day(firstTs)} 진단 · 지금까지 ${nHist}번 진단했어요`:`${day(firstTs)} 1강에서 진단했어요.<br>학기말에 같은 진단을 한 번 더 하면 처음 결과와 겹쳐서 비교해 드려요.`}</p>
       <div class="hexwrap">${hexSVG(dg.a)}
         <div class="facts">
           <div class="fact"><small>가장 닮은 직무</small><b>${esc(JOBNAME[dg.fit]||dg.fit)}</b></div>
           <div class="fact"><small>내가 원했던 직무</small><b>${esc(JOBNAME[dg.want]||dg.want)}</b></div>
           <div class="fact"><small>가장 강한 역량</small><b>${esc(best)}</b></div>
         </div></div>
-      <div class="row"><a class="btn pri" href="#growth">처음과 지금 비교하기</a><a class="btn sec" href="${diagHref("view")}">결과 자세히 보기</a></div>
+      <div class="row">${nHist>1?`<a class="btn pri" href="#growth">처음과 지금 비교하기</a>`:`<a class="btn pri" href="${diagHref("new")}">학기말 진단하고 비교하기</a><a class="btn sec" href="#growth">목표 실행 기록하기</a>`}<a class="btn sec" href="${diagHref("view")}">결과 자세히 보기</a></div>
     </section>`
   :`<section class="card">
       <div class="lesson">먼저 해 볼 것</div>
@@ -1256,7 +1258,8 @@ async function xRoster(box){
         const pick=(c,k)=>ix(k)>-1?c[ix(k)]:"";
         rows=lines.slice(1).map(c=>({name:c[ni],sid:c[si],grade:pick(c,"학년"),major:pick(c,"주전공"),major2:pick(c,"복수·부전공"),phone:pick(c,"연락처")})); }
       const n=await F.importRoster(rows.filter(r=>r.name&&r.sid));
-      $("#rok").textContent=`${n}명을 명단에 올렸어요.`; $("#rok").style.display="block"; setTimeout(viewExec,900);
+      let k=0; try{ k=await F.syncRosterDiag(); }catch(e){}
+      $("#rok").textContent=`${n}명을 명단에 올렸어요.${k?` 이미 가입한 ${k}명에게 1강 진단 결과도 채웠어요.`:""}`; $("#rok").style.display="block"; setTimeout(viewExec,900);
     }catch(err){ showErr(err.code?authMsg(err):(err.message||"파일을 읽지 못했어요"),"err2"); }
   };
 }
@@ -1487,7 +1490,15 @@ async function render(){
 }
 /* 마스터 보기: 고른 학회원의 실제 화면을 읽기 전용으로 보여줌 */
 async function masterPick(u, uid){
-  let us=[]; try{ us=(await F.listUsers()).sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko")); }catch(e){}
+  let us=[], ro=[]; try{ [us, ro]=await Promise.all([F.listUsers(), F.listRoster()]); }catch(e){}
+  /* 가입 전인 명단 학회원도 1강 진단 결과로 미리 볼 수 있게 함 */
+  const pre=ro.filter(r=>!r.uid).map(r=>({uid:"r:"+r.id, name:r.name, sid:r.sid, grade:r.grade||"", major:r.major||"", major2:r.major2||"",
+    jobs:r.jobs||[], stage:r.stage||"", phone:r.phone||"", progress:{}, preJoin:true,
+    ...(r.diag?{diag:r.diag, diagAt:r.diag.ts||"", diagFrom:"1강 진단", diagHist:[F.diagSummary(r.diag)]}:{})}));
+  /* 가입했지만 진단이 비어 있으면 명단의 1강 결과로 채워서 보여 줌 (화면에서만) */
+  const rmap=Object.fromEntries(ro.map(r=>[r.uid||"", r]));
+  us=us.map(u=>(!u.diag && rmap[u.uid] && rmap[u.uid].diag) ? {...u, diag:rmap[u.uid].diag, diagHist:[F.diagSummary(rmap[u.uid].diag)]} : u);
+  us=[...us, ...pre].sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko"));
   S.members=us;
   let pick=uid; if(!pick){ try{ pick=localStorage.getItem("kusc:viewAs"); }catch(e){} }
   const m=us.find(x=>x.uid===pick);
@@ -1500,7 +1511,7 @@ async function masterPick(u, uid){
 function viewAsBar(){
   if(!(S.prof && (S.prof.viewAs || S.prof.master)) || inExec()) return "";
   const me=!S.prof.viewAs;
-  return `<div class="viewas"><b>마스터 보기</b><select id="vas" aria-label="화면을 볼 사람"><option value="__me" ${me?"selected":""}>마스터 (내 화면)</option>${(S.members||[]).map(m=>`<option value="${m.uid}" ${m.uid===S.prof.viewAs?"selected":""}>${esc(m.name)}${m.grade?` (${esc(m.grade)})`:""}</option>`).join("")}</select>
+  return `<div class="viewas"><b>마스터 보기</b><select id="vas" aria-label="화면을 볼 사람"><option value="__me" ${me?"selected":""}>마스터 (내 화면)</option>${(S.members||[]).map(m=>`<option value="${m.uid}" ${m.uid===S.prof.viewAs?"selected":""}>${esc(m.name)}${m.grade?` (${esc(m.grade)})`:""}${m.preJoin?" 가입 전":""}</option>`).join("")}</select>
     <span>${me?"학회원을 고르면 그 사람에게 보이는 화면을 읽기 전용으로 볼 수 있어요.":"님에게 보이는 화면이에요. 읽기 전용이라 아무것도 바뀌지 않아요."}</span><a href="admin.html">운영실</a></div>`;
 }
 document.addEventListener("change",async e=>{ if(e.target && e.target.id==="vas"){ await masterPick(S.user, e.target.value); S.cache={}; S.fb=null; S.me=null; render(); } });
@@ -1533,6 +1544,10 @@ F.onUser(async u=>{
   if(u){
     try{ S.prof=await F.getProfile(u.uid); }catch(e){ S.prof=null; }
     S.role=await F.getRole(u.uid);
+    /* 가입 전에 1강 진단을 했는데 계정에 결과가 없으면 명단에 있는 결과를 내 기록으로 가져옴 */
+    if(S.prof && !S.prof.diag && S.prof.rosterId){ try{ const r=await F.getRoster(S.prof.rosterId);
+      if(r && r.diag){ const add={diag:r.diag, diagAt:r.diag.ts||"", diagFrom:"1강 진단", diagHist:[F.diagSummary(r.diag)]};
+        await F.updateProfile(u.uid, add); Object.assign(S.prof, add); } }catch(e){ console.log("heal",e&&(e.code||e.message)); } }
     S.ownProf=S.prof;   /* 내 계정의 실제 회원 정보 (마스터는 없음) */
     S.myName=(S.prof&&S.prof.name)||"";
     if(S.role && !S.myName){ const a=await F.getAdmin(u.uid); S.myName=(a&&a.name)||"관리자"; }

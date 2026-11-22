@@ -229,3 +229,16 @@ export async function importRoster(entries) {
   return n;
 }
 export const deleteRoster = id => del("roster", id);
+/* 이미 가입한 학회원 중 1강 진단 결과가 비어 있는 사람에게 명단의 결과를 채워 줌 (임원진이 명단을 올릴 때) */
+export async function syncRosterDiag() {
+  const [rs, us] = await Promise.all([listRoster(), listUsers()]);
+  const byUid = Object.fromEntries(us.map(u => [u.uid, u]));
+  let n = 0;
+  for (const r of rs) {
+    const u = r.uid && byUid[r.uid];
+    if (!u || !r.diag || u.diag) continue;
+    await updateDoc(doc(db, "users", r.uid), { diag: r.diag, diagAt: r.diag.ts || "", diagFrom: "1강 진단", diagHist: [diagSummary(r.diag)], updatedAt: now() });
+    n++;
+  }
+  return n;
+}

@@ -1240,7 +1240,11 @@ F.onUser(async u=>{
   if(!u){ if(q.has("view")) location.replace("index.html"); return; }
   /* 마스터 보기: 관리자가 ?as=학회원으로 들어오면 그 학회원의 결과만 보여주고 아무것도 저장하지 않음 */
   const as=q.get("as"); let ro=false, p=null;
-  if(as && q.get("view")==="mine" && (await F.getRole(u.uid))==="admin"){ try{ p=await F.getProfile(as); ro=true; }catch(e){} }
+  if(as && q.get("view")==="mine" && (await F.getRole(u.uid))==="admin"){
+    /* 가입 전 학회원(r:명단id)이거나 계정에 결과가 없으면 명단의 1강 결과를 보여 줌 */
+    try{ if(as.startsWith("r:")){ const r=await F.getRoster(as.slice(2)); p={diag:r&&r.diag}; }
+      else { p=await F.getProfile(as); if(p && !p.diag && p.rosterId){ const r=await F.getRoster(p.rosterId); if(r&&r.diag) p.diag=r.diag; } }
+      ro=true; }catch(e){} }
   let lab=false;
   if(!ro){ try{ p=await F.getProfile(u.uid); }catch(e){} }
   /* 학회원이 아닌 관리자(마스터): 테스트 공간(lab)에 저장하고 비교 기능을 똑같이 씀 */
