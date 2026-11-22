@@ -927,12 +927,12 @@ const EXEC_TABS = [["dash","현황"],["roster","명단·요청"],["members","회
 async function viewExec(){
   if(!isExec() || MODE!=="exec"){ location.hash="#home"; return; }
   const tab = route().arg || "dash";
-  app.innerHTML = header("운영실","")+`<div class="seg scrollx">${EXEC_TABS.map(([k,t])=>`<a href="#exec/${k}" class="${tab===k?"on":""}">${t}</a>`).join("")}</div>
+  app.innerHTML = header("운영실","")+`<div class="seg scrollx">${EXEC_TABS.filter(([k])=>k!=="fb"||S.role==="admin").map(([k,t])=>`<a href="#exec/${k}" class="${tab===k?"on":""}">${t}</a>`).join("")}</div>
     ${isMember()?"":`<div class="notice">아직 학회원 가입을 하지 않은 임원진 계정이에요. 명단·요청 탭에서 명단을 올린 뒤 <a href="./#join" style="color:inherit;font-weight:800">학회원 사이트에서 가입하면</a> 내 공간, 소식, 커뮤니티도 쓸 수 있어요.</div>`}
     <div id="xbody"><div class="skel"></div></div>`+foot();
   const box=$("#xbody");
   const err=e=>{ box.innerHTML=`<section class="card"><p class="err" style="display:block">${authMsg(e)}</p></section>`; };
-  try{ await ({dash:xDash,roster:xRoster,members:xMembers,post:xPost,money:xMoney,minutes:xMinutes,fb:xFeedback,system:xSystem}[tab]||xDash)(box); }catch(e){ err(e); }
+  try{ await ({dash:xDash,roster:xRoster,members:xMembers,post:xPost,money:xMoney,minutes:xMinutes,fb:S.role==="admin"?xFeedback:xDash,system:xSystem}[tab]||xDash)(box); }catch(e){ err(e); }
 }
 const bars=(o,order)=>{ const max=Math.max(1,...Object.values(o)); return (order||Object.keys(o)).map(k=>`<div class="bar"><span>${esc(k)}</span><span class="t"><i style="width:${(o[k]||0)/max*100}%"></i></span><b>${o[k]||0}</b></div>`).join(""); };
 const cnt=a=>a.reduce((m,x)=>(m[x]=(m[x]||0)+1,m),{});

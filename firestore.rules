@@ -8,7 +8,7 @@ rules_version = '2';
 // - 명단 한 줄은 한 계정만 연결할 수 있다
 // - 회원은 자기 정보만 읽고 고친다. 이름, 학번, 등급, 회비 기록은 본인이 못 고친다
 // - 임원진(admins: exec)은 명단, 공지, 일정, 회비, 재정, 회의록을 관리한다
-// - 관리자(admins: admin)만 임원진을 지정하거나 해제한다
+// - 관리자(admins: admin)만 임원진을 지정하거나 해제하고, 커리큘럼 피드백을 본다
 
 service cloud.firestore {
   match /databases/{db}/documents {
@@ -87,8 +87,9 @@ service cloud.firestore {
     }
 
     // 커리큘럼 피드백: 내용(feedback)에는 누가 썼는지 남기지 않고, 낸 여부(feedbackDone)만 따로 둔다
+    // 응답 내용과 응답 여부는 관리자만 본다 (임원진도 못 봄)
     match /feedback/{id} {
-      allow read: if isExec();
+      allow read: if isAdmin();
       allow create: if canUse()
         && request.resource.data.keys().hasOnly(['term', 'answers', 'createdAt'])
         && request.resource.data.term is string
@@ -97,8 +98,8 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     match /feedbackDone/{id} {
-      allow get: if signedIn() && (id.matches('^' + request.auth.uid + '_.+$') || isExec());
-      allow list: if isExec();
+      allow get: if signedIn() && (id.matches('^' + request.auth.uid + '_.+$') || isAdmin());
+      allow list: if isAdmin();
       allow create: if canUse() && id == request.auth.uid + '_' + request.resource.data.term
         && request.resource.data.keys().hasOnly(['term']);
       allow delete: if isAdmin();
