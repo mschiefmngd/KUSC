@@ -831,6 +831,7 @@ async function persist(){
   if(st.admin)return;                      /* 강사 모드에서는 저장하지 않음 */
   const rec=buildRec();
   try{ rec.goals=goals().map(g=>({t:g.t, goal:g.goal})); }catch(e){}   /* 이번 진단이 제안한 목표 세 가지 (변화 추적용) */
+  if(window.KUSC_PREVIEW){ try{ window.KUSC_PREVIEW(rec); }catch(e){} return; }   /* 마스터 미리보기: 이 창에만 두고 어디에도 저장하지 않음 */
   try{ if(window.KUSC_saveDiag) window.KUSC_saveDiag(rec); }catch(e){}   /* 로그인한 회원이면 내 계정에도 저장 */
   window.__local=(window.__local||[]).concat(rec);
   lsSet("kusc:mine",lsGet("kusc:mine","[]").concat(rec));   /* 본인 기기 기록 */
@@ -1240,6 +1241,28 @@ F.onUser(async u=>{
   if(!u){ if(q.has("view")) location.replace("index.html"); return; }
   /* 마스터 보기: 관리자가 ?as=학회원으로 들어오면 그 학회원의 결과만 보여주고 아무것도 저장하지 않음 */
   const as=q.get("as"); let ro=false, p=null;
+  /* 마스터 미리보기: 학회원 화면에서 학기말 진단을 직접 해 봄. 결과는 이 브라우저 창에만 잠시 두고 저장하지 않음 */
+  const pv=q.get("preview");
+  if(pv && (await F.getRole(u.uid))==="admin"){
+    let m=null;
+    try{ if(pv.startsWith("r:")) m=await F.getRoster(pv.slice(2)); else { m=await F.getProfile(pv); } }catch(e){}
+    m=m||{};
+    window.KUSC_NOSHEET=true;
+    window.KUSC_saveDiag=()=>{};
+    window.KUSC_PREVIEW=rec=>{ try{ sessionStorage.setItem("kusc:preview:"+pv, JSON.stringify(rec)); }catch(e){} };
+    const bar=document.createElement("div");
+    bar.textContent="마스터 미리보기예요. 이 진단은 어디에도 저장되지 않아요.";
+    bar.style.cssText="position:sticky;top:0;z-index:60;background:#0E2A1E;color:#fff;font:700 14px Pretendard,sans-serif;padding:12px 16px;text-align:center";
+    document.body.prepend(bar);
+    const a=document.createElement("a"); a.href="index.html#growth"; a.textContent="← 처음과 비교해 보기";
+    a.style.cssText="position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:#036B3F;color:#fff;font:800 14px Pretendard,sans-serif;padding:11px 16px;border-radius:14px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.18)";
+    document.body.appendChild(a);
+    const fill=()=>{ const set=(id,v)=>{ const e=document.getElementById(id); if(e&&!e.value&&v) e.value=v; };
+      set("f_name",m.name); set("f_sid",m.sid); set("f_major",m.major);
+      const g=document.getElementById("f_grade"); if(g&&m.grade&&!g.dataset.kf){ g.dataset.kf="1"; [...g.options].forEach(o=>{ if(o.value===m.grade||o.text===m.grade) g.value=o.value; }); } };
+    new MutationObserver(fill).observe(document.getElementById("app")||document.body,{childList:true,subtree:true}); fill();
+    return;
+  }
   if(as && q.get("view")==="mine" && (await F.getRole(u.uid))==="admin"){
     /* 가입 전 학회원(r:명단id)이거나 계정에 결과가 없으면 명단의 1강 결과를 보여 줌 */
     try{ if(as.startsWith("r:")){ const r=await F.getRoster(as.slice(2)); p={diag:r&&r.diag}; }

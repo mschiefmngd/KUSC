@@ -55,7 +55,7 @@ const won = n => (Number(n)||0).toLocaleString("ko-KR")+"원";
 const isExec = () => !!S.role && (inExec() || !(S.prof && S.prof.viewAs));   /* 마스터 보기 중에는 그 학회원과 똑같이 보이게 */
 const isMember = () => !!S.prof;
 /* 진단 링크: 마스터 보기 중에는 그 학회원의 결과만 보고, 새로 진단하지 않음 */
-const diagHref = mode => (S.prof && S.prof.viewAs) ? (mode==="view" ? `diagnostic.html?view=mine&as=${S.prof.viewAs}` : "javascript:void 0") : (mode==="view" ? "diagnostic.html?view=mine" : "diagnostic.html?from=app");
+const diagHref = mode => (S.prof && S.prof.viewAs) ? (mode==="view" ? `diagnostic.html?view=mine&as=${S.prof.viewAs}` : `diagnostic.html?from=app&preview=${encodeURIComponent(S.prof.viewAs)}`) : (mode==="view" ? "diagnostic.html?view=mine" : "diagnostic.html?from=app");
 const myUid = () => (S.prof && S.prof.viewAs) || (S.user && S.user.uid);
 const myName = () => inExec() ? (S.myName || "운영진") : (S.prof&&S.prof.name) || (S.user&&S.user.displayName) || "운영진";
 
@@ -943,6 +943,9 @@ const GOAL_ST = [["todo","아직"],["doing","하는 중"],["done","해냈어요"
 function viewGrowth(){
   const p=S.prof;
   const H=(p.diagHist&&p.diagHist.length) ? [...p.diagHist].sort((x,y)=>String(x.ts).localeCompare(String(y.ts))) : (p.diag?[{...p.diag}]:[]);
+  /* 마스터 미리보기로 해 본 학기말 진단: 이 창에서만 지금 결과로 겹쳐 보여 줌 */
+  let pvRec=null; if(p.viewAs){ try{ pvRec=JSON.parse(sessionStorage.getItem("kusc:preview:"+p.viewAs)||"null"); }catch(e){} }
+  if(pvRec && H.length) H.push({...F.diagSummary(pvRec), preview:true});
   if(!H.length){ app.innerHTML=header("내 역량의 변화","")+`<section class="card"><p class="desc">아직 진단 기록이 없어요.<br>1강 직무 성향 진단을 먼저 해 주세요.</p>
     <div class="row" style="margin-top:14px"><a class="btn pri" href="${diagHref("new")}">진단 시작하기</a></div></section>`+foot(); return; }
   const f=H[0], l=H[H.length-1], two=H.length>1;
@@ -952,8 +955,10 @@ function viewGrowth(){
   const sign=n=>n>0?`+${n}`:`${n}`;
   app.innerHTML = header("내 역량의 변화","학기 초 진단과 지금을 나란히 놓고, 그때 정한 목표를 얼마나 해냈는지 기록해요.")+`
   <section class="card">
-    <div class="lesson">${two?`처음 ${day(f.ts)} → 지금 ${day(l.ts)}`:`처음 진단 ${day(f.ts)}`}</div>
+    <div class="lesson">${two?`처음 ${day(f.ts)} → ${l.preview?"마스터 미리보기":"지금"} ${day(l.ts)}`:`처음 진단 ${day(f.ts)}`}</div>
     <h2 style="margin-top:4px">${two?"처음과 지금, 이렇게 달라졌어요":"학기말에 한 번 더 진단해 보세요"}</h2>
+    ${l.preview?`<p class="desc">방금 마스터 미리보기로 해 본 진단을 지금 결과로 겹쳐 보여 드리고 있어요.<br>이 결과는 저장되지 않았고, 이 창을 닫으면 사라져요.</p>
+      <div class="row" style="margin-top:10px"><button class="btn sec sm" id="pvclr">미리보기 지우기</button></div>`:""}
     ${two?"":`<p class="desc">같은 진단을 다시 하면 처음 결과와 겹쳐서 비교해 드려요.<br>진단은 몇 번이든 할 수 있고, 할 때마다 기록이 쌓여요.</p>`}
     <div class="hexwrap">${two?hexCmp(f.a,l.a):hexSVG(f.a)}
       <div class="facts">
@@ -984,6 +989,7 @@ function viewGrowth(){
   ${H.length>1?`<section class="card"><h3>진단 기록</h3>
     <div class="scroll"><table class="tbl"><tr><th>날짜</th><th>역량 합계</th><th>가장 닮은 직무</th></tr>
     ${H.map(h=>`<tr><td>${day(h.ts)}</td><td>${sum(h.a)}</td><td>${esc(JOBNAME[h.fit]||h.fit||"")}</td></tr>`).join("")}</table></div></section>`:""}`+foot();
+  if($("#pvclr")) $("#pvclr").onclick=()=>{ try{ sessionStorage.removeItem("kusc:preview:"+p.viewAs); }catch(e){} viewGrowth(); };
   const keepNotes=()=>goals.forEach((g,i)=>{ const e=$("#gn"+i); if(e){ d[g.t]={...(d[g.t]||{}), note:e.value}; } });
   $$("[data-gs]").forEach(c=>c.onclick=()=>{ keepNotes(); const g=goals[+c.dataset.gs]; d[g.t]={...(d[g.t]||{}), status:c.dataset.v}; viewGrowth(); });
   if($("#gsave")) $("#gsave").onclick=async()=>{ keepNotes();
