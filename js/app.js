@@ -7,7 +7,7 @@ import * as FB from "./fb.js";
 const WRITES = new Set(["updateProfile","saveDiag","markProgress","deleteMe","submitRequest","deleteRequest","joinMember","setRsvp",
   "addPost","updatePost","deletePost","addComment","deleteComment","submitFeedback","setAttendance"]);
 const F = new Proxy(FB, { get(t, k){
-  if(WRITES.has(k) && typeof S!=="undefined" && S.prof && S.prof.viewAs && MODE!=="exec") return async()=>{ throw {code:"view-only"}; };
+  if(WRITES.has(k) && typeof S!=="undefined" && S.prof && S.prof.viewAs && !inExec()) return async()=>{ throw {code:"view-only"}; };
   return t[k]; } });
 import { SURVEY, rowsOf, optsOf, allQs, shown, allRows } from "./survey.js";
 
@@ -44,18 +44,20 @@ const $$ = s => [...document.querySelectorAll(s)];
 const app = $("#app");
 const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const nl = s => esc(s).replace(/\n/g,"<br>");
+/* 운영실은 같은 사이트 안의 #exec 화면. 임원진, 관리자 계정에만 입구가 보이고 열림 */
+const inExec = () => MODE==="exec" || route().r==="exec";
 const route = () => { const h=(location.hash||"").slice(1); const [r,arg]=h.split("/"); return {r:r||"main", arg:arg?decodeURIComponent(arg):""}; };
 const toD = x => x&&x.toDate ? x.toDate() : (x ? new Date(x) : null);
 const day = x => { const d=toD(x); return d&&!isNaN(d) ? `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}` : ""; };
 const ymd = s => { if(!s) return ""; const [y,m,d]=String(s).split("-"); const w="일월화수목금토"[new Date(+y,+m-1,+d).getDay()]; return `${+m}월 ${+d}일(${w})`; };
 const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
 const won = n => (Number(n)||0).toLocaleString("ko-KR")+"원";
-const isExec = () => !!S.role && !(S.prof && S.prof.viewAs);   /* 마스터 보기 중에는 그 학회원과 똑같이 보이게 */
+const isExec = () => !!S.role && (inExec() || !(S.prof && S.prof.viewAs));   /* 마스터 보기 중에는 그 학회원과 똑같이 보이게 */
 const isMember = () => !!S.prof;
 /* 진단 링크: 마스터 보기 중에는 그 학회원의 결과만 보고, 새로 진단하지 않음 */
 const diagHref = mode => (S.prof && S.prof.viewAs) ? (mode==="view" ? `diagnostic.html?view=mine&as=${S.prof.viewAs}` : "javascript:void 0") : (mode==="view" ? "diagnostic.html?view=mine" : "diagnostic.html?from=app");
 const myUid = () => (S.prof && S.prof.viewAs) || (S.user && S.user.uid);
-const myName = () => (S.prof&&S.prof.name) || (S.user&&S.user.displayName) || "운영진";
+const myName = () => inExec() ? (S.myName || "운영진") : (S.prof&&S.prof.name) || (S.user&&S.user.displayName) || "운영진";
 
 /* ───────── 문장마다 줄바꿈 ─────────
    화면의 설명 문단(p)에서 마침표, 물음표, 느낌표 뒤에 오는 문장은 항상 새 줄에서 시작하게 함.
@@ -73,14 +75,14 @@ new MutationObserver(()=>breakSentences(app)).observe(app,{childList:true,subtre
 /* ───────── 공통 조각 ───────── */
 function header(title, lead){
   const {r} = route();
-  if(MODE==="exec") return `<div class="top"><a class="brand" href="#exec" aria-label="KUSC 운영실"><b>KUSC</b><span>운영실</span></a>
-    <nav class="tabs" aria-label="메뉴"><a href="./">학회원 사이트</a>${S.user?`<a href="#" data-out>로그아웃</a>`:""}</nav></div>
+  if(inExec()) return `<div class="top"><a class="brand" href="#exec" aria-label="KUSC 운영실"><b>KUSC</b><span>운영실</span></a>
+    <nav class="tabs" aria-label="메뉴"><a href="${MODE==="exec"?"./#home":"#home"}">학회원 사이트로</a>${S.user?`<a href="#" data-out>로그아웃</a>`:""}</nav></div>
     ${title?`<h1>${title}</h1>`:""}${lead?`<p class="lead">${lead}</p>`:""}`;
   const on = k => (r===k || (k==="board"&&r==="post") || (k==="class"&&(r==="l3"||r==="feedback"))) ? "on" : "";
   const tabs = isMember() ? `<nav class="tabs" aria-label="메뉴">
     ${isMember()?`<a href="#home" class="${on("home")}">내 공간</a><a href="#class" class="${on("class")}">강의실</a>
     <a href="#news" class="${on("news")}">소식</a><a href="#board" class="${on("board")}">커뮤니티</a>
-    <a href="#me" class="${on("me")}">내 정보</a>`:""}</nav>` : "";
+    <a href="#me" class="${on("me")}">내 정보</a>${S.role?`<a href="#exec" class="${on("exec")}">운영실</a>`:""}`:""}</nav>` : "";
   return viewAsBar()+`<div class="top"><a class="brand" href="#" aria-label="KUSC 홈페이지"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span></a>${tabs}</div>
     ${title?`<h1>${title}</h1>`:""}${lead?`<p class="lead">${lead}</p>`:""}`;
 }
@@ -1098,10 +1100,10 @@ function viewMe(){
 /* ───────── 임원진 공간 ───────── */
 const EXEC_TABS = [["dash","현황"],["roster","명단·요청"],["members","회원·회비"],["post","공지·일정"],["money","재정"],["minutes","회의록"],["fb","강의 후기"],["system","운영 체계"]];
 async function viewExec(){
-  if(!isExec() || MODE!=="exec"){ location.hash="#home"; return; }
+  if(!S.role){ location.hash="#home"; return; }
   const tab = route().arg || "dash";
   app.innerHTML = header("운영실","")+`<div class="seg scrollx">${EXEC_TABS.filter(([k])=>k!=="fb"||S.role==="admin").map(([k,t])=>`<a href="#exec/${k}" class="${tab===k?"on":""}">${t}</a>`).join("")}</div>
-    ${isMember()?"":`<div class="notice">아직 학회원 가입을 하지 않은 임원진 계정이에요. 명단·요청 탭에서 명단을 올린 뒤 <a href="./#join" style="color:inherit;font-weight:800">학회원 사이트에서 가입하면</a> 내 공간, 소식, 커뮤니티도 쓸 수 있어요.</div>`}
+    ${S.role!=="exec"||S.ownProf?"":`<div class="notice">아직 학회원 가입을 하지 않은 임원진 계정이에요. 명단·요청 탭에서 명단을 올린 뒤 <a href="#join" style="color:inherit;font-weight:800">학회원 사이트에서 가입하면</a> 내 공간, 소식, 커뮤니티도 쓸 수 있어요.</div>`}
     <div id="xbody"><div class="skel"></div></div>`+foot();
   const box=$("#xbody");
   const err=e=>{ box.innerHTML=`<section class="card"><p class="err" style="display:block">${authMsg(e)}</p></section>`; };
@@ -1134,14 +1136,14 @@ async function xDash(box){
     ${tbu("KPI 정의","정체성과 연결한 학기 목표 지표. 임원진 확정 후 여기에 숫자로 걸어 둘 예정")}
     <p class="hint" style="margin-top:8px">지금 바로 볼 수 있는 지표: 가입률, 진단 완료, 회비 납부율, 일정별 참석 응답, 커뮤니티 활동</p>
   </section>`;
-  if(S.role==="admin" && S.prof && !S.prof.master && S.prof.rosterId!==undefined){   /* 관리자 본인이 학회원으로 가입돼 있으면: 마스터 계정으로 전환 */
+  if(S.role==="admin" && S.ownProf){   /* 관리자 본인이 학회원으로 가입돼 있으면: 마스터 계정으로 전환 */
     const mc=document.createElement("section"); mc.className="card";
     mc.innerHTML=`<div class="lesson">관리자 전용</div><h3 style="margin-top:6px">마스터 계정으로 전환</h3>
       <p class="desc">지금 이 계정은 학회원으로도 가입돼 있어요. 전환하면 학회원 명단과 회원 정보에서 빠지고, 관리자 권한과 로그인은 그대로예요. 학회원 화면도 계속 둘러볼 수 있어요.</p>
       <p class="err" id="merr"></p><div class="row"><button class="btn pri sm" id="mgo">학회원에서 빼고 마스터로 쓰기</button></div>`;
     box.prepend(mc);
     $("#mgo").onclick=async()=>{ const b=$("#mgo"); if(b.dataset.armed!=="1"){ b.dataset.armed="1"; b.textContent="정말 전환하기"; return; }
-      try{ await F.leaveMembership(S.user.uid, S.prof.rosterId); location.reload(); }catch(e){ showErr(authMsg(e),"merr"); } };
+      try{ await F.leaveMembership(S.user.uid, S.ownProf.rosterId); location.reload(); }catch(e){ showErr(authMsg(e),"merr"); } };
   }
   if(S.role==="admin"){   /* 관리자만: 3강 사진 열쇠 등록 */
     let has=false; try{ const c=await F.getConfig("gallery"); has=!!(c&&c.key); }catch(e){}
@@ -1413,6 +1415,7 @@ async function render(){
   if(r==="main" || !S.user && r!=="about") return viewLanding();   /* 사이트 첫 화면은 누구에게나 홈페이지 */
   app.className="wrap";
   if(r==="about") return viewAbout();
+  if(r==="exec"){ if(S.role) return viewExec(); location.hash="#home"; return; }
   if(!S.prof){
     if(r==="join"){ if(S.join) S.join.force=true; }
     return viewJoin();
@@ -1437,7 +1440,7 @@ async function masterPick(u, uid){
   try{ localStorage.setItem("kusc:viewAs", m?m.uid:"__me"); }catch(e){}
 }
 function viewAsBar(){
-  if(!(S.prof && (S.prof.viewAs || S.prof.master)) || MODE==="exec") return "";
+  if(!(S.prof && (S.prof.viewAs || S.prof.master)) || inExec()) return "";
   const me=!S.prof.viewAs;
   return `<div class="viewas"><b>마스터 보기</b><select id="vas" aria-label="화면을 볼 사람"><option value="__me" ${me?"selected":""}>마스터 (내 화면)</option>${(S.members||[]).map(m=>`<option value="${m.uid}" ${m.uid===S.prof.viewAs?"selected":""}>${esc(m.name)}${m.grade?` (${esc(m.grade)})`:""}</option>`).join("")}</select>
     <span>${me?"학회원을 고르면 그 사람에게 보이는 화면을 읽기 전용으로 볼 수 있어요.":"님에게 보이는 화면이에요. 읽기 전용이라 아무것도 바뀌지 않아요."}</span><a href="admin.html">운영실</a></div>`;
@@ -1468,10 +1471,13 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
 window.addEventListener("hashchange",()=>{ S.me=null; if(!location.hash.startsWith("#post/")) S.draft=null; render(); scrollTo(0,0); });
 window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); window.__bip=e; });
 F.onUser(async u=>{
-  S.user=u; S.fb=null; S.sheetOpen=false; S.prof=null; S.role=null; S.req=null; S.join=null; S.me=null; S.cache={};
+  S.user=u; S.fb=null; S.sheetOpen=false; S.prof=null; S.ownProf=null; S.myName=""; S.role=null; S.req=null; S.join=null; S.me=null; S.cache={};
   if(u){
     try{ S.prof=await F.getProfile(u.uid); }catch(e){ S.prof=null; }
     S.role=await F.getRole(u.uid);
+    S.ownProf=S.prof;   /* 내 계정의 실제 회원 정보 (마스터는 없음) */
+    S.myName=(S.prof&&S.prof.name)||"";
+    if(S.role && !S.myName){ const a=await F.getAdmin(u.uid); S.myName=(a&&a.name)||"관리자"; }
     /* 마스터(관리자) 계정: 학회원이 아니어도 학회원 화면을 둘러볼 수 있게 가상의 프로필을 씀. 회원 수에는 들어가지 않음 */
     if(!S.prof && S.role==="admin" && MODE!=="exec") await masterPick(u);
     if(!S.prof){ try{ S.req=await F.getMyRequest(u.uid); }catch(e){} }
