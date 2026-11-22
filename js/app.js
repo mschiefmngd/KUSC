@@ -776,6 +776,16 @@ function viewClass(){
 
 /* ───────── 커리큘럼 피드백 설문 ───────── */
 const ETC = "기타";
+/* 엑셀과 구글 시트에 쓰는 열: 질문마다 한 열, 행이 있는 질문은 행마다 한 열 */
+function fbColumns(){ const cols=[]; let i=0;
+  allQs().forEach(q=>{ i++; if(q.type==="grid") allRows(q).forEach(r=>cols.push([q.id,r,`${i}. ${q.q} - ${r}`])); else cols.push([q.id,null,`${i}. ${q.q}`]); });
+  return cols; }
+function fbRow(ans, cols){ return cols.map(([id,row])=>{ const v=(ans||{})[id]; return row?((v||{})[row]||""):Array.isArray(v)?v.join(" / "):(v===undefined?"":v); }); }
+function sheetFeedback(ans){   /* 구글 시트 feedback 탭에도 한 줄 (이름 없이) */
+  const cols=fbColumns();
+  try{ fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify({type:"feedback",term:SURVEY.term,cols:cols.map(c=>c[2]),row:fbRow(ans,cols)})}).catch(()=>{}); }catch(e){}
+}
 const SCALE = ["1","2","3","4","5"];
 function fbAnswers(a){   /* 화면용 임시 값(a)을 저장용 답으로 정리. 안 보인 질문은 버림 */
   const out={};
@@ -854,7 +864,7 @@ async function viewFeedback(){
     if(miss) return showErr(`${num[miss.id]}번 질문에 답해 주세요`);
     if(st.p<P.length-1){ st.p++; viewFeedback(); scrollTo(0,0); return; }
     const b=$("#next"); b.disabled=true; b.textContent="보내는 중…";
-    try{ await F.submitFeedback(S.user.uid, T.term, fbAnswers(a)); S.fb={done:true}; location.hash="#class"; }
+    try{ const ans=fbAnswers(a); await F.submitFeedback(S.user.uid, T.term, ans); sheetFeedback(ans); S.fb={done:true}; location.hash="#class"; }
     catch(e){ b.disabled=false; b.textContent="후기 보내기"; showErr(authMsg(e)); }
   };
 }
@@ -1011,10 +1021,13 @@ async function xMembers(box){
   const role=uid=>(admins.find(a=>a.uid===uid)||{}).role;
   users.sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko"));
   const paid=users.filter(u=>u.dues&&u.dues[TERM]).length;
+  setTimeout(()=>{ const b=$("#tosheet"); if(b) b.onclick=async()=>{ b.disabled=true;
+    for(const u of users){ sheetLog("가입", u); await new Promise(r=>setTimeout(r,350)); }
+    b.textContent=`${users.length}명을 보냈어요. 시트의 site_members 탭을 확인하세요`; }; },0);
   box.innerHTML = `<section class="card">
     <h2>회원과 회비</h2>
     <p class="desc">${TERM_LABEL} 회비 ${DUES}: ${users.length}명 중 ${paid}명 확인. 입금을 확인하면 체크하세요. 본인 화면에도 바로 표시돼요.</p>
-    <div class="row"><button class="btn pri sm" id="mcsv">회원 연락망 CSV</button><button class="btn sec sm" id="unpaid">미납자 이름 복사</button></div>
+    <div class="row"><button class="btn pri sm" id="mcsv">회원 연락망 CSV</button><button class="btn sec sm" id="unpaid">미납자 이름 복사</button><button class="btn sec sm" id="tosheet">가입자 전체를 구글 시트에 쓰기</button></div>
     <p class="ok" id="cp" style="display:none"></p>
     <div class="scroll"><table class="tbl"><tr><th>회비</th><th>이름</th><th>학년</th><th>주전공</th><th>연락처</th><th>진단</th>${S.role==="admin"?"<th>임원진</th>":""}</tr>
       ${users.map(u=>`<tr><td><input type="checkbox" class="due" data-uid="${u.uid}" ${u.dues&&u.dues[TERM]?"checked":""} aria-label="${esc(u.name)} 회비"></td>
@@ -1135,9 +1148,8 @@ async function xFeedback(box){
   <section class="card">${n?blocks.join(""):`<p class="desc">아직 응답이 없어요. 학회원이 강의실의 '후기 남기기'에서 낼 수 있어요.</p>`}</section>`;
   if($("#fbleft")) $("#fbleft").onclick=async()=>{ try{ await navigator.clipboard.writeText(left.join(", ")); $("#fbcopied").style.display="block"; }catch(e){ prompt("복사해서 쓰세요", left.join(", ")); } };
   if($("#fbcsv")) $("#fbcsv").onclick=()=>{
-    const cols=[]; let i=0; allQs().forEach(q=>{ i++; if(q.type==="grid") allRows(q).forEach(r=>cols.push([q.id,r,`${i}. ${q.q} - ${r}`])); else cols.push([q.id,null,`${i}. ${q.q}`]); });
-    csv(`KUSC_${T.term}_커리큘럼피드백.csv`,["응답 날짜",...cols.map(c=>c[2])],
-      rs.map(r=>[day(r.createdAt),...cols.map(([id,row])=>{ const v=(r.answers||{})[id]; return row?((v||{})[row]||""):Array.isArray(v)?v.join(" / "):(v===undefined?"":v); })]));
+    const cols=fbColumns();
+    csv(`KUSC_${T.term}_커리큘럼피드백.csv`,["응답 날짜",...cols.map(c=>c[2])], rs.map(r=>[day(r.createdAt),...fbRow(r.answers,cols)]));
   };
 }
 

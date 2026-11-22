@@ -19,6 +19,7 @@
    - downloads : 양식을 받아 간 기록 (자동)
    - site_members : 학회원 사이트 가입과 가입 요청 기록 (자동)
                     진짜 회원 정보는 Firebase에 있고, 이 탭은 확인용 사본이에요
+   - feedback_2026-2 : 커리큘럼 피드백 응답 (자동, 이름 없이). 학기마다 탭이 새로 생겨요
    ───────────────────────────────────────────── */
 
 var KUSC_DL_MEMBERS = "members";
@@ -53,13 +54,34 @@ var KUSC_SITE_HEAD = ["ts", "kind", "name", "sid", "phone", "grade", "age", "gen
 function KUSC_dlPost_(e) {
   var d;
   try { d = JSON.parse(e.postData.contents); } catch (err) { return null; }
-  /* 학회원 사이트 가입 기록 (POST, type: "site") */
+  /* 학회원 사이트 가입 기록 (POST, type: "site")
+     같은 학번의 '가입' 줄이 이미 있으면 새로 쌓지 않고 그 줄을 최신 정보로 덮어씀 */
   if (d && d.type === "site") {
-    KUSC_dlSheet_(KUSC_SITE_TAB, KUSC_SITE_HEAD).appendRow([
-      new Date().toISOString(), d.kind || "", d.name || "", "'" + KUSC_dlDigits_(d.sid),
+    var sh = KUSC_dlSheet_(KUSC_SITE_TAB, KUSC_SITE_HEAD);
+    var sid = KUSC_dlDigits_(d.sid);
+    var row = [
+      new Date().toISOString(), d.kind || "", d.name || "", "'" + sid,
       d.phone || "", d.grade || "", d.age || "", d.gender || "", d.major || "", d.major2 || "",
       (d.jobs || []).join("/"), d.stage || "", d.email || "", d.msg || ""
-    ]);
+    ];
+    if (d.kind === "가입" && sid) {
+      var v = sh.getDataRange().getValues();
+      for (var i = 1; i < v.length; i++) {
+        if (v[i][1] === "가입" && KUSC_dlDigits_(v[i][3]) === sid) {
+          sh.getRange(i + 1, 1, 1, row.length).setValues([row]);
+          return KUSC_dlJson_({ ok: true, updated: true });
+        }
+      }
+    }
+    sh.appendRow(row);
+    return KUSC_dlJson_({ ok: true });
+  }
+  /* 커리큘럼 피드백 (POST, type: "feedback") — 이름 없이 한 줄씩. 학기마다 탭이 따로 생김 */
+  if (d && d.type === "feedback") {
+    var head = ["ts"].concat(d.cols || []);
+    var fs = KUSC_dlSheet_("feedback_" + String(d.term || ""), head);
+    if (fs.getLastColumn() < head.length) fs.getRange(1, 1, 1, head.length).setValues([head]);
+    fs.appendRow([new Date().toISOString()].concat(d.row || []));
     return KUSC_dlJson_({ ok: true });
   }
   if (!d || d.type !== "download") return null;
