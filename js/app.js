@@ -57,6 +57,19 @@ const diagHref = mode => (S.prof && S.prof.viewAs) ? (mode==="view" ? `diagnosti
 const myUid = () => (S.prof && S.prof.viewAs) || (S.user && S.user.uid);
 const myName = () => (S.prof&&S.prof.name) || (S.user&&S.user.displayName) || "운영진";
 
+/* ───────── 문장마다 줄바꿈 ─────────
+   화면의 설명 문단(p)에서 마침표, 물음표, 느낌표 뒤에 오는 문장은 항상 새 줄에서 시작하게 함.
+   학회원이 쓴 글(.body)과 입력칸은 건드리지 않음 */
+function breakSentences(root){
+  root.querySelectorAll("p:not(.body)").forEach(p=>{
+    const w=document.createTreeWalker(p, NodeFilter.SHOW_TEXT), hits=[];
+    while(w.nextNode()){ const t=w.currentNode; if(!t.parentElement.closest(".body,textarea,input,a.btn,button") && /[.!?]\s+\S/.test(t.nodeValue)) hits.push(t); }
+    hits.forEach(t=>{ const parts=t.nodeValue.split(/(?<=[.!?])\s+(?=\S)/); const f=document.createDocumentFragment();
+      parts.forEach((x,i)=>{ if(i) f.appendChild(document.createElement("br")); f.appendChild(document.createTextNode(x)); }); t.replaceWith(f); });
+  });
+}
+new MutationObserver(()=>breakSentences(app)).observe(app,{childList:true,subtree:true});
+
 /* ───────── 공통 조각 ───────── */
 function header(title, lead){
   const {r} = route();
@@ -354,8 +367,8 @@ function viewLanding(){
   <section class="lsec dark" id="vision">
     ${landStars()}
     <div class="lin narrow">
-      <h2>우리의 목표는<br>카르텔이에요</h2>
-      <p class="lsub">여기서 함께 반짝인 별들이 업계 곳곳에 자리 잡고, 서로를 끌어주는 별자리가 되는 것. 졸업한 선배는 한 번 강연하고 끝나는 손님이 아니라, 후배를 이끌고 기회를 나누며 학회를 함께 키우는 사람이에요.</p>
+      <h2>우리의 목표는<br>건강한 카르텔이에요</h2>
+      <p class="lsub">여기서 함께 반짝인 별들이 업계 곳곳에 자리 잡고, 서로를 끌어주는 별자리가 되는 것.<br>그게 KUSC가 그리는 모습이에요.<br>졸업한 선배는 한 번 강연하고 떠나는 손님이 아니에요.<br>후배를 이끌고 기회를 나누며, 학회를 함께 키워 가요.</p>
       <div class="lduo trio">
         <div><h3>엄격하게 고르고</h3><p>진출 의지가 분명한 학생을 서류와 면접으로 골라요. 들어오기 어려운 만큼 서로를 믿을 수 있어요.</p></div>
         <div><h3>깊게 단련하고</h3><p>실제 기업의 문제로 한 학기를 채워요. 같은 문제를 끝까지 붙들어 본 사이라 서로의 실력을 알아요.</p></div>
