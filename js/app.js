@@ -54,7 +54,7 @@ function header(title, lead){
   if(MODE==="exec") return `<div class="top"><a class="brand" href="#exec" aria-label="KUSC 운영실"><b>KUSC</b><span>운영실</span></a>
     <nav class="tabs" aria-label="메뉴"><a href="./">학회원 사이트</a>${S.user?`<a href="#" data-out>로그아웃</a>`:""}</nav></div>
     ${title?`<h1>${title}</h1>`:""}${lead?`<p class="lead">${lead}</p>`:""}`;
-  const on = k => (r===k || (k==="board"&&r==="post") || (k==="news"&&r==="news")) ? "on" : "";
+  const on = k => (r===k || (k==="board"&&r==="post") || (k==="class"&&(r==="l3"||r==="feedback"))) ? "on" : "";
   const tabs = isMember() ? `<nav class="tabs" aria-label="메뉴">
     ${isMember()?`<a href="#home" class="${on("home")}">내 공간</a><a href="#class" class="${on("class")}">강의실</a>
     <a href="#news" class="${on("news")}">소식</a><a href="#board" class="${on("board")}">커뮤니티</a>
@@ -753,11 +753,12 @@ async function viewPost(id){
 /* ───────── 강의실 ───────── */
 /* 3강 기록: 연사와 현장 사진. 사진은 잠긴 파일이고, 학회원만 받는 열쇠로 화면에서 풀어 보여줌 */
 const L3_INFO = {
-  applied: 59,
-  speakers: [["PM","신지환"],["전략기획","황성준"],["IB","봉찬희"],["PE",""],["컨설팅","백재웅"],["VC","장원준"]],
+  attended: 80,
+  speakers: [["PM","신지환","카카오페이"],["전략기획","황성준","현대기아자동차"],["IB","봉찬희","NH투자증권"],
+             ["PE","백승현","J&M Partners"],["컨설팅","백재웅","PwC컨설팅"],["VC","장원준","Google"]],
   photos: [
     ["01","10월 28일, 강연장"],["02","오프닝"],["03","오프닝: Winning Mentality"],
-    ["04","VC 장원준"],["05","PE"],["06","IB 봉찬희"],["07","전략기획 황성준"],["08","PM 신지환"],
+    ["04","VC 장원준"],["05","PE 백승현"],["06","IB 봉찬희"],["07","전략기획 황성준"],["08","PM 신지환"],
     ["09","뒤풀이"],["10","뒤풀이"],["11","뒤풀이"]
   ]
 };
@@ -799,6 +800,27 @@ async function galView(i){
   document.onkeydown=e=>{ if(e.key==="Escape") close(); if(e.key==="ArrowLeft") galView(i-1); if(e.key==="ArrowRight") galView(i+1); };
   try{ const u=await galImg(P[i][0],"f"); const w=lb.querySelector(".lbimg"); if(w) w.innerHTML=`<img src="${u}" alt="${esc(P[i][1])}">`; }catch(e){}
 }
+function viewL3(){
+  app.innerHTML = header("","")+`<a class="back" href="#class">← 강의실</a>
+  <section class="card" style="margin-top:12px">
+    <div class="lesson">3강 · 전략 직무 검증하기</div>
+    <h2 style="margin-top:4px">그날의 현장 돌아보기</h2>
+    <p class="desc">10월 28일, 경영대학과 함께 연 공개 행사에 학회원과 비학회원 약 ${L3_INFO.attended}명이 참석했어요. 여섯 직무의 현직자 선배들이 진출 노하우와 출근 후기를 직접 들려줬어요.</p>
+    <p class="desc" style="margin-top:10px">평소라면 모시기 어려운 우리 학교 최고의 아웃풋들을 한자리에서 만날 수 있는 좋은 기회였어요.</p>
+    <p class="desc" style="margin-top:10px">이례적으로 김추연 지도교수님뿐 아니라 유재욱 경영대학장님께서도 직접 참석해, 학회에 대한 지원과 관심을 약속해 주셨어요. 학회 행사에 학장님이 함께하시는 일은 거의 없어서 더 뜻깊은 자리였어요.</p>
+  </section>
+  <section class="card">
+    <h3>함께해 준 선배들</h3>
+    <div class="spk">${L3_INFO.speakers.map(([j,n,c])=>`<div><small>${esc(j)}</small><b>${esc(n)}</b><span>${esc(c)}</span></div>`).join("")}</div>
+  </section>
+  <section class="card">
+    <h3>현장 사진</h3>
+    <p class="hint" style="margin-top:4px">사진을 누르면 크게 볼 수 있어요.</p>
+    <div class="gal" id="gal3"><div class="skel"></div></div>
+    <a class="go" href="apply.html">그날의 신청 기록<b>→</b></a>
+  </section>`+foot();
+  galRender();
+}
 function viewClass(){
   const p=S.prof, g=p.progress||{}, done=[!!p.diag,!!g.l2,!!g.l3,!!g.l4];
   const mark=k=>`data-mark="${k}"`, ok=i=>done[i]?' <span class="badge ku">완료</span>':"";
@@ -811,24 +833,22 @@ function viewClass(){
         <polygon points="110,30 172,58 150,102 110,124 52,94 76,62" fill="rgba(3,107,63,.18)" stroke="var(--ku)" stroke-width="3" stroke-linejoin="round"/></svg></div>
       <div class="lesson" style="margin-top:20px">1강 · 전략 직무 정의하기${ok(0)}</div>
       <h2 style="margin-top:4px">직무 성향 진단</h2>
-      <p class="desc">일상 속 상황 17개로 나의 역량 모양을 그리고, 여섯 전략 직무 중 어디와 닮았는지 확인합니다.</p>
+      <p class="desc">일상 속 상황 17개로 나의 역량 모양을 그리고, 여섯 전략 직무 중 어디와 닮았는지 확인해요.</p>
       <a class="go" href="${p.diag?"diagnostic.html?view=mine":"diagnostic.html?from=app"}">${p.diag?"내 결과 보기":"진단 시작하기"}<b>→</b></a>
     </section>
     <section class="card lec">
       <div class="art" id="cast"></div>
       <div class="lesson" style="margin-top:20px">2강 · 전략 직무 구조화하기${ok(1)}</div>
       <h2 style="margin-top:4px">전략 직무 시뮬레이션</h2>
-      <p class="desc">디저트 브랜드 ‘하프’가 매각되기까지 7년. 회사가 커질 때마다 어떤 직무가 왜 필요해지는지 따라갑니다.</p>
+      <p class="desc">디저트 브랜드 ‘하프’가 매각되기까지 7년. 회사가 커질 때마다 어떤 직무가 왜 필요해지는지 따라가요.</p>
       <a class="go" href="simulation.html" ${mark("l2")}>시뮬레이션 열기<b>→</b></a>
     </section>
     <section class="card lec l3">
       <div class="lesson">3강 · 전략 직무 검증하기${ok(2)}</div>
       <h2 style="margin-top:4px">여섯 직무 현직자 강연</h2>
-      <p class="desc">10월 28일, 경영대학과 함께 연 공개 행사였어요. 학회원과 경영대 학우 ${L3_INFO.applied}명이 신청했고, 여섯 직무의 현직자가 진출 노하우와 출근 후기를 직접 들려줬어요.</p>
-      <p class="desc" style="margin-top:10px">이례적으로 지도교수님뿐 아니라 유재욱 경영대학장님께서도 직접 참석해, 학회에 대한 지원과 관심을 약속해 주셨어요. 학회 행사에 학장님이 함께하시는 일은 거의 없어서 더 뜻깊은 자리였어요.</p>
-      <div class="spk">${L3_INFO.speakers.map(([j,n])=>`<div><small>${esc(j)}</small><b>${esc(n||"현직자")}</b></div>`).join("")}</div>
-      <div class="gal" id="gal3"><div class="skel"></div></div>
-      <a class="go" href="apply.html" ${mark("l3")}>그날의 신청 기록<b>→</b></a>
+      <p class="desc">10월 28일, 여섯 직무의 현직자 선배들과 학회원, 비학회원 약 ${L3_INFO.attended}명이 함께한 경영대학 공동 행사였어요.</p>
+      <div class="spkmini">${L3_INFO.speakers.map(([j,n])=>`<span><small>${esc(j)}</small>${esc(n)}</span>`).join("")}</div>
+      <a class="go" href="#l3" ${mark("l3")}>그날의 현장 돌아보기<b>→</b></a>
     </section>
     <section class="card lec">
       <div class="lesson">4강 · 전략 직무 진입하기${ok(3)}</div>
@@ -849,7 +869,6 @@ function viewClass(){
     g.innerHTML = done ? `<p class="ok" style="margin:0">후기를 남겨 주셔서 고마워요. 다음 학기 설계에 그대로 쓸게요.</p>`
       : `<a class="btn pri" href="#feedback">후기 남기기</a>`; }).catch(()=>{ const g=$("#fbgo"); if(g) g.innerHTML=`<a class="btn pri" href="#feedback">후기 남기기</a>`; });
   if(typeof chr==="function") $("#cast").innerHTML=["VC","PM","BP","CS","PE","IB"].map(k=>chr(k)).join("");
-  galRender();
   $$("[data-mark]").forEach(a=>a.addEventListener("click",()=>{ const k=a.dataset.mark;
     if(!(S.prof.progress||{})[k]){ F.markProgress(S.user.uid,k).catch(()=>{}); S.prof.progress={...(S.prof.progress||{}),[k]:new Date().toISOString()}; } }));
 }
@@ -1320,6 +1339,7 @@ async function render(){
   if(r==="post") return viewPost(arg);
   if(r==="class") return viewClass();
   if(r==="feedback") return viewFeedback();
+  if(r==="l3") return viewL3();
   if(r==="me") return viewMe();
   return viewHome();
 }
