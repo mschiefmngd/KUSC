@@ -5,6 +5,15 @@
 import * as F from "./fb.js";
 
 /* ───────── 고정 값 (학기마다 여기만 고치면 됨) ───────── */
+/* 임원진 공간은 admin.html 에서만 열림 (학회원 사이트에는 입구가 없음) */
+const MODE = window.KUSC_MODE === "exec" ? "exec" : "site";
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbzr2-vwdBV4v7U6qliXPlFWWu0Mo9S7tC7_70xqGdqeCd0wPDmUB52FyB7xB510o-oT/exec";
+/* 가입과 가입 요청을 구글 시트 site_members 탭에도 한 줄씩 남김 (실패해도 가입에는 영향 없음) */
+function sheetLog(kind, d){
+  try{ fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify({type:"site",kind,name:d.name||"",sid:d.sid||"",phone:d.phone||"",grade:d.grade||"",age:d.age||"",gender:d.gender||"",
+      major:d.major||"",major2:d.major2||"",jobs:d.jobs||[],stage:d.stage||"",email:d.email||"",msg:d.msg||""})}).catch(()=>{}); }catch(e){}
+}
 const TERM = "2026-2", TERM_LABEL = "2026년 2학기", DUES = "15,000원";
 const JOBS = ["IB","PE","VC","컨설팅","전략기획","PM"];
 const GRADES = ["1학년","2학년","3학년","4학년","초과학기·졸업유예","졸업생","대학원"];
@@ -41,12 +50,14 @@ const myName = () => (S.prof&&S.prof.name) || (S.user&&S.user.displayName) || "�
 /* ───────── 공통 조각 ───────── */
 function header(title, lead){
   const {r} = route();
+  if(MODE==="exec") return `<div class="top"><a class="brand" href="#exec" aria-label="KUSC 운영실"><b>KUSC</b><span>운영실</span></a>
+    <nav class="tabs" aria-label="메뉴"><a href="./">학회원 사이트</a>${S.user?`<a href="#" data-out>로그아웃</a>`:""}</nav></div>
+    ${title?`<h1>${title}</h1>`:""}${lead?`<p class="lead">${lead}</p>`:""}`;
   const on = k => (r===k || (k==="board"&&r==="post") || (k==="news"&&r==="news")) ? "on" : "";
-  const tabs = (isMember()||isExec()) ? `<nav class="tabs" aria-label="메뉴">
+  const tabs = isMember() ? `<nav class="tabs" aria-label="메뉴">
     ${isMember()?`<a href="#home" class="${on("home")}">내 공간</a><a href="#news" class="${on("news")}">소식</a>
     <a href="#board" class="${on("board")}">커뮤니티</a><a href="#class" class="${on("class")}">강의실</a>
-    <a href="#me" class="${on("me")}">내 정보</a>`:""}
-    ${isExec()?`<a href="#exec" class="${on("exec")}">임원진</a>`:""}</nav>` : "";
+    <a href="#me" class="${on("me")}">내 정보</a>`:""}</nav>` : "";
   return `<div class="top"><a class="brand" href="#" aria-label="KUSC 홈페이지"><b>KUSC</b><span>건국대학교 경영대학 전략학회</span></a>${tabs}</div>
     ${title?`<h1>${title}</h1>`:""}${lead?`<p class="lead">${lead}</p>`:""}`;
 }
@@ -376,8 +387,8 @@ function renderLogin(){
   const gIcon = `<svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`;
   const card=$("#sheetcard");
   card.innerHTML = `<button class="sheetx" data-close aria-label="닫기">×</button>
-    <h2>${isReset?"비밀번호 다시 설정":isUp?"이메일로 가입하기":"학회원 로그인"}</h2>
-    <p class="desc">${isReset?"가입한 이메일로 비밀번호를 다시 정하는 링크를 보내 드려요.":"가입하면 학회원 명단과 이름, 학번을 맞춰 확인해요."}</p>
+    <h2>${isReset?"비밀번호 다시 설정":isUp?"이메일로 가입하기":MODE==="exec"?"운영실 로그인":"학회원 로그인"}</h2>
+    <p class="desc">${isReset?"가입한 이메일로 비밀번호를 다시 정하는 링크를 보내 드려요.":MODE==="exec"?"임원진으로 지정된 계정만 들어올 수 있어요.":"가입하면 학회원 명단과 이름, 학번을 맞춰 확인해요."}</p>
     ${inApp && !isReset ? `<div class="notice">카카오톡이나 인스타그램 안에서 열면 구글 로그인이 막혀 있어요.<br>
       <button class="link" id="ext" style="color:inherit;font-weight:800">다른 브라우저로 열기</button> 또는 이메일로 로그인해 주세요.</div>`:""}
     ${isReset?"":`<button class="btn line block" id="google" style="margin-top:18px">${gIcon}구글 계정으로 계속하기</button>
@@ -389,7 +400,7 @@ function renderLogin(){
     <button class="btn pri block" id="go" style="margin-top:18px">${isReset?"링크 보내기":isUp?"가입하기":"로그인"}</button>
     <div style="display:flex;justify-content:space-between;margin-top:14px;gap:10px">
       ${isReset?`<button class="link" data-mode="login">로그인으로 돌아가기</button>`
-        :`<button class="link" data-mode="${isUp?"login":"signup"}">${isUp?"이미 계정이 있어요":"처음이에요, 이메일로 가입할게요"}</button>
+        :`${MODE==="exec"?"<span></span>":`<button class="link" data-mode="${isUp?"login":"signup"}">${isUp?"이미 계정이 있어요":"처음이에요, 이메일로 가입할게요"}</button>`}
           <button class="link" data-mode="reset">비밀번호를 잊었어요</button>`}
     </div>`;
   card.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeLogin);
@@ -439,7 +450,6 @@ function viewJoin(){
   app.innerHTML = header("","")+`<section class="card" style="margin-top:22px">${bars}${body}
     <p class="err" id="err"></p>
     <div class="row" style="margin-top:24px"><button class="btn sec" id="back" style="flex:0 0 96px">${step===1?"나가기":"이전"}</button><button class="btn pri" id="next" style="flex:1">${step===3?"가입 완료":"다음"}</button></div>
-    ${step===1&&isExec()?`<p class="hint" style="margin-top:14px">임원진 계정이에요. 명단을 먼저 올리려면 <a href="#exec" style="color:var(--ku);font-weight:800">임원진 공간</a>으로 가세요.</p>`:""}
   </section>`+foot();
   const keep=()=>{ if(step===1){ d.name=val("name"); d.sid=val("sid"); } if(step===2){ d.phone=val("phone"); d.age=val("age"); d.major=val("major"); d.major2=val("major2"); } };
   bindChips(d, ()=>{ keep(); viewJoin(); });
@@ -474,7 +484,7 @@ function viewJoin(){
     const data={name:d.name, sid:d.sid, phone:d.phone, grade:d.grade, age:d.age||"", gender:d.gender||"", major:d.major, major2:d.major2||"",
       jobs:d.jobs, stage:d.stage, email:S.user.email||"", consent:true, consentAt:new Date().toISOString(), progress:{}};
     if(J.roster&&J.roster.diag){ data.diag=J.roster.diag; data.diagAt=J.roster.diag.ts||""; data.diagFrom="1강 진단"; }
-    try{ await F.joinMember(S.user.uid, J.rid, data); S.prof=await F.getProfile(S.user.uid); S.join=null; S.req=null; location.hash="#home"; render(); }
+    try{ await F.joinMember(S.user.uid, J.rid, data); sheetLog("가입", data); S.prof=await F.getProfile(S.user.uid); S.join=null; S.req=null; location.hash="#home"; render(); }
     catch(e){ b.disabled=false; b.textContent="가입 완료"; showErr(authMsg(e)); }
   };
 }
@@ -496,7 +506,7 @@ function viewNotFound(){
     if(!/^01\d{8,9}$/.test(p.replace(/\D/g,""))) return showErr("휴대폰 번호를 정확히 입력해 주세요");
     const b=$("#req"); b.disabled=true;
     const r={name:d.name.replace(/\s/g,""), sid:d.sid.replace(/\D/g,""), phone:fmtPhone(p), major:val("rmajor"), msg:val("rmsg"), email:S.user.email||""};
-    try{ await F.submitRequest(S.user.uid, r); S.req=r; S.join.force=false; viewPending(); }catch(e){ b.disabled=false; showErr(authMsg(e)); }
+    try{ await F.submitRequest(S.user.uid, r); sheetLog("가입 요청", r); S.req=r; S.join.force=false; viewPending(); }catch(e){ b.disabled=false; showErr(authMsg(e)); }
   };
 }
 function viewPending(){
@@ -815,10 +825,10 @@ function viewMe(){
 /* ───────── 임원진 공간 ───────── */
 const EXEC_TABS = [["dash","현황"],["roster","명단·요청"],["members","회원·회비"],["post","공지·일정"],["money","재정"],["minutes","회의록"],["system","운영 체계"]];
 async function viewExec(){
-  if(!isExec()){ location.hash="#home"; return; }
+  if(!isExec() || MODE!=="exec"){ location.hash="#home"; return; }
   const tab = route().arg || "dash";
-  app.innerHTML = header("임원진","")+`<div class="seg scrollx">${EXEC_TABS.map(([k,t])=>`<a href="#exec/${k}" class="${tab===k?"on":""}">${t}</a>`).join("")}</div>
-    ${isMember()?"":`<div class="notice">아직 회원 정보가 없는 임원진 계정이에요. 명단을 올린 뒤 <a href="#join" style="color:inherit;font-weight:800">가입을 마치면</a> 홈, 소식, 커뮤니티도 쓸 수 있어요.</div>`}
+  app.innerHTML = header("운영실","")+`<div class="seg scrollx">${EXEC_TABS.map(([k,t])=>`<a href="#exec/${k}" class="${tab===k?"on":""}">${t}</a>`).join("")}</div>
+    ${isMember()?"":`<div class="notice">아직 학회원 가입을 하지 않은 임원진 계정이에요. 명단·요청 탭에서 명단을 올린 뒤 <a href="./#join" style="color:inherit;font-weight:800">학회원 사이트에서 가입하면</a> 내 공간, 소식, 커뮤니티도 쓸 수 있어요.</div>`}
     <div id="xbody"><div class="skel"></div></div>`+foot();
   const box=$("#xbody");
   const err=e=>{ box.innerHTML=`<section class="card"><p class="err" style="display:block">${authMsg(e)}</p></section>`; };
@@ -1059,11 +1069,11 @@ async function render(){
   if(!S.ready) return;
   const {r, arg} = route();
   window.onscroll=null; document.body.style.overflow="";
+  if(MODE==="exec") return renderExecDoor();
   if(r==="main" || !S.user && r!=="about") return viewLanding();   /* 사이트 첫 화면은 누구에게나 홈페이지 */
   app.className="wrap";
   if(r==="about") return viewAbout();
   if(!S.prof){
-    if(isExec() && r==="exec") return viewExec();
     if(r==="join"){ if(S.join) S.join.force=true; }
     return viewJoin();
   }
@@ -1072,9 +1082,27 @@ async function render(){
   if(r==="post") return viewPost(arg);
   if(r==="class") return viewClass();
   if(r==="me") return viewMe();
-  if(r==="exec") return viewExec();
   return viewHome();
 }
+/* 운영실(admin.html) 입구: 임원진 계정만 통과 */
+function renderExecDoor(){
+  app.className="wrap";
+  if(!S.user){
+    app.innerHTML = header("","")+`<section class="card gate" id="sheetcard" style="margin-top:22px"></section>`+foot();
+    return renderLogin();
+  }
+  if(!isExec()){
+    app.innerHTML = header("","")+`<section class="card" style="margin-top:22px">
+      <h2>임원진 계정이 아니에요</h2>
+      <p class="desc">${esc(S.user.email||"이 계정")}은 운영실에 들어올 수 없어요. 임원진이라면 관리자에게 지정을 부탁하고, 지정된 뒤 다시 로그인해 주세요.</p>
+      <div class="row" style="margin-top:20px"><a class="btn pri" href="./">학회원 사이트로</a><button class="btn sec" data-out>다른 계정으로 로그인</button></div>
+    </section>`+foot();
+    return;
+  }
+  if(route().r!=="exec"){ history.replaceState(null,"","#exec"); }
+  return viewExec();
+}
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-out]"); if(t){ e.preventDefault(); F.signOut(); } });
 window.addEventListener("hashchange",()=>{ S.me=null; if(!location.hash.startsWith("#post/")) S.draft=null; render(); scrollTo(0,0); });
 window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); window.__bip=e; });
 F.onUser(async u=>{
@@ -1083,7 +1111,7 @@ F.onUser(async u=>{
     try{ S.prof=await F.getProfile(u.uid); }catch(e){ S.prof=null; }
     S.role=await F.getRole(u.uid);
     if(!S.prof){ try{ S.req=await F.getMyRequest(u.uid); }catch(e){} }
-    if(S.afterLogin){ S.afterLogin=false; S.ready=true; const to = S.prof ? "#home" : "#join"; if(location.hash!==to){ location.hash = to; return; } }
+    if(S.afterLogin){ S.afterLogin=false; S.ready=true; const to = MODE==="exec" ? "#exec" : S.prof ? "#home" : "#join"; if(location.hash!==to){ location.hash = to; return; } }
   }
   S.ready=true; render();
 });

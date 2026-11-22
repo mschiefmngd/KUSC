@@ -17,6 +17,8 @@
    만들어지는 탭
    - members   : 학회원 명단 (운영진이 채움)
    - downloads : 양식을 받아 간 기록 (자동)
+   - site_members : 학회원 사이트 가입과 가입 요청 기록 (자동)
+                    진짜 회원 정보는 Firebase에 있고, 이 탭은 확인용 사본이에요
    ───────────────────────────────────────────── */
 
 var KUSC_DL_MEMBERS = "members";
@@ -44,9 +46,22 @@ function KUSC_dlNorm_(s) { return String(s == null ? "" : s).replace(/\s/g, "");
 function KUSC_dlDigits_(s) { return String(s == null ? "" : s).replace(/\D/g, ""); }
 
 /* 비학회원 정보 저장 (POST, type: "download") */
+var KUSC_SITE_TAB = "site_members";
+var KUSC_SITE_HEAD = ["ts", "kind", "name", "sid", "phone", "grade", "age", "gender",
+                      "major", "major2", "jobs", "stage", "email", "msg"];
+
 function KUSC_dlPost_(e) {
   var d;
   try { d = JSON.parse(e.postData.contents); } catch (err) { return null; }
+  /* 학회원 사이트 가입 기록 (POST, type: "site") */
+  if (d && d.type === "site") {
+    KUSC_dlSheet_(KUSC_SITE_TAB, KUSC_SITE_HEAD).appendRow([
+      new Date().toISOString(), d.kind || "", d.name || "", "'" + KUSC_dlDigits_(d.sid),
+      d.phone || "", d.grade || "", d.age || "", d.gender || "", d.major || "", d.major2 || "",
+      (d.jobs || []).join("/"), d.stage || "", d.email || "", d.msg || ""
+    ]);
+    return KUSC_dlJson_({ ok: true });
+  }
   if (!d || d.type !== "download") return null;
   KUSC_dlSheet_(KUSC_DL_LOG, KUSC_DL_HEAD).appendRow([
     new Date().toISOString(), "guest",
