@@ -406,3 +406,30 @@ main.land{max-width:none;padding:0;background:#fff;color:#191F28;--page:#F2F4F6;
 .spkmini small{color:var(--ku);font-weight:800;margin-right:5px}
 .spk span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
 a.back{display:inline-block;margin-top:14px;font-weight:800;color:var(--sub);text-decoration:none}
+/* 3강 현장 돌아보기 (토스식 블록) */
+.spkmini em{font-style:normal;font-weight:600;color:var(--mute);margin-left:5px;font-size:12.5px}
+.story{margin-top:8px}
+.story .st{background:var(--card);border-radius:28px;padding:32px 28px;margin-top:14px;box-shadow:var(--shadow)}
+.story .st h2{font-size:26px;line-height:1.35;letter-spacing:-.03em;font-weight:900}
+.story .st.hero h2{font-size:30px;margin-top:6px}
+.story .st p{font-size:16.5px;line-height:1.75;color:var(--sub);margin-top:12px}
+.story .st.next{background:#0E2A1E;color:#fff}
+.story .st.next h2{color:#fff}
+.story .st.next p{color:rgba(255,255,255,.78)}
+.ph3{position:relative;display:block;border:0;padding:0;border-radius:18px;overflow:hidden;background:var(--soft);cursor:zoom-in;width:100%}
+.ph3 img{width:100%;height:100%;object-fit:cover;display:block}
+.ph3 em{position:absolute;left:8px;bottom:8px;font-style:normal;font-size:12px;font-weight:800;color:#fff;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:8px}
+.ph3.wide{aspect-ratio:4/3;margin-top:20px}
+.ph3.locked{cursor:default}
+.ph3:focus-visible{outline:3px solid var(--ku);outline-offset:2px}
+.sp3{margin-top:20px;display:grid;gap:14px}
+.sprow{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center}
+.sprow .ph3.sq{aspect-ratio:1;border-radius:16px}
+.sprow .ph3 em{display:none}
+.sprow small{font-size:12.5px;font-weight:900;color:var(--ku)}
+.sprow b{display:block;font-size:17px;margin-top:2px}
+.sprow b span{font-size:13.5px;font-weight:600;color:var(--mute);margin-left:4px}
+.sprow p{font-size:14.5px!important;margin-top:4px!important;line-height:1.55!important}
+.trio3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}
+.trio3 .ph3{aspect-ratio:1}
+@media (max-width:700px){.story .st{padding:26px 20px;border-radius:24px}.story .st h2{font-size:22px}.story .st.hero h2{font-size:25px}.sprow{grid-template-columns:76px 1fr}}

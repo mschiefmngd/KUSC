@@ -774,7 +774,7 @@ const L3_INFO = {
   speakers: [["PM","신지환","카카오페이"],["전략기획","황성준","현대기아자동차"],["IB","봉찬희","NH투자증권"],
              ["PE","백승현","J&M Partners"],["컨설팅","백재웅","PwC컨설팅"],["VC","장원준","Google"]],
   photos: [
-    ["01","10월 28일, 강연장"],["02","오프닝"],["03","오프닝: Winning Mentality"],
+    ["01","10월 28일, 강연장"],["02","김추연 담당교수님 오프닝"],["03","컨설팅 백재웅"],
     ["04","VC 장원준"],["05","PE 백승현"],["06","IB 봉찬희"],["07","전략기획 황성준"],["08","PM 신지환"],
     ["09","뒤풀이"],["10","뒤풀이"],["11","뒤풀이"]
   ]
@@ -794,15 +794,14 @@ async function galImg(id, size){
   const plain = await crypto.subtle.decrypt({name:"AES-GCM", iv:buf.slice(0,12)}, await galOpen(), buf.slice(12));
   return (galCache[k] = URL.createObjectURL(new Blob([plain], {type:"image/jpeg"})));
 }
-async function galRender(){
-  const box=$("#gal3"); if(!box) return;
+async function galRender(){   /* data-ph="번호" 자리에 사진을 풀어 넣고, 누르면 크게 보기 */
+  const spots=[...document.querySelectorAll("[data-ph]")]; if(!spots.length) return;
   let key=null; try{ key=await galOpen(); }catch(e){}
-  if(!key){ box.innerHTML=`<p class="hint">현장 사진을 준비하고 있어요.</p>`; return; }
-  const P=L3_INFO.photos;
-  box.innerHTML = P.map(([id,cap],i)=>`<button class="gi" data-gi="${i}" aria-label="${esc(cap)} 크게 보기"><span class="ph"></span><em>${esc(cap)}</em></button>`).join("");
-  $$("[data-gi]").forEach(b=>b.onclick=()=>galView(+b.dataset.gi));
-  for(const [i,[id]] of P.entries()){
-    try{ const u=await galImg(id,"t"); const b=box.querySelector(`[data-gi="${i}"] .ph`); if(b) b.outerHTML=`<img src="${u}" alt="">`; }catch(e){}
+  if(!key){ spots.forEach(s=>s.classList.add("locked")); const n=$("#galnote"); if(n) n.textContent="현장 사진을 준비하고 있어요."; return; }
+  spots.forEach(s=>s.onclick=()=>galView(+s.dataset.ph));
+  for(const s of spots){
+    try{ const id=L3_INFO.photos[+s.dataset.ph][0]; const u=await galImg(id, s.dataset.size||"t");
+      s.insertAdjacentHTML("afterbegin", `<img src="${u}" alt="">`); }catch(e){}
   }
 }
 async function galView(i){
@@ -818,24 +817,53 @@ async function galView(i){
   try{ const u=await galImg(P[i][0],"f"); const w=lb.querySelector(".lbimg"); if(w) w.innerHTML=`<img src="${u}" alt="${esc(P[i][1])}">`; }catch(e){}
 }
 function viewL3(){
+  const P=L3_INFO.photos, idx=id=>P.findIndex(x=>x[0]===id);
+  const ph=(id,size,cls)=>`<button class="ph3 ${cls||""}" data-ph="${idx(id)}" data-size="${size}" aria-label="${esc(P[idx(id)][1])} 크게 보기"><em>${esc(P[idx(id)][1])}</em></button>`;
+  const SP={PM:"08","전략기획":"07",IB:"06",PE:"05","컨설팅":"03",VC:"04"};
+  const LINE={PM:"제품을 낸 다음, 모르는 고객을 어떻게 데려오는지","전략기획":"차를 정의하는 첫 단계, 상품전략",IB:"기업에 돈이 필요한 순간, 가장 알맞은 조달을 설계하는 일",
+    PE:"기업을 인수하고 가치를 키운 뒤 회수하는 구조","컨설팅":"정답이 아니라 해답을 찾아주는 일",VC:"스타트업을 둘러싼 돈의 흐름과 그 안에서 일하는 사람들"};
   app.innerHTML = header("","")+`<a class="back" href="#class">← 강의실</a>
-  <section class="card" style="margin-top:12px">
-    <div class="lesson">3강 · 전략 직무 검증하기</div>
-    <h2 style="margin-top:4px">그날의 현장 돌아보기</h2>
-    <p class="desc">10월 28일, 경영대학과 함께 연 공개 행사에 학회원과 비학회원 약 ${L3_INFO.attended}명이 참석했어요. 여섯 직무의 현직자 선배들이 진출 노하우와 출근 후기를 직접 들려줬어요.</p>
-    <p class="desc" style="margin-top:10px">평소라면 모시기 어려운 우리 학교 최고의 아웃풋들을 한자리에서 만날 수 있는 좋은 기회였어요.</p>
-    <p class="desc" style="margin-top:10px">이례적으로 김추연 지도교수님뿐 아니라 유재욱 경영대학장님께서도 직접 참석해, 학회에 대한 지원과 관심을 약속해 주셨어요. 학회 행사에 학장님이 함께하시는 일은 거의 없어서 더 뜻깊은 자리였어요.</p>
-  </section>
-  <section class="card">
-    <h3>함께해 준 선배들</h3>
-    <div class="spk">${L3_INFO.speakers.map(([j,n,c])=>`<div><small>${esc(j)}</small><b>${esc(n)}</b><span>${esc(c)}</span></div>`).join("")}</div>
-  </section>
-  <section class="card">
-    <h3>현장 사진</h3>
-    <p class="hint" style="margin-top:4px">사진을 누르면 크게 볼 수 있어요.</p>
-    <div class="gal" id="gal3"><div class="skel"></div></div>
-    <a class="go" href="apply.html">그날의 신청 기록<b>→</b></a>
-  </section>`+foot();
+  <div class="story">
+    <section class="st hero">
+      <div class="lesson">3강 · 그날의 현장 돌아보기</div>
+      <h2>10월 28일 저녁,<br>101호에 ${L3_INFO.attended}명이 모였어요</h2>
+      <p>경영대학과 KUSC가 함께 연 첫 공개 행사였어요.<br>학회원뿐 아니라 직무가 궁금한 학우라면 누구나 신청할 수 있었어요.</p>
+      ${ph("01","f","wide")}
+    </section>
+    <section class="st">
+      <h2>여섯 직무를,<br>그 일을 하는 선배에게 직접 들었어요</h2>
+      <div class="sp3">${L3_INFO.speakers.map(([j,n,c])=>`<div class="sprow">${ph(SP[j],"t","sq")}
+        <div><small>${esc(j)}</small><b>${esc(n)} <span>${esc(c)}</span></b><p>${esc(LINE[j])}</p></div></div>`).join("")}</div>
+    </section>
+    <section class="st">
+      <h2>화려한 이력보다,<br>어떻게 들어갔는지를 물었어요</h2>
+      <p>연사마다 순서는 같았어요.<br>나는 누구인지, 이 직무는 무엇인지, AI가 무엇을 바꿨는지,<br>그리고 남들과 다른 길로 들어간 나만의 틈.</p>
+      <p>미리 받은 질문에도 직무별로 답해 줬어요.</p>
+    </section>
+    <section class="st">
+      <h2>쉽게 모실 수 없는 선배들이<br>한자리에</h2>
+      <p>평소라면 한 분 모시기도 어려운, 우리 학교 최고의 아웃풋들이에요.<br>같은 강의실에 앉았던 선배들이라, 이야기가 더 가깝게 들렸어요.</p>
+    </section>
+    <section class="st">
+      <h2>학장님도<br>함께해 주셨어요</h2>
+      <p>김추연 지도교수님뿐 아니라 유재욱 경영대학장님께서도 직접 참석해 학회에 대한 지원과 관심을 약속해 주셨어요.</p>
+      <p>학회 행사에 학장님이 오시는 일은 거의 없어서, 더 뜻깊은 자리였어요.</p>
+      ${ph("02","f","wide")}
+    </section>
+    <section class="st">
+      <h2>강연이 끝나도<br>이야기는 이어졌어요</h2>
+      <p>뒤풀이에서는 관심 직무별로 테이블을 나눠, 선배 옆자리에서 묻고 싶었던 걸 마저 물었어요.</p>
+      <div class="trio3">${ph("09","t","")}${ph("10","t","")}${ph("11","t","")}</div>
+    </section>
+    <section class="st next">
+      <h2>다음은<br>여러분 차례예요</h2>
+      <p>오늘 무대에 선 선배들도 몇 년 전에는 여러분과 같은 자리에 앉아 있었어요.</p>
+      <p>원하는 자리에 가게 되면, 이번에는 여러분이 돌아와 주세요. 후배들 앞에서 길을 들려주고, 기회를 나눠 주는 선배로요.</p>
+      <p>KUSC는 그렇게 이어지는 학회예요.</p>
+    </section>
+    <p class="hint" id="galnote" style="text-align:center">사진을 누르면 크게 볼 수 있어요.</p>
+    <div class="row" style="justify-content:center"><a class="btn sec sm" href="apply.html">그날의 신청 기록 보기</a></div>
+  </div>`+foot();
   galRender();
 }
 function viewClass(){
@@ -864,7 +892,7 @@ function viewClass(){
       <div class="lesson">3강 · 전략 직무 검증하기${ok(2)}</div>
       <h2 style="margin-top:4px">여섯 직무 현직자 강연</h2>
       <p class="desc">10월 28일, 여섯 직무의 현직자 선배들과 학회원, 비학회원 약 ${L3_INFO.attended}명이 함께한 경영대학 공동 행사였어요.</p>
-      <div class="spkmini">${L3_INFO.speakers.map(([j,n])=>`<span><small>${esc(j)}</small>${esc(n)}</span>`).join("")}</div>
+      <div class="spkmini">${L3_INFO.speakers.map(([j,n,c])=>`<span><small>${esc(j)}</small>${esc(n)}<em>${esc(c)}</em></span>`).join("")}</div>
       <a class="go" href="#l3" ${mark("l3")}>그날의 현장 돌아보기<b>→</b></a>
     </section>
     <section class="card lec">
