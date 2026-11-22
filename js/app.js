@@ -591,7 +591,7 @@ async function viewHome(){
       <p class="desc">${nHist>1?`처음 진단 ${day(firstTs)}, 지금까지 ${nHist}번 진단했어요`:`${day(firstTs)} 1강에서 진단했어요.<br>학기말에 같은 진단을 한 번 더 하면 처음 결과와 겹쳐서 비교해 드려요.`}</p>
       <div class="hexwrap">${hexSVG(dg.a)}
         <div class="facts">
-          <div class="fact"><small>가장 닮은 직무</small><b>${esc(JOBNAME[dg.fit]||dg.fit)}</b></div>
+          <div class="fact"><small>가장 닮은 직무</small><b>${esc(JOBNAME[dg.fit]||dg.fit)}</b>${matchBadge(dg)}</div>
           <div class="fact"><small>내가 원했던 직무</small><b>${esc(JOBNAME[dg.want]||dg.want)}</b></div>
           <div class="fact"><small>가장 강한 역량</small><b>${esc(best)}</b></div>
         </div></div>
@@ -626,7 +626,10 @@ async function viewHome(){
   <section class="card">
     <div class="lesson">곧 열려요</div>
     <h3 style="margin-top:6px">작성실</h3>
-    <p class="desc">내 경험을 정리하고, 4강 방식대로 레쥬메 불릿과 자소서를 써 보는 곳이에요. 쓴 내용은 계정에 저장돼서 어느 기기에서든 이어 쓸 수 있어요.</p>
+    <p class="desc">이번 학기에 남긴 기록이 모두 레쥬메의 재료가 돼요.<br>아래 기록을 불러와서 4강 방식대로 레쥬메 불릿과 자소서 초안을 함께 써요.</p>
+    <div class="feed"><span>1강 진단 결과</span><span>목표별로 쌓은 기록</span><span>들은 강의</span><i aria-hidden="true">→</i><b>레쥬메 불릿 초안</b></div>
+    <p class="hint" style="margin-top:10px">쓴 내용은 계정에 저장돼서 어느 기기에서든 이어 쓸 수 있어요.</p>
+
   </section>`+foot();
   if(HGL.length) goalsDoc(p).then(()=>goalsUI($("#hgbox"), HGL, p, "home")).catch(()=>{});
   F.getAttendance(myUid()).then(at=>{ const box=$("#hatt"); if(!box) return;
@@ -972,6 +975,10 @@ async function goalsDoc(p){
 /* ───────── 목표 트래킹: 상태는 바로 저장, 기록은 덮어쓰지 않고 쌓임 ─────────
    저장 형태 track[목표 이름] = { status, at, log:[{t, kind:"status"|"note", status?, text?}] } */
 const GST={todo:"아직",doing:"하는 중",done:"해냈어요"};
+/* 가장 닮은 직무가 원하는 직무와 같으면 축하 표시 (다르면 아무 표시 안 함) */
+const matchBadge=(r,newly)=>(r&&r.fit&&r.want&&r.want!=="NONE"&&r.fit===r.want)?`<span class="match">✓ 원하는 직무와 일치해요${newly?"<em>이번에 처음</em>":""}</span>`:"";
+/* 기록 시각: 날짜와 시간까지 */
+const stamp=t=>{ const d=toD(t); return d&&!isNaN(d)?`${day(d)} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`:""; };
 const GEV={todo:"아직 시작 전으로 바꿨어요",doing:"시작했어요",done:"해냈어요"};
 const clone=o=>JSON.parse(JSON.stringify(o||{}));
 const ago=t=>{ const d=Math.floor((Date.now()-new Date(t).getTime())/864e5); return d<=0?"오늘":d===1?"어제":`${d}일 전`; };
@@ -988,8 +995,8 @@ function gTimeline(v, i, ro, limit){
   const L=v.log.slice().reverse(), shown=limit?L.slice(0,limit):L;
   if(!L.length) return `<p class="hint gempty">아직 남긴 기록이 없어요.</p>`;
   return `<ol class="tl">${shown.map(e=>e.kind==="status"
-    ? `<li class="ev ${e.status}"><span class="d">${day(e.t)}</span><span>${GEV[e.status]||""}</span></li>`
-    : `<li class="nt"><span class="d">${day(e.t)}</span><p>${nl(e.text)}</p>${ro?"":`<button class="x" data-gd="${i}" data-t="${esc(e.t)}">지우기</button>`}</li>`).join("")}</ol>`;
+    ? `<li class="ev ${e.status}"><span class="d">${stamp(e.t)}</span><span>${GEV[e.status]||""}</span></li>`
+    : `<li class="nt"><span class="d">${stamp(e.t)}</span><p>${nl(e.text)}</p>${ro?"":`<button class="x" data-gd="${i}" data-t="${esc(e.t)}">지우기</button>`}</li>`).join("")}</ol>`;
 }
 /* box: 그릴 자리, mode: "home"(접어서) | "full"(펼쳐서 전체 기록) */
 function goalsUI(box, goals, p, mode){
@@ -1070,7 +1077,7 @@ async function viewGrowth(){
     <div class="hexwrap">${two?hexCmp(f.a,l.a):hexSVG(f.a)}
       <div class="facts">
         ${two?`<div class="legend2"><span><i class="ln0"></i>처음</span><span><i class="ln1"></i>지금</span></div>`:""}
-        <div class="fact"><small>가장 닮은 직무</small><b>${esc(JOBNAME[f.fit]||f.fit||"-")}${two&&l.fit!==f.fit?` → ${esc(JOBNAME[l.fit]||l.fit)}`:""}</b></div>
+        <div class="fact"><small>가장 닮은 직무</small><b>${esc(JOBNAME[f.fit]||f.fit||"-")}${two&&l.fit!==f.fit?` → ${esc(JOBNAME[l.fit]||l.fit)}`:""}</b>${matchBadge(two?l:f, two&&!(f.fit&&f.want&&f.fit===f.want))}</div>
         <div class="fact"><small>원하는 직무</small><b>${esc(JOBNAME[f.want]||f.want||"-")}${two&&l.want!==f.want?` → ${esc(JOBNAME[l.want]||l.want)}`:""}</b></div>
       </div></div>
     ${two?(()=>{ const ch=AXES.map((t,i)=>(+(l.a[i]||0))-(+(f.a[i]||0))), up=ch.filter(x=>x>=4).length, dn=ch.filter(x=>x<=-4).length;
