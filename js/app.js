@@ -1094,8 +1094,10 @@ function renderExecDoor(){
   if(!isExec()){
     app.innerHTML = header("","")+`<section class="card" style="margin-top:22px">
       <h2>임원진 계정이 아니에요</h2>
-      <p class="desc">${esc(S.user.email||"이 계정")}은 운영실에 들어올 수 없어요. 임원진이라면 관리자에게 지정을 부탁하고, 지정된 뒤 다시 로그인해 주세요.</p>
-      <div class="row" style="margin-top:20px"><a class="btn pri" href="./">학회원 사이트로</a><button class="btn sec" data-out>다른 계정으로 로그인</button></div>
+      ${S.prof?`<p class="desc">${esc(S.user.email||"이 계정")}은 운영실에 들어올 수 없어요. 임원진이라면 관리자에게 지정을 부탁하고, 지정된 뒤 다시 로그인해 주세요.</p>`
+        :`<p class="desc">${esc(S.user.email||"이 계정")}은 아직 학회원 가입 전이에요. 임원진 지정은 가입을 마친 계정에만 할 수 있어요.</p>
+          <p class="desc" style="margin-top:8px">학회원 사이트에서 이름과 학번으로 가입을 마친 뒤, 관리자에게 지정을 부탁하고 다시 로그인해 주세요.</p>`}
+      <div class="row" style="margin-top:20px">${S.prof?`<a class="btn pri" href="./">학회원 사이트로</a>`:`<a class="btn pri" href="./#join">학회원 가입하러 가기</a>`}<button class="btn sec" data-out>다른 계정으로 로그인</button></div>
     </section>`+foot();
     return;
   }
