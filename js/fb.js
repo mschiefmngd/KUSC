@@ -59,6 +59,16 @@ export async function getRole(uid) {          /* 'admin' | 'exec' | null */
   try { const s = await getDoc(doc(db, "admins", uid)); return s.exists() ? (s.data().role || "exec") : null; }
   catch (e) { return null; }
 }
+export async function getAdmin(uid) {          /* 관리자, 임원진 문서 (이름 포함) */
+  try { const s = await getDoc(doc(db, "admins", uid)); return s.exists() ? s.data() : null; } catch (e) { return null; }
+}
+/* 관리자 계정을 학회원 명단과 회원 정보에서 빼기 (로그인 계정과 관리자 권한은 그대로) */
+export async function leaveMembership(uid, rosterId) {
+  const b = writeBatch(db);
+  if (rosterId) b.delete(doc(db, "roster", rosterId));
+  b.delete(doc(db, "users", uid));
+  await b.commit();
+}
 export async function getRoster(id) {
   const s = await getDoc(doc(db, "roster", id));
   return s.exists() ? s.data() : null;

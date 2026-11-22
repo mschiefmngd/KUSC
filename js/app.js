@@ -535,6 +535,23 @@ function viewPending(){
 /* ───────── 홈 ───────── */
 async function viewHome(){
   const p=S.prof, dg=p.diag, g=p.progress||{};
+  if(p.master){
+    app.innerHTML = header(`${esc(p.name)} 님, 반가워요`, `<span class="badge ku">마스터 계정</span> 학회원 화면을 둘러보는 중이에요`)+`
+    <div class="grid">
+      <section class="card" id="hnot"><div class="lesson">공지</div><div class="skel sm"></div></section>
+      <section class="card" id="hev"><div class="lesson">다가오는 일정</div><div class="skel sm"></div></section>
+    </div>
+    <section class="card"><div class="lesson">마스터 계정</div>
+      <p class="desc" style="margin-top:6px">학회원 명단과 회원 수에는 들어가지 않는 관리자 계정이에요. 학회원 화면은 이렇게 둘러볼 수 있고, 관리는 운영실에서 해요.</p>
+      <div class="row"><a class="btn pri sm" href="admin.html">운영실로 가기</a></div></section>`+foot();
+    try{
+      const [ns, evs] = await Promise.all([load("notices",F.listNotices), load("events",F.listEvents)]);
+      $("#hnot").innerHTML = `<div class="lesson">공지</div>${ns.length?ns.slice(0,3).map(x=>`<a class="li" href="#news"><span class="badge">${esc(x.tag||"공지")}</span><b>${esc(x.title)}</b><small>${day(x.createdAt)}</small></a>`).join(""):`<p class="desc">아직 공지가 없어요.</p>`}`;
+      const up = evs.filter(e=>e.date>=today()).sort((a,b)=>a.date.localeCompare(b.date))[0];
+      $("#hev").innerHTML = `<div class="lesson">다가오는 일정</div>${up?`<h3 style="margin-top:6px">${esc(up.title)}</h3><p class="desc">${ymd(up.date)} ${esc(up.time||"")}</p>`:`<p class="desc">예정된 일정이 없어요.</p>`}`;
+    }catch(e){}
+    return;
+  }
   const LECS=["1강","2강","3강","4강"];
   const best = dg ? AXES[dg.a.indexOf(Math.max(...dg.a))] : "";
   const paid = p.dues && p.dues[TERM];
@@ -865,7 +882,8 @@ function viewClass(){
     <p class="desc">${SURVEY.intro}</p>
     <div id="fbgo" style="margin-top:16px"><div class="skel" style="height:52px"></div></div>
   </section>`+foot();
-  F.getFeedbackDone(S.user.uid, SURVEY.term).then(done=>{ const g=$("#fbgo"); if(!g) return;
+  if(S.prof.master){ const g=$("#fbgo"); if(g) g.innerHTML=`<p class="hint" style="margin:0">마스터 계정은 응답하지 않아요. 응답은 운영실의 강의 후기 탭에서 볼 수 있어요.</p>`; }
+  else F.getFeedbackDone(S.user.uid, SURVEY.term).then(done=>{ const g=$("#fbgo"); if(!g) return;
     g.innerHTML = done ? `<p class="ok" style="margin:0">후기를 남겨 주셔서 고마워요. 다음 학기 설계에 그대로 쓸게요.</p>`
       : `<a class="btn pri" href="#feedback">후기 남기기</a>`; }).catch(()=>{ const g=$("#fbgo"); if(g) g.innerHTML=`<a class="btn pri" href="#feedback">후기 남기기</a>`; });
   if(typeof chr==="function") $("#cast").innerHTML=["VC","PM","BP","CS","PE","IB"].map(k=>chr(k)).join("");
@@ -931,6 +949,7 @@ function fbQuestion(q,a,no){
   return `<div class="field fq">${head}<textarea id="${q.id}" rows="${q.rows||4}" placeholder="${esc(q.ph||"")}">${esc(a[q.id]||"")}</textarea></div>`;
 }
 async function viewFeedback(){
+  if(S.prof.master){ location.hash="#class"; return; }
   const T=SURVEY, st=S.fb||(S.fb={p:0,a:{}});
   if(st.done===undefined){ app.innerHTML=header("","")+`<div class="skel"></div>`; try{ st.done=await F.getFeedbackDone(S.user.uid,T.term); }catch(e){ st.done=false; } }
   if(st.done){ app.innerHTML=header("강의 후기","")+`<section class="card"><h2>이미 후기를 남겼어요</h2>
@@ -970,6 +989,13 @@ async function viewFeedback(){
 
 /* ───────── 내 정보 ───────── */
 function viewMe(){
+  if(S.prof.master){
+    app.innerHTML = header("내 정보","")+`<section class="card"><div class="lesson">마스터 계정</div>
+      <h2 style="margin-top:4px">${esc(S.prof.name)}</h2><p class="desc">${esc(S.user.email||"")}</p>
+      <p class="desc" style="margin-top:10px">학회원이 아닌 관리자 계정이라 회원 정보, 회비, 진단 기록이 없어요.</p>
+      <div class="row" style="margin-top:16px"><a class="btn pri sm" href="admin.html">운영실로 가기</a><button class="btn sec sm" data-out>로그아웃</button></div></section>`+foot();
+    return;
+  }
   const p=S.prof, d=S.me||(S.me={phone:p.phone||"",grade:p.grade||"",age:p.age||"",gender:p.gender||"",major:p.major||"",major2:p.major2||"",jobs:[...(p.jobs||[])],stage:p.stage||""});
   const provider = (S.user.providerData[0]||{}).providerId==="google.com" ? "구글 계정" : "이메일";
   const dues = Object.entries(p.dues||{}).sort((a,b)=>b[0].localeCompare(a[0]));
@@ -1060,6 +1086,15 @@ async function xDash(box){
     ${tbu("KPI 정의","정체성과 연결한 학기 목표 지표. 임원진 확정 후 여기에 숫자로 걸어 둘 예정")}
     <p class="hint" style="margin-top:8px">지금 바로 볼 수 있는 지표: 가입률, 진단 완료, 회비 납부율, 일정별 참석 응답, 커뮤니티 활동</p>
   </section>`;
+  if(S.role==="admin" && S.prof && !S.prof.master && S.prof.rosterId!==undefined){   /* 관리자 본인이 학회원으로 가입돼 있으면: 마스터 계정으로 전환 */
+    const mc=document.createElement("section"); mc.className="card";
+    mc.innerHTML=`<div class="lesson">관리자 전용</div><h3 style="margin-top:6px">마스터 계정으로 전환</h3>
+      <p class="desc">지금 이 계정은 학회원으로도 가입돼 있어요. 전환하면 학회원 명단과 회원 정보에서 빠지고, 관리자 권한과 로그인은 그대로예요. 학회원 화면도 계속 둘러볼 수 있어요.</p>
+      <p class="err" id="merr"></p><div class="row"><button class="btn pri sm" id="mgo">학회원에서 빼고 마스터로 쓰기</button></div>`;
+    box.prepend(mc);
+    $("#mgo").onclick=async()=>{ const b=$("#mgo"); if(b.dataset.armed!=="1"){ b.dataset.armed="1"; b.textContent="정말 전환하기"; return; }
+      try{ await F.leaveMembership(S.user.uid, S.prof.rosterId); location.reload(); }catch(e){ showErr(authMsg(e),"merr"); } };
+  }
   if(S.role==="admin"){   /* 관리자만: 3강 사진 열쇠 등록 */
     let has=false; try{ const c=await F.getConfig("gallery"); has=!!(c&&c.key); }catch(e){}
     const sec=document.createElement("section"); sec.className="card";
@@ -1371,6 +1406,8 @@ F.onUser(async u=>{
   if(u){
     try{ S.prof=await F.getProfile(u.uid); }catch(e){ S.prof=null; }
     S.role=await F.getRole(u.uid);
+    /* 마스터(관리자) 계정: 학회원이 아니어도 학회원 화면을 둘러볼 수 있게 가상의 프로필을 씀. 회원 수에는 들어가지 않음 */
+    if(!S.prof && S.role==="admin"){ const a=await F.getAdmin(u.uid); S.prof={name:(a&&a.name)||"관리자", master:true, progress:{}}; }
     if(!S.prof){ try{ S.req=await F.getMyRequest(u.uid); }catch(e){} }
     if(S.afterLogin){ S.afterLogin=false; S.ready=true; const to = MODE==="exec" ? "#exec" : S.prof ? "#home" : "#join"; if(location.hash!==to){ location.hash = to; return; } }
   }
