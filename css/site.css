@@ -458,3 +458,13 @@ p,h1,h2,h3,figcaption{text-wrap:pretty}
 .lduo.trio p{margin:0;font-size:15.5px;line-height:1.7}
 @media (max-width:860px){.lduo.trio div{grid-template-columns:1fr;gap:6px}}
 @media (min-width:1000px){.lduo.trio{margin-left:-70px!important;margin-right:-70px!important;max-width:none}}
+/* 내 역량의 변화 */
+.legend2{display:flex;gap:14px;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
+.legend2 i{display:inline-block;width:22px;height:0;vertical-align:middle;margin-right:6px}
+.legend2 .ln0{border-top:2.5px dashed var(--mute)}
+.legend2 .ln1{border-top:3px solid var(--ku)}
+td.up{color:var(--ku);font-weight:800}
+td.down{color:var(--red);font-weight:800}
+.gtrack{display:grid;grid-template-columns:36px 1fr;gap:12px;padding:18px 0;border-top:1px solid var(--line);margin-top:14px}
+.gtrack .gn{width:32px;height:32px;border-radius:10px;background:var(--ku-soft);color:var(--ku);font-weight:900;display:flex;align-items:center;justify-content:center}
+.gtrack h3{font-size:17px}

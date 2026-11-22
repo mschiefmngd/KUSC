@@ -10,7 +10,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, addDoc, getDocs, collection,
-  query, orderBy, limit, writeBatch, serverTimestamp, deleteField, increment
+  query, orderBy, limit, writeBatch, serverTimestamp, deleteField, increment, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -82,8 +82,19 @@ export async function joinMember(uid, rid, data) {
   await b.commit();
 }
 export const updateProfile = (uid, patch) => upd("users", uid, patch);
-export const saveDiag = (uid, rec) =>
-  updateDoc(doc(db, "users", uid), { diag: rec, diagAt: rec.ts || new Date().toISOString(), diagFrom: deleteField(), updatedAt: now() });
+/* 진단 기록: 최신 결과(diag)는 덮어쓰고, 요약은 diagHist에 계속 쌓음.
+   처음 저장할 때 예전 결과(1강 진단)가 있으면 그것을 첫 기록으로 함께 넣음 */
+export const diagSummary = r => ({ ts: r.ts || "", a: r.a || [], total: r.total || 0, want: r.want || "", fit: r.fit || "",
+  items: r.items || [], goals: r.goals || [] });
+export const saveDiag = (uid, rec, prev) => {
+  const add = [];
+  if (prev && prev.diag && !(prev.diagHist && prev.diagHist.length)) add.push(diagSummary(prev.diag));
+  add.push(diagSummary(rec));
+  return updateDoc(doc(db, "users", uid), { diag: rec, diagAt: rec.ts || new Date().toISOString(), diagHist: arrayUnion(...add),
+    diagFrom: deleteField(), updatedAt: now() });
+};
+/* 예전 결과만 있고 기록이 없을 때, 그 결과를 첫 기록으로 만듦 (목표 포함) */
+export const initDiagHist = (uid, first) => updateDoc(doc(db, "users", uid), { diagHist: [diagSummary(first)], updatedAt: now() });
 export const markProgress = (uid, key) =>
   updateDoc(doc(db, "users", uid), { ["progress." + key]: new Date().toISOString() });
 /* 탈퇴: 명단 연결을 풀고 내 정보를 지운 뒤 로그인 계정을 삭제 */

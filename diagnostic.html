@@ -774,6 +774,7 @@ async function flushOutbox(){
 async function persist(){
   if(st.admin)return;                      /* 강사 모드에서는 저장하지 않음 */
   const rec=buildRec();
+  try{ rec.goals=goals().map(g=>({t:g.t, goal:g.goal})); }catch(e){}   /* 이번 진단이 제안한 목표 세 가지 (변화 추적용) */
   try{ if(window.KUSC_saveDiag) window.KUSC_saveDiag(rec); }catch(e){}   /* 로그인한 회원이면 내 계정에도 저장 */
   window.__local=(window.__local||[]).concat(rec);
   lsSet("kusc:mine",lsGet("kusc:mine","[]").concat(rec));   /* 본인 기기 기록 */
@@ -1161,6 +1162,12 @@ function adminView(){
 }
 function preview(){resetAll(true)}
 initOrder();render();netBadge();flushOutbox().then(netBadge);
+/* ── 저장된 결과로 그때의 목표 세 가지를 다시 계산 ── */
+window.KUSC_goalsFor=function(r){
+  const keep=st;
+  try{ st={...st,ans:r.ans||[],sans:r.sans||[],items:r.items||[],want:r.want}; return goals().map(g=>({t:g.t, goal:g.goal})); }
+  catch(e){ return []; } finally{ st=keep; }
+};
 /* ── 회원 사이트 연결: 저장된 내 결과 다시 보기 ── */
 window.KUSC_showResult=function(r){
   st={step:"result",i:0,ans:r.ans||[],sans:r.sans||[],items:r.items||[],want:r.want,code:r.code,
@@ -1183,7 +1190,12 @@ F.onUser(async u=>{
     const b=document.createElement("a"); b.href="index.html#home"; b.textContent="← 마스터 보기로";
     b.style.cssText="position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:#0E2A1E;color:#fff;font:800 14px 'Noto Sans KR',sans-serif;padding:11px 16px;border-radius:14px;text-decoration:none";
     document.body.appendChild(b); return; }
-  window.KUSC_saveDiag=rec=>F.saveDiag(u.uid,rec).catch(()=>{});
+  /* 예전(1강) 결과만 있으면 첫 기록으로 옮겨 둠: 처음과 지금을 비교하는 기준 */
+  if(p.diag && !(p.diagHist && p.diagHist.length)){
+    const first={...p.diag, goals:(p.diag.goals&&p.diag.goals.length)?p.diag.goals:window.KUSC_goalsFor(p.diag)};
+    try{ await F.initDiagHist(u.uid, first); p.diagHist=[F.diagSummary(first)]; }catch(e){}
+  }
+  window.KUSC_saveDiag=rec=>F.saveDiag(u.uid,rec,p).catch(()=>{});
   window.KUSC_PROFILE={name:p.name||"",sid:p.sid||"",grade:p.grade||"",age:p.age||"",major:p.major||"",major2:p.major2||"",gender:p.gender||""};
   /* 내 홈으로 돌아가는 버튼 */
   const a=document.createElement("a");

@@ -78,7 +78,7 @@ function header(title, lead){
   if(inExec()) return `<div class="top"><a class="brand" href="#exec" aria-label="KUSC 운영실"><b>KUSC</b><span>운영실</span></a>
     <nav class="tabs" aria-label="메뉴"><a href="${MODE==="exec"?"./#home":"#home"}">학회원 사이트로</a>${S.user?`<a href="#" data-out>로그아웃</a>`:""}</nav></div>
     ${title?`<h1>${title}</h1>`:""}${lead?`<p class="lead">${lead}</p>`:""}`;
-  const on = k => (r===k || (k==="board"&&r==="post") || (k==="class"&&(r==="l3"||r==="feedback"))) ? "on" : "";
+  const on = k => (r===k || (k==="board"&&r==="post") || (k==="class"&&(r==="l3"||r==="feedback"))||(k==="home"&&r==="growth")) ? "on" : "";
   const tabs = isMember() ? `<nav class="tabs" aria-label="메뉴">
     ${isMember()?`<a href="#home" class="${on("home")}">내 공간</a><a href="#class" class="${on("class")}">강의실</a>
     <a href="#news" class="${on("news")}">소식</a><a href="#board" class="${on("board")}">커뮤니티</a>
@@ -144,6 +144,18 @@ function hexSVG(a){
     ${[1,.66,.33].map(f=>`<polygon points="${ring(f)}" fill="none" stroke="var(--line)" stroke-width="1.5"/>`).join("")}
     <polygon points="${a.map((v,i)=>P(i,k(v))).join(" ")}" fill="var(--ku-soft)" stroke="var(--ku)" stroke-width="3" stroke-linejoin="round"/>
     ${a.map((v,i)=>{ const [x,y]=pt(i,k(v)); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="var(--ku)"/>`; }).join("")}
+    ${AXES.map((t,i)=>{ const [x,y]=pt(i,1.24); return `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle">${t}</text>`; }).join("")}</svg>`;
+}
+
+/* 처음(점선)과 지금(초록)을 겹쳐 그린 육각형 */
+function hexCmp(a0,a1){
+  const cx=150, cy=130, R=96, max=50, pt=(i,v)=>{ const ang=-Math.PI/2+i*Math.PI/3; return [cx+Math.cos(ang)*R*v, cy+Math.sin(ang)*R*v]; };
+  const P=(i,v)=>pt(i,v).map(n=>n.toFixed(1)).join(","), k=v=>Math.max(.04,Math.min(1,v/max));
+  const ring=f=>AXES.map((_,i)=>P(i,f)).join(" ");
+  return `<svg class="hex" viewBox="0 0 300 260" role="img" aria-label="처음과 지금의 역량 육각형 비교">
+    ${[1,.66,.33].map(f=>`<polygon points="${ring(f)}" fill="none" stroke="var(--line)" stroke-width="1.5"/>`).join("")}
+    <polygon points="${a0.map((v,i)=>P(i,k(v))).join(" ")}" fill="none" stroke="var(--mute)" stroke-width="2.5" stroke-dasharray="6 5" stroke-linejoin="round"/>
+    <polygon points="${a1.map((v,i)=>P(i,k(v))).join(" ")}" fill="var(--ku-soft)" stroke="var(--ku)" stroke-width="3" stroke-linejoin="round"/>
     ${AXES.map((t,i)=>{ const [x,y]=pt(i,1.24); return `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle">${t}</text>`; }).join("")}</svg>`;
 }
 
@@ -509,7 +521,7 @@ function viewJoin(){
     b.disabled=true; b.textContent="가입 중…";
     const data={name:d.name, sid:d.sid, phone:d.phone, grade:d.grade, age:d.age||"", gender:d.gender||"", major:d.major, major2:d.major2||"",
       jobs:d.jobs, stage:d.stage, email:S.user.email||"", consent:true, consentAt:new Date().toISOString(), progress:{}};
-    if(J.roster&&J.roster.diag){ data.diag=J.roster.diag; data.diagAt=J.roster.diag.ts||""; data.diagFrom="1강 진단"; }
+    if(J.roster&&J.roster.diag){ data.diag=J.roster.diag; data.diagAt=J.roster.diag.ts||""; data.diagFrom="1강 진단"; data.diagHist=[F.diagSummary(J.roster.diag)]; }
     try{ await F.joinMember(S.user.uid, J.rid, data); sheetLog("가입", data); S.prof=await F.getProfile(S.user.uid); S.join=null; S.req=null; location.hash="#home"; render(); }
     catch(e){ b.disabled=false; b.textContent="가입 완료"; showErr(authMsg(e)); }
   };
@@ -596,7 +608,7 @@ async function viewHome(){
           <div class="fact"><small>내가 원했던 직무</small><b>${esc(JOBNAME[dg.want]||dg.want)}</b></div>
           <div class="fact"><small>가장 강한 역량</small><b>${esc(best)}</b></div>
         </div></div>
-      <div class="row"><a class="btn pri" href="${diagHref("view")}">결과 자세히 보기</a><a class="btn sec" href="${diagHref("new")}">다시 진단하기</a></div>
+      <div class="row"><a class="btn pri" href="#growth">처음과 지금 비교하기</a><a class="btn sec" href="${diagHref("view")}">결과 자세히 보기</a></div>
     </section>`
   :`<section class="card">
       <div class="lesson">먼저 해 볼 것</div>
@@ -900,7 +912,7 @@ function viewClass(){
       <div class="lesson" style="margin-top:20px">1강 · 전략 직무 정의하기${ok(0)}</div>
       <h2 style="margin-top:4px">직무 성향 진단</h2>
       <p class="desc">일상 속 상황 17개로 나의 역량 모양을 그리고, 여섯 전략 직무 중 어디와 닮았는지 확인해요.</p>
-      <a class="go" href="${diagHref(p.diag?"view":"new")}">${p.diag?"내 결과 보기":"진단 시작하기"}<b>→</b></a>
+      <a class="go" href="${p.diag?"#growth":diagHref("new")}">${p.diag?"처음과 지금 비교하기":"진단 시작하기"}<b>→</b></a>
     </section>
     <section class="card lec">
       <div class="art" id="cast"></div>
@@ -938,6 +950,60 @@ function viewClass(){
   if(typeof chr==="function") $("#cast").innerHTML=["VC","PM","BP","CS","PE","IB"].map(k=>chr(k)).join("");
   $$("[data-mark]").forEach(a=>a.addEventListener("click",()=>{ const k=a.dataset.mark;
     if(!(S.prof.progress||{})[k]){ F.markProgress(S.user.uid,k).catch(()=>{}); S.prof.progress={...(S.prof.progress||{}),[k]:new Date().toISOString()}; } }));
+}
+
+/* ───────── 내 역량의 변화: 처음과 지금 비교 + 목표 실행 기록 ───────── */
+const GOAL_ST = [["todo","아직"],["doing","하는 중"],["done","해냈어요"]];
+function viewGrowth(){
+  const p=S.prof;
+  const H=(p.diagHist&&p.diagHist.length) ? [...p.diagHist].sort((x,y)=>String(x.ts).localeCompare(String(y.ts))) : (p.diag?[{...p.diag}]:[]);
+  if(!H.length){ app.innerHTML=header("내 역량의 변화","")+`<section class="card"><p class="desc">아직 진단 기록이 없어요.<br>1강 직무 성향 진단을 먼저 해 주세요.</p>
+    <div class="row" style="margin-top:14px"><a class="btn pri" href="${diagHref("new")}">진단 시작하기</a></div></section>`+foot(); return; }
+  const f=H[0], l=H[H.length-1], two=H.length>1;
+  const goals=(f.goals&&f.goals.length)?f.goals:((p.diag&&p.diag.goals)||[]);
+  const T=p.goalTrack||{}, d=S.gt||(S.gt=JSON.parse(JSON.stringify(T)));
+  const sum=a=>(a||[]).reduce((x,y)=>x+(+y||0),0);
+  const sign=n=>n>0?`+${n}`:`${n}`;
+  app.innerHTML = header("내 역량의 변화","학기 초 진단과 지금을 나란히 놓고, 그때 정한 목표를 얼마나 해냈는지 기록해요.")+`
+  <section class="card">
+    <div class="lesson">${two?`처음 ${day(f.ts)} → 지금 ${day(l.ts)}`:`처음 진단 ${day(f.ts)}`}</div>
+    <h2 style="margin-top:4px">${two?"처음과 지금, 이렇게 달라졌어요":"학기말에 한 번 더 진단해 보세요"}</h2>
+    ${two?"":`<p class="desc">같은 진단을 다시 하면 처음 결과와 겹쳐서 비교해 드려요.<br>진단은 몇 번이든 할 수 있고, 할 때마다 기록이 쌓여요.</p>`}
+    <div class="hexwrap">${two?hexCmp(f.a,l.a):hexSVG(f.a)}
+      <div class="facts">
+        ${two?`<div class="legend2"><span><i class="ln0"></i>처음</span><span><i class="ln1"></i>지금</span></div>`:""}
+        <div class="fact"><small>가장 닮은 직무</small><b>${esc(JOBNAME[f.fit]||f.fit||"-")}${two&&l.fit!==f.fit?` → ${esc(JOBNAME[l.fit]||l.fit)}`:""}</b></div>
+        <div class="fact"><small>원하는 직무</small><b>${esc(JOBNAME[f.want]||f.want||"-")}${two&&l.want!==f.want?` → ${esc(JOBNAME[l.want]||l.want)}`:""}</b></div>
+      </div></div>
+    ${two?`<div class="scroll"><table class="tbl"><tr><th>역량</th><th>처음</th><th>지금</th><th>변화</th></tr>
+      ${AXES.map((t,i)=>{ const x=+(f.a[i]||0), y=+(l.a[i]||0), dv=y-x; return `<tr><td>${t}</td><td>${x}</td><td><b>${y}</b></td><td class="${dv>0?"up":dv<0?"down":""}">${sign(dv)}</td></tr>`; }).join("")}
+      <tr><td><b>합계</b></td><td>${sum(f.a)}</td><td><b>${sum(l.a)}</b></td><td class="${sum(l.a)-sum(f.a)>0?"up":sum(l.a)-sum(f.a)<0?"down":""}">${sign(sum(l.a)-sum(f.a))}</td></tr></table></div>
+      <p class="hint" style="margin-top:8px">변화 = 지금 점수 − 처음 점수<br>지금 점수에서 처음 점수를 뺀 값이에요.<br>0보다 크면 그 역량이 처음보다 높게 나왔다는 뜻이에요.</p>`:""}
+    <div class="row" style="margin-top:16px"><a class="btn ${two?"sec":"pri"}" href="${diagHref("new")}">${two?"한 번 더 진단하기":"지금 다시 진단하기"}</a><a class="btn sec" href="${diagHref("view")}">최근 결과 자세히 보기</a></div>
+  </section>
+  <section class="card">
+    <h2>처음 진단이 제안한 목표, 해냈나요?</h2>
+    <p class="desc">학기 초 진단에서 나온 세 가지 목표예요.<br>얼마나 했는지 고르고, 어떻게 했는지 적어 두면 다음 진단 때 함께 돌아볼 수 있어요.</p>
+    ${goals.length?goals.map((g,i)=>{ const v=d[g.t]||{};
+      return `<div class="gtrack">
+        <div class="gn">${i+1}</div>
+        <div class="gb"><h3>${esc(g.t)}</h3><p class="hint" style="margin-top:2px">기준: ${esc(g.goal||"")}</p>
+          <div class="chips" style="margin-top:10px">${GOAL_ST.map(([k,t])=>`<span class="chip ${v.status===k?"on":""}" data-gs="${i}" data-v="${k}" tabindex="0" role="radio" aria-checked="${v.status===k}">${t}</span>`).join("")}</div>
+          <textarea id="gn${i}" rows="3" placeholder="어떻게 했는지, 무엇이 남았는지 적어 두세요" style="margin-top:10px">${esc(v.note||"")}</textarea>
+          ${v.at?`<p class="hint">${day(v.at)}에 마지막으로 적었어요</p>`:""}</div></div>`; }).join("")
+      :`<p class="desc" style="margin-top:12px">처음 진단의 목표를 불러오는 중이에요.<br>1강 결과 화면을 한 번 열면 여기에 채워져요.</p><div class="row"><a class="btn sec sm" href="${diagHref("view")}">결과 화면 열기</a></div>`}
+    ${goals.length?`<p class="err" id="err"></p><p class="ok" id="gsaved" style="display:none">저장했어요</p>
+      <div class="row" style="margin-top:14px"><button class="btn pri" id="gsave">기록 저장하기</button></div>`:""}
+  </section>
+  ${H.length>1?`<section class="card"><h3>진단 기록</h3>
+    <div class="scroll"><table class="tbl"><tr><th>날짜</th><th>역량 합계</th><th>가장 닮은 직무</th></tr>
+    ${H.map(h=>`<tr><td>${day(h.ts)}</td><td>${sum(h.a)}</td><td>${esc(JOBNAME[h.fit]||h.fit||"")}</td></tr>`).join("")}</table></div></section>`:""}`+foot();
+  const keepNotes=()=>goals.forEach((g,i)=>{ const e=$("#gn"+i); if(e){ d[g.t]={...(d[g.t]||{}), note:e.value}; } });
+  $$("[data-gs]").forEach(c=>c.onclick=()=>{ keepNotes(); const g=goals[+c.dataset.gs]; d[g.t]={...(d[g.t]||{}), status:c.dataset.v}; viewGrowth(); });
+  if($("#gsave")) $("#gsave").onclick=async()=>{ keepNotes();
+    const nowIso=new Date().toISOString(); goals.forEach(g=>{ if(d[g.t]) d[g.t].at=nowIso; });
+    try{ await F.updateProfile(S.user.uid,{goalTrack:d}); S.prof.goalTrack=JSON.parse(JSON.stringify(d)); $("#gsaved").style.display="block"; $("#err").style.display="none"; }
+    catch(e){ showErr(authMsg(e)); } };
 }
 
 /* ───────── 커리큘럼 피드백 설문 ───────── */
@@ -1431,6 +1497,7 @@ async function render(){
   if(r==="class") return viewClass();
   if(r==="feedback") return viewFeedback();
   if(r==="l3") return viewL3();
+  if(r==="growth") return viewGrowth();
   if(r==="me") return viewMe();
   return viewHome();
 }
@@ -1473,7 +1540,7 @@ function renderExecDoor(){
   return viewExec();
 }
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-out]"); if(t){ e.preventDefault(); F.signOut(); } });
-window.addEventListener("hashchange",()=>{ S.me=null; if(!location.hash.startsWith("#post/")) S.draft=null; render(); scrollTo(0,0); });
+window.addEventListener("hashchange",()=>{ S.me=null; S.gt=null; if(!location.hash.startsWith("#post/")) S.draft=null; render(); scrollTo(0,0); });
 window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); window.__bip=e; });
 F.onUser(async u=>{
   S.user=u; S.fb=null; S.sheetOpen=false; S.prof=null; S.ownProf=null; S.myName=""; S.role=null; S.req=null; S.join=null; S.me=null; S.cache={};
