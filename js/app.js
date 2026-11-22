@@ -612,7 +612,7 @@ async function viewHome(){
     const names=["정의","구조화","검증","진입"], n=got?LECS.filter((_,i)=>has(i)).length:0;
     box.innerHTML = `<h3 style="margin-top:6px">${got?`4개 중 ${n}개를 들었어요`:"강의 후기를 남기면 들은 강의가 표시돼요"}</h3>
       <div class="prog">${names.map((t,i)=>`<div class="${has(i)?"done":""}"><small>${i+1}강</small><b>${t}</b></div>`).join("")}</div>
-      <div class="row">${got?`<a class="btn sec sm" href="#class">강의실 가기</a>`:`<a class="btn pri sm" href="#feedback">후기 남기기</a><a class="btn sec sm" href="#class">강의실 가기</a>`}</div>`;
+      <div class="row"><a class="btn sec sm" href="#class">강의실 가기</a></div>`;
   }).catch(()=>{ const box=$("#hatt"); if(box) box.innerHTML=`<div class="row"><a class="btn sec sm" href="#class">강의실 가기</a></div>`; });
   try{
     const [ns, evs] = await Promise.all([load("notices",F.listNotices), load("events",F.listEvents)]);
@@ -836,8 +836,8 @@ function viewL3(){
   <div class="story">
     <section class="st hero">
       <div class="lesson">3강 · 그날의 현장 돌아보기</div>
-      <h2>10월 28일 저녁,<br>101호에 ${L3_INFO.attended}명이 모였어요</h2>
-      <p>경영대학과 KUSC가 함께 연 첫 공개 행사였어요.<br>학회원뿐 아니라 직무가 궁금한 학우라면 누구나 신청할 수 있었어요.</p>
+      <h2>10월 28일 저녁,<br>101호에 약 ${L3_INFO.attended}명이 모였어요</h2>
+      <p>KUSC가 경영대학과 함께 연 첫 공개 행사였어요.<br>학회원뿐 아니라 직무가 궁금한 학우라면 누구나 신청할 수 있었어요.</p>
       ${ph("01","f","wide")}
       ${ph("02","f","wide")}
     </section>
@@ -848,8 +848,7 @@ function viewL3(){
     </section>
     <section class="st">
       <h2>화려한 이력보다,<br>어떻게 들어갔는지를 물었어요</h2>
-      <p>연사마다 순서는 같았어요.<br>나는 누구인지, 이 직무는 무엇인지, AI가 무엇을 바꿨는지,<br>그리고 남들과 다른 길로 들어간 나만의 틈.</p>
-      <p>미리 받은 질문에도 직무별로 답해 줬어요.</p>
+      <p>연사마다 순서는 같았어요.<br>나는 누구인지, 이 직무는 무엇인지, AI가 무엇을 바꿨는지, 그리고 남들과 다른 길로 들어간 나만의 틈.<br>미리 받은 질문에도 직무별로 답해 줬어요.</p>
     </section>
     <section class="st">
       <h2>쉽게 모실 수 없는 선배들이<br>한자리에</h2>
@@ -862,14 +861,11 @@ function viewL3(){
     </section>
     <section class="st">
       <h2>학장님도<br>함께해 주셨어요</h2>
-      <p>김추연 지도교수님뿐 아니라 유재욱 경영대학장님께서도 직접 참석해 학회에 대한 지원과 관심을 약속해 주셨어요.</p>
-      <p>학회 행사에 학장님이 오시는 일은 거의 없어서, 더 뜻깊은 자리였어요.</p>
+      <p>김추연 지도교수님뿐 아니라 유재욱 경영대학장님께서도 직접 참석해 학회에 대한 지원과 관심을 약속해 주셨어요.<br>학회 행사에 학장님이 오시는 일은 거의 없어서, 더 뜻깊은 자리였어요.</p>
     </section>
     <section class="st next">
       <h2>다음은<br>여러분 차례예요</h2>
-      <p>오늘 무대에 선 선배들도 몇 년 전에는 여러분과 같은 자리에 앉아 있었어요.</p>
-      <p>원하는 자리에 가게 되면, 이번에는 여러분이 돌아와 주세요. 후배들 앞에서 길을 들려주고, 기회를 나눠 주는 선배로요.</p>
-      <p>KUSC는 그렇게 이어지는 학회예요.</p>
+      <p>오늘 무대에 선 선배들도 몇 년 전에는 여러분과 같은 자리에 앉아 있었어요.<br>원하는 자리에 가게 되면, 그때는 여러분이 돌아와 주세요.<br>후배들 앞에서 길을 들려주고, 기회를 나눠 주는 선배로요.<br>KUSC는 그렇게 이어지는 학회예요.</p>
     </section>
     <p class="hint" id="galnote" style="text-align:center">사진을 누르면 크게 볼 수 있어요.</p>
     <div class="row" style="justify-content:center"><a class="btn sec sm" href="apply.html">그날의 신청 기록 보기</a></div>
@@ -1420,16 +1416,17 @@ async function render(){
 async function masterPick(u, uid){
   let us=[]; try{ us=(await F.listUsers()).sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko")); }catch(e){}
   S.members=us;
-  if(!us.length){ const a=await F.getAdmin(u.uid); S.prof={name:(a&&a.name)||"관리자", master:true, progress:{}}; return; }
   let pick=uid; if(!pick){ try{ pick=localStorage.getItem("kusc:viewAs"); }catch(e){} }
-  const m=us.find(x=>x.uid===pick)||us[0];
-  S.prof={...m, viewAs:m.uid};
-  try{ localStorage.setItem("kusc:viewAs", m.uid); }catch(e){}
+  const m=us.find(x=>x.uid===pick);
+  if(!m){ const a=await F.getAdmin(u.uid); S.prof={name:(a&&a.name)||"관리자", master:true, progress:{}}; }   /* 기본: 마스터 본인 화면 */
+  else S.prof={...m, viewAs:m.uid};
+  try{ localStorage.setItem("kusc:viewAs", m?m.uid:"__me"); }catch(e){}
 }
 function viewAsBar(){
-  if(!(S.prof && S.prof.viewAs)) return "";
-  return `<div class="viewas"><b>마스터 보기</b><select id="vas" aria-label="화면을 볼 학회원">${(S.members||[]).map(m=>`<option value="${m.uid}" ${m.uid===S.prof.viewAs?"selected":""}>${esc(m.name)}${m.grade?` (${esc(m.grade)})`:""}</option>`).join("")}</select>
-    <span>님에게 보이는 화면이에요. 읽기 전용이라 아무것도 바뀌지 않아요.</span><a href="admin.html">운영실</a></div>`;
+  if(!(S.prof && (S.prof.viewAs || S.prof.master)) || MODE==="exec") return "";
+  const me=!S.prof.viewAs;
+  return `<div class="viewas"><b>마스터 보기</b><select id="vas" aria-label="화면을 볼 사람"><option value="__me" ${me?"selected":""}>마스터 (내 화면)</option>${(S.members||[]).map(m=>`<option value="${m.uid}" ${m.uid===S.prof.viewAs?"selected":""}>${esc(m.name)}${m.grade?` (${esc(m.grade)})`:""}</option>`).join("")}</select>
+    <span>${me?"학회원을 고르면 그 사람에게 보이는 화면을 읽기 전용으로 볼 수 있어요.":"님에게 보이는 화면이에요. 읽기 전용이라 아무것도 바뀌지 않아요."}</span><a href="admin.html">운영실</a></div>`;
 }
 document.addEventListener("change",async e=>{ if(e.target && e.target.id==="vas"){ await masterPick(S.user, e.target.value); S.cache={}; S.fb=null; S.me=null; render(); } });
 
