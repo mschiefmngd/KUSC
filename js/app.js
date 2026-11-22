@@ -1341,7 +1341,12 @@ async function xFeedback(box){
     <div class="row" style="margin-top:14px"><button class="btn pri sm" id="fbcsv"${n?"":" disabled"}>응답 엑셀(CSV) 받기</button>${left.length?`<button class="btn sec sm" id="fbleft">안 낸 사람 이름 복사</button>`:""}</div>
     <p class="ok" id="fbcopied" style="display:none">복사했어요</p>
   </section>
+  ${n?`<section class="card"><h3>응답한 사람</h3><p class="desc">테스트 응답처럼 지워야 할 응답이 있으면 지우세요. 지우면 그 사람은 다시 낼 수 있어요.</p>
+    <div class="scroll"><table class="tbl"><tr><th>응답 날짜</th><th>이름</th><th>학번</th><th></th></tr>
+    ${rs.map(r=>`<tr><td>${day(r.createdAt)}</td><td>${esc(r.name||"")}</td><td>${esc(r.sid||"")}</td><td><button class="link" data-fdel="${r.id}" data-fuid="${esc(r.uid||"")}" style="color:var(--red)">지우기</button></td></tr>`).join("")}</table></div></section>`:""}
   <section class="card">${n?blocks.join(""):`<p class="desc">아직 응답이 없어요. 학회원이 강의실의 '후기 남기기'에서 낼 수 있어요.</p>`}</section>`;
+  $$("[data-fdel]").forEach(b=>b.onclick=async()=>{ if(b.dataset.armed!=="1"){ b.dataset.armed="1"; b.textContent="정말 지우기"; return; }
+    try{ await F.deleteFeedback(b.dataset.fdel, b.dataset.fuid, T.term); viewExec(); }catch(e){ alert(authMsg(e)); } });
   if($("#fbleft")) $("#fbleft").onclick=async()=>{ try{ await navigator.clipboard.writeText(left.join(", ")); $("#fbcopied").style.display="block"; }catch(e){ prompt("복사해서 쓰세요", left.join(", ")); } };
   if($("#fbcsv")) $("#fbcsv").onclick=()=>{
     const cols=fbColumns();

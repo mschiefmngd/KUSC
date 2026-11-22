@@ -133,6 +133,14 @@ export async function submitFeedback(uid, term, answers, who) {
   b.set(doc(collection(db, "feedback")), { term, answers, uid, name: who.name || "", sid: who.sid || "", createdAt: now() });
   await b.commit();
 }
+/* 응답 지우기 (관리자): 응답, 낸 기록, 들은 강의 기록을 함께 지워서 다시 낼 수 있게 함 */
+export async function deleteFeedback(id, uid, term) {
+  const b = writeBatch(db);
+  b.delete(doc(db, "feedback", id));
+  if (uid) b.delete(doc(db, "feedbackDone", uid + "_" + term));
+  await b.commit();
+  if (uid) { try { await deleteDoc(doc(db, "attendance", uid)); } catch (e) {} }
+}
 export async function listFeedback(term) { return (await list("feedback", 1000)).filter(x => x.term === term); }
 export async function listFeedbackDone(term) {
   const s = await getDocs(collection(db, "feedbackDone"));
