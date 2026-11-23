@@ -1388,10 +1388,10 @@ async function xMembers(box){
     <p class="desc">${TERM_LABEL} 회비 ${DUES}: ${users.length}명 중 ${paid}명 확인. 입금을 확인하면 체크하세요. 본인 화면에도 바로 표시돼요.</p>
     <div class="row"><button class="btn pri sm" id="mcsv">회원 연락망 CSV</button><button class="btn sec sm" id="unpaid">미납자 이름 복사</button>${S.role==="admin"?`<button class="btn sec sm" id="tosheet">가입자 전체를 기록 사본에 쓰기</button>`:""}</div>
     <p class="ok" id="cp" style="display:none"></p>
-    <div class="scroll"><table class="tbl"><tr><th>회비</th><th>이름</th><th>학년</th><th>주전공</th><th>연락처</th><th>진단</th>${S.role==="admin"?"<th>임원진</th>":""}</tr>
+    <div class="scroll"><table class="tbl"><tr><th>회비</th><th>이름</th><th>학년</th><th>주전공</th><th>연락처</th><th>희망 직무</th>${S.role==="admin"?"<th>임원진</th>":""}</tr>
       ${users.map(u=>`<tr><td><input type="checkbox" class="due" data-uid="${u.uid}" ${u.dues&&u.dues[TERM]?"checked":""} aria-label="${esc(u.name)} 회비"></td>
         <td>${esc(u.name)}${role(u.uid)?` <span class="badge ku">${role(u.uid)==="admin"?"관리자":"임원진"}</span>`:""}</td><td>${esc(u.grade)}</td><td>${esc(u.major)}</td><td>${esc(u.phone||"")}</td>
-        <td>${u.diag?esc(JOBNAME[u.diag.fit]||""):"-"}</td>
+        <td>${(u.jobs&&u.jobs.length)?esc(u.jobs.join(", ")):(u.diag&&u.diag.want&&u.diag.want!=="NONE")?esc(JOBNAME[u.diag.want]||u.diag.want):"-"}</td>
         ${S.role==="admin"?`<td>${role(u.uid)==="admin"?"":`<button class="link" data-role="${u.uid}" data-name="${esc(u.name)}" data-on="${role(u.uid)?1:0}">${role(u.uid)?"해제":"지정"}</button>`}</td>`:""}</tr>`).join("")}
     </table></div>
   </section>`;
