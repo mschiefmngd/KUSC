@@ -1109,11 +1109,21 @@ function fbColumns(){ const cols=[]; let i=0;
   allQs().forEach(q=>{ i++; if(q.type==="grid") allRows(q).forEach(r=>cols.push([q.id,r,`${i}. ${q.q} - ${r}`])); else cols.push([q.id,null,`${i}. ${q.q}`]); });
   return cols; }
 function fbRow(ans, cols){ return cols.map(([id,row])=>{ const v=(ans||{})[id]; return row?((v||{})[row]||""):Array.isArray(v)?v.join(" / "):(v===undefined?"":v); }); }
-function sheetFeedback(ans, who){   /* 응답 기록 사본 */
+function sheetFeedback(ans, who, tag=""){   /* 응답 기록 사본. tag가 있으면 '_tag' 탭에 따로 쌓임(미저장 응답 구조용) */
   const cols=fbColumns();
-  try{ fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
-    body:JSON.stringify({type:"feedback",term:SURVEY.term,cols:["이름","학번",...cols.map(c=>c[2])],row:[who.name||"","'"+(who.sid||""),...fbRow(ans,cols)]})}).catch(()=>{}); }catch(e){}
+  const body=JSON.stringify({type:"feedback",term:SURVEY.term+(tag?"_"+tag:""),cols:["이름","학번",...(tag?["계정","상태"]:[]),...cols.map(c=>c[2])],
+    row:[who.name||"","'"+(who.sid||""),...(tag?[who.email||who.uid||"",who.status||tag]:[]),...fbRow(ans,cols)]});   /* 원래 탭은 열 구성을 그대로 둠 */
+  const once=()=>new Promise(res=>{ const t=setTimeout(()=>res(false),8000);
+    try{ fetch(ENDPOINT,{method:"POST",mode:"no-cors",keepalive:body.length<60000,headers:{"Content-Type":"text/plain;charset=utf-8"},body})
+      .then(()=>{ clearTimeout(t); res(true); },()=>{ clearTimeout(t); res(false); }); }catch(e){ clearTimeout(t); res(false); } });
+  return once().then(ok=>ok||new Promise(r=>setTimeout(r,1500)).then(once));
 }
+/* 쓰던 후기는 이 기기에 계속 저장해 둠. 보내다 실패해도 답이 날아가지 않게 */
+const fbKey=()=>"kusc:fb:"+((S.user&&S.user.uid)||"")+":"+SURVEY.term;
+function fbDraftSave(st){ try{ localStorage.setItem(fbKey(), JSON.stringify({p:st.p,a:st.a})); }catch(e){} }
+function fbDraftLoad(){ try{ const d=JSON.parse(localStorage.getItem(fbKey())||"null"); if(d&&d.a) return {p:d.p||0,a:d.a}; }catch(e){} return null; }
+function fbDraftClear(){ try{ localStorage.removeItem(fbKey()); }catch(e){} }
+const withTimeout=(pr,ms)=>Promise.race([pr,new Promise((_,rej)=>setTimeout(()=>rej({code:"timeout"}),ms))]);
 const SCALE = ["1","2","3","4","5"];
 function fbAnswers(a){   /* 화면용 임시 값(a)을 저장용 답으로 정리. 안 보인 질문은 버림 */
   const out={};
@@ -1161,11 +1171,12 @@ function fbQuestion(q,a,no){
 }
 async function viewFeedback(){
   if(S.prof.master && !S.prof.viewAs){ location.hash="#class"; return; }
-  const T=SURVEY, st=S.fb||(S.fb={p:0,a:{}});
+  const T=SURVEY, st=S.fb||(S.fb=fbDraftLoad()||{p:0,a:{}});
   if(st.done===undefined){ app.innerHTML=header("","")+`<div class="skel"></div>`; try{ st.done=await F.getFeedbackDone(myUid(),T.term); }catch(e){ st.done=false; } }
-  if(st.done){ app.innerHTML=header("강의 후기","")+`<section class="card"><h2>이미 후기를 남겼어요</h2>
-      <p class="desc">${esc(T.title)}에 답해 줘서 고마워요. 한 학기에 한 번만 낼 수 있어요.</p>
+  if(st.done){ app.innerHTML=header("강의 후기","")+`<section class="card"><h2>${st.justSent?"후기가 저장됐어요":"이미 후기를 남겼어요"}</h2>
+      <p class="desc">${esc(T.title)}에 답해 줘서 고마워요.${st.justSent?` 저장 확인: ${esc(st.justSent)}`:" 한 학기에 한 번만 낼 수 있어요."}</p>
       <div class="row" style="margin-top:18px"><a class="btn pri" href="#class">강의실로</a></div></section>`+foot(); return; }
+  fbDraftSave(st);
   const a=st.a, P=T.pages, page=P[st.p], num=fbNumber(a), vis=page.qs.filter(q=>shown(q,a));
   app.innerHTML = header("","")+`<section class="card" style="margin-top:22px">
     <div class="steps">${P.map((_,i)=>`<i class="${i<=st.p?"on":""}"></i>`).join("")}</div>
@@ -1179,7 +1190,8 @@ async function viewFeedback(){
     <div class="row" style="margin-top:24px"><button class="btn sec" id="back" style="flex:0 0 96px">${st.p===0?"나가기":"이전"}</button>
       <button class="btn pri" id="next" style="flex:1">${st.p===P.length-1?"후기 보내기":"다음"}</button></div>
   </section>`+foot();
-  const keep=()=>{ vis.forEach(q=>{ if(q.type==="text"){ const e=$("#"+q.id); if(e) a[q.id]=e.value; } const t=$("#"+q.id+"_etc"); if(t) a[q.id+"_etc"]=t.value; }); };
+  const keep=()=>{ vis.forEach(q=>{ if(q.type==="text"){ const e=$("#"+q.id); if(e) a[q.id]=e.value; } const t=$("#"+q.id+"_etc"); if(t) a[q.id+"_etc"]=t.value; }); fbDraftSave(st); };
+  $$("textarea, input").forEach(x=>x.addEventListener("input",()=>{ clearTimeout(st._t); st._t=setTimeout(keep,400); }));
   const before={}; vis.forEach(q=>{ if(q.none) before[q.id]=[...(a[q.id]||[])]; });
   bindChips(a, ()=>{ keep();
     vis.forEach(q=>{ if(!q.none) return; const now=a[q.id]||[];   /* '아직 없음' 같은 선택지는 다른 것과 같이 못 고름 */
@@ -1193,8 +1205,24 @@ async function viewFeedback(){
     if(miss) return showErr(`${num[miss.id]}번 질문에 답해 주세요`);
     if(st.p<P.length-1){ st.p++; viewFeedback(); scrollTo(0,0); return; }
     const b=$("#next"); b.disabled=true; b.textContent="보내는 중…";
-    try{ const ans=fbAnswers(a), who={name:S.prof.name, sid:S.prof.sid}; await F.submitFeedback(S.user.uid, T.term, ans, who); sheetFeedback(ans, who); F.setAttendance(S.user.uid, TERM, ans.a4||[]).catch(()=>{}); S.fb={done:true}; location.hash="#class"; }
-    catch(e){ b.disabled=false; b.textContent="후기 보내기"; showErr(authMsg(e)); }
+    const ans=fbAnswers(a), who={name:S.prof.name, sid:S.prof.sid, uid:S.user.uid, email:S.user.email||""};
+    try{
+      await withTimeout(F.submitFeedback(S.user.uid, T.term, ans, who), 20000);
+      const ok=await withTimeout(F.getFeedbackDone(S.user.uid, T.term), 10000).catch(()=>true);   /* 서버에 진짜 들어갔는지 한 번 더 확인 */
+      if(!ok) throw {code:"not-saved"};
+      b.textContent="기록 사본 남기는 중…"; await sheetFeedback(ans, who);
+      F.setAttendance(S.user.uid, TERM, ans.a4||[]).catch(()=>{}); fbDraftClear();
+      const t=new Date(); S.fb={done:true, justSent:`${t.getMonth()+1}월 ${t.getDate()}일 ${String(t.getHours()).padStart(2,"0")}:${String(t.getMinutes()).padStart(2,"0")}`};
+      viewFeedback(); scrollTo(0,0);
+    }
+    catch(e){
+      const code=(e&&e.code)||String(e&&e.message||e||"unknown");
+      if(code==="view-only"){ b.disabled=false; b.textContent="후기 보내기"; return showErr(authMsg(e)); }
+      /* 저장이 막혀도 답은 운영진 시트로 따로 보내 살려 둠 */
+      const rescued=await sheetFeedback(ans, {...who, status:"저장 실패: "+code}, "미저장");
+      b.disabled=false; b.textContent="다시 보내기";
+      showErr(`저장이 안 됐어요 (${code}).${rescued?" 답은 운영진에게 따로 전달했어요.":""} 쓴 답은 이 기기에 남아 있어요. 다시 보내기를 눌러 주시고, 또 안 되면 이 화면을 캡처해 임원진에게 보내 주세요. 로그인 계정: ${S.user.email||S.user.uid}`);
+    }
   };
 }
 
@@ -1524,12 +1552,20 @@ async function xFeedback(box){
     const tx=rs.filter(r=>(r.answers||{})[q.id]!==undefined);
     return h+(k?`<ul class="dl">${tx.map(r=>`<li>${nl(r.answers[q.id])}<br><span class="hint">${esc(r.name||"")}</span></li>`).join("")}</ul>`:`<p class="desc muted">아직 답이 없어요.</p>`);
   });
-  const left=users.filter(u=>!doneUids.includes(u.uid)).map(u=>u.name);
+  /* 계정(uid)으로 먼저 맞추고, 안 맞으면 학번으로도 맞춰 봄. 다른 계정으로 낸 사람을 '안 냄'으로 잘못 세지 않게 */
+  const dg=x=>String(x||"").replace(/\D/g,""), fbSids=new Set(rs.map(r=>dg(r.sid)).filter(Boolean)), fbUids=new Set(rs.map(r=>r.uid));
+  const isDone=u=>doneUids.includes(u.uid)||fbUids.has(u.uid)||(dg(u.sid)&&fbSids.has(dg(u.sid)));
+  const left=users.filter(u=>!isDone(u)).map(u=>u.name);
+  const other=users.filter(u=>!doneUids.includes(u.uid)&&!fbUids.has(u.uid)&&isDone(u)).map(u=>u.name);
+  const doneN=users.filter(isDone).length;
   box.innerHTML = `<section class="card">
     <h2>${esc(T.title)}</h2>
     <p class="desc">관리자만 보는 화면이에요. 임원진 화면에는 이 탭이 없어요.</p>
-    <div class="stat three"><div><small>응답</small><b>${n}</b></div><div><small>가입한 학회원</small><b>${users.length}</b></div><div><small>응답률</small><b>${users.length?pct(doneUids.length,users.length)+"%":"-"}</b></div></div>
-    <div class="row" style="margin-top:14px"><button class="btn pri sm" id="fbcsv"${n?"":" disabled"}>응답 엑셀(CSV) 받기</button>${left.length?`<button class="btn sec sm" id="fbleft">안 낸 사람 이름 복사</button>`:""}</div>
+    <div class="stat three"><div><small>응답</small><b>${n}</b></div><div><small>가입한 학회원</small><b>${users.length}</b></div><div><small>응답률</small><b>${users.length?pct(doneN,users.length)+"%":"-"}</b></div></div>
+    ${left.length?`<p class="desc" style="margin-top:12px">안 낸 사람 ${left.length}명: ${esc(left.join(", "))}</p>`:`<p class="desc" style="margin-top:12px">가입한 학회원 모두 냈어요.</p>`}
+    ${other.length?`<p class="hint">다른 계정으로 낸 사람(학번으로 확인): ${esc(other.join(", "))}</p>`:""}
+    <div class="row" style="margin-top:14px"><button class="btn pri sm" id="fbcsv"${n?"":" disabled"}>응답 엑셀(CSV) 받기</button>${left.length?`<button class="btn sec sm" id="fbleft">안 낸 사람 이름 복사</button>`:""}${n?`<button class="btn sec sm" id="fbsync">구글 시트로 전체 다시 보내기</button>`:""}</div>
+    <p class="hint">시트 사본이 빠졌을 때 쓰세요. 서버에 저장된 응답 ${n}개를 시트의 'feedback_${esc(T.term)}_복구' 탭에 새로 씁니다. 학생 쪽 저장이 막혀 따로 전달된 답은 'feedback_${esc(T.term)}_미저장' 탭에 쌓여요.</p>
     <p class="ok" id="fbcopied" style="display:none">복사했어요</p>
   </section>
   ${n?`<section class="card"><h3>응답한 사람</h3><p class="desc">테스트 응답처럼 지워야 할 응답이 있으면 지우세요. 지우면 그 사람은 다시 낼 수 있어요.</p>
@@ -1539,6 +1575,11 @@ async function xFeedback(box){
   $$("[data-fdel]").forEach(b=>b.onclick=async()=>{ if(b.dataset.armed!=="1"){ b.dataset.armed="1"; b.textContent="정말 지우기"; return; }
     try{ await F.deleteFeedback(b.dataset.fdel, b.dataset.fuid, T.term); viewExec(); }catch(e){ alert(authMsg(e)); } });
   if($("#fbleft")) $("#fbleft").onclick=async()=>{ try{ await navigator.clipboard.writeText(left.join(", ")); $("#fbcopied").style.display="block"; }catch(e){ prompt("복사해서 쓰세요", left.join(", ")); } };
+  if($("#fbsync")) $("#fbsync").onclick=async()=>{ const b=$("#fbsync"); b.disabled=true; let ok=0;
+    for(const [i,r] of [...rs].reverse().entries()){ b.textContent=`보내는 중… ${i+1}/${n}`;
+      if(await sheetFeedback(r.answers, {name:r.name, sid:r.sid, uid:r.uid, status:"서버 저장 "+day(r.createdAt)}, "복구")) ok++;
+      await new Promise(z=>setTimeout(z,350)); }
+    b.textContent=`${ok}/${n}개 보냈어요. 시트를 확인하세요`; };
   if($("#fbcsv")) $("#fbcsv").onclick=()=>{
     const cols=fbColumns();
     csv(`KUSC_${T.term}_커리큘럼피드백.csv`,["응답 날짜","이름","학번",...cols.map(c=>c[2])], rs.map(r=>[day(r.createdAt),r.name||"",r.sid||"",...fbRow(r.answers,cols)]));

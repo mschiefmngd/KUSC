@@ -79,9 +79,13 @@ function KUSC_dlPost_(e) {
   /* 커리큘럼 피드백 (POST, type: "feedback") — 이름 없이 한 줄씩. 학기마다 탭이 따로 생김 */
   if (d && d.type === "feedback") {
     var head = ["ts"].concat(d.cols || []);
-    var fs = KUSC_dlSheet_("feedback_" + String(d.term || ""), head);
-    if (fs.getLastColumn() < head.length) fs.getRange(1, 1, 1, head.length).setValues([head]);
-    fs.appendRow([new Date().toISOString()].concat(d.row || []));
+    var lock = LockService.getScriptLock();   /* 여러 명이 동시에 내도 줄이 엉키지 않게 */
+    try { lock.waitLock(20000); } catch (le) {}
+    try {
+      var fs = KUSC_dlSheet_("feedback_" + String(d.term || ""), head);
+      if (fs.getLastColumn() < head.length) fs.getRange(1, 1, 1, head.length).setValues([head]);
+      fs.appendRow([new Date().toISOString()].concat(d.row || []));
+    } finally { try { lock.releaseLock(); } catch (re) {} }
     return KUSC_dlJson_({ ok: true });
   }
   if (!d || d.type !== "download") return null;
