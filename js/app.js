@@ -1302,8 +1302,8 @@ async function viewExec(){
 }
 const bars=(o,order)=>{ const max=Math.max(1,...Object.values(o)); return (order||Object.keys(o)).map(k=>`<div class="bar"><span>${esc(k)}</span><span class="t"><i style="width:${(o[k]||0)/max*100}%"></i></span><b>${o[k]||0}</b></div>`).join(""); };
 const cnt=a=>a.reduce((m,x)=>(m[x]=(m[x]||0)+1,m),{});
-function csv(name,H,rows){ const L=rows.map(r=>r.map(v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`).join(","));
-  const b=new Blob(["﻿"+[H.join(","),...L].join("\n")],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=name; a.click(); }
+function csv(name,H,rows){ const q=v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`, L=rows.map(r=>r.map(q).join(","));   /* 제목 줄도 따옴표로 감싸야 쉼표 든 질문이 칸을 밀지 않음 */
+  const b=new Blob(["﻿"+[H.map(q).join(","),...L].join("\n")],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=name; a.click(); }
 
 async function xDash(box){
   const [users, roster, reqs, posts, evs] = await Promise.all([F.listUsers(), F.listRoster(), F.listRequests(), load("posts",F.listPosts,1), load("events",F.listEvents,1)]);
